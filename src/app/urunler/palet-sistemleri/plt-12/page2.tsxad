@@ -1,0 +1,383 @@
+"use client";
+import React, { useState } from "react";
+import Image from "next/image";
+import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
+import {
+  ChevronDown,
+  CheckCircle2,
+  FileText,
+  Palette,
+  Loader2,
+  Send,
+  User,
+  Phone,
+  Mail,
+  MessageSquare,
+  X,
+} from "lucide-react";
+
+export default function PLT12Page() {
+  const { scrollYProgress } = useScroll();
+  const scale = useTransform(scrollYProgress, [0, 0.3], [1, 1.1]);
+
+  const [imgError, setImgError] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // --- FORM STATE ---
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [form, setForm] = useState({ adSoyad: "", telefon: "", email: "", mesaj: "" });
+
+  // --- RENK KONFİGÜRATÖRÜ STATE ---
+  const colors = [
+    { id: "mavi", hex: "#0B63FF", img: "/image/mavii.png", label: "Taktik Mavi" },
+    { id: "yesil", hex: "#22C55E", img: "/image/yesill.png", label: "Orman Yeşili" },
+    { id: "turuncu", hex: "#FF6A00", img: "/image/turuncuu.png", label: "Endüstriyel Turuncu" },
+    { id: "sari", hex: "#FFD100", img: "/image/sarii.png", label: "Güvenlik Sarısı" },
+  ];
+
+  const [selectedColor, setSelectedColor] = useState(colors[2]); // turuncu default
+
+  const mainImage = "/image/plt-12-4.png";
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...form, secim: `PLT-12 ASPAR (${selectedColor.label})` }),
+      });
+
+      if (response.ok) {
+        setSuccess(true);
+        setTimeout(() => {
+          setIsModalOpen(false);
+          setSuccess(false);
+          setForm({ adSoyad: "", telefon: "", email: "", mesaj: "" });
+        }, 3500);
+      }
+    } catch (error) {
+      alert("Bağlantı hatası!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <main className="bg-[#050505] min-h-screen relative text-white selection:bg-amber-500 selection:text-black font-sans overflow-x-hidden">
+      {/* 1. ARKA PLAN */}
+      <div className="fixed inset-0 w-full h-screen z-0">
+        <motion.div style={{ scale }} className="relative w-full h-full">
+          {!imgError && (
+            <Image
+              src={mainImage}
+              alt="PLT-12"
+              fill
+              className="object-cover opacity-60"
+              priority
+              onError={() => setImgError(true)}
+            />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-[#050505]/80" />
+        </motion.div>
+      </div>
+
+      <div className="relative z-10 w-full">
+        {/* HERO SECTION */}
+        <section className="h-screen flex flex-col items-center justify-center text-center px-6">
+          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1 }}>
+            <span className="text-amber-500 font-bold tracking-[0.4em] uppercase text-[10px] mb-8 block bg-amber-500/10 px-6 py-2 rounded-full border border-amber-500/20 w-fit mx-auto italic font-black">
+              Heavy Duty ASPAR Series
+            </span>
+            <h1 className="text-7xl md:text-[14rem] font-black tracking-tighter leading-[0.8] mb-4 drop-shadow-2xl uppercase italic">
+              ASPAR <span className="text-amber-500 font-light">12</span>
+            </h1>
+            <h2 className="text-white text-2xl md:text-5xl font-black italic uppercase tracking-widest mb-10 drop-shadow-2xl leading-none">
+              ARAZİNİN YENİ <span className="text-amber-500">HAKİMİ</span>
+            </h2>
+            <p className="text-white/70 text-lg md:text-2xl max-w-4xl mx-auto font-bold leading-relaxed drop-shadow-2xl px-6 bg-black/20 backdrop-blur-sm py-4 rounded-2xl border border-white/5">
+              Engebeli, çamurlu ve zorlu arazilerde maksimum çekiş sağlayan ASPAR 12, ağır yük altında dahi kararlı ilerleme
+              sunar.
+            </p>
+          </motion.div>
+          <ChevronDown className="absolute bottom-10 opacity-30 animate-bounce text-amber-500" size={40} />
+        </section>
+
+        {/* --- CANLI RENK KONFİGÜRATÖRÜ --- */}
+        <section className="py-32 px-6 bg-white/[0.02] border-y border-white/5 backdrop-blur-sm overflow-hidden">
+          <div className="container mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+              {/* Sol: SABİT RESİM + OPACITY İLE RENK DEĞİŞİMİ */}
+              <div className="relative">
+                <div className="relative aspect-video rounded-[3rem] overflow-hidden border border-white/10 shadow-2xl bg-transparent">
+
+                  {/* 4 görsel üst üste: sadece opacity değişiyor */}
+                  {colors.map((color) => (
+                    <motion.div
+                      key={color.id}
+                      className="absolute inset-0"
+                      initial={false}
+                      animate={{ opacity: selectedColor.id === color.id ? 1 : 0 }}
+                      transition={{ duration: 0.25, ease: "easeOut" }}
+                    >
+                      <Image src={color.img} alt={color.label} fill className="object-cover" priority />
+                    </motion.div>
+                  ))}
+
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+
+
+                  <div className="absolute bottom-10 left-10">
+                    <p className="text-amber-500 font-black uppercase text-[10px] tracking-[0.4em] mb-2 italic">
+                      Color Selection
+                    </p>
+                    <h3 className="text-4xl font-black uppercase italic tracking-tighter">{selectedColor.label}</h3>
+                  </div>
+                </div>
+
+                {/* Glow */}
+                <div
+                  className="absolute -z-10 blur-[120px] opacity-20 w-full h-full top-0 left-0 transition-colors duration-1000"
+                  style={{ backgroundColor: selectedColor.hex }}
+                />
+              </div>
+
+              {/* Sağ: Seçim Paneli */}
+              <div className="space-y-12">
+                <div>
+                  <div className="flex items-center gap-4 mb-6">
+                    <Palette className="text-amber-500" size={40} />
+                    <h2 className="text-5xl md:text-7xl font-black uppercase italic leading-none tracking-tighter text-white">
+                      KİŞİSEL <span className="text-amber-500 font-light">TASARIM</span>
+                    </h2>
+                  </div>
+                  <p className="text-white/60 text-xl font-medium leading-relaxed italic max-w-lg">
+                    Operasyonel kimliğinizi sahaya yansıtın. ASPAR 12 gövde rengini sektörel ihtiyaçlarınıza göre özelleştirin.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-4 flex-wrap">
+                  {colors.map((c) => {
+                    const active = selectedColor.id === c.id;
+
+                    return (
+                      <button
+                        key={c.id}
+                        onClick={() => setSelectedColor(c)}
+                        className="group relative"
+                        aria-label={c.label}
+                        title={c.label}
+                      >
+                        {/* dış halka / glow */}
+                        <span
+                          className={[
+                            "absolute inset-0 rounded-full transition-all duration-300",
+                            active ? "ring-2 ring-amber-400/90" : "ring-1 ring-white/10 group-hover:ring-white/25"
+                          ].join(" ")}
+                        />
+
+                        {/* swatch */}
+                        <span
+                          className={[
+                            "relative block w-11 h-11 rounded-full",
+                            "shadow-[0_10px_30px_rgba(0,0,0,0.35)]",
+                            "transition-transform duration-300",
+                            active ? "scale-[1.08]" : "group-hover:scale-[1.06]",
+                          ].join(" ")}
+                          style={{
+                            background: `radial-gradient(circle at 30% 25%, rgba(255,255,255,0.75), rgba(255,255,255,0) 45%), linear-gradient(180deg, rgba(255,255,255,0.15), rgba(0,0,0,0.25)), ${c.hex}`,
+                          }}
+                        >
+                          {/* cam parlama */}
+                          <span className="absolute inset-0 rounded-full bg-white/10 blur-[0.5px] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                          {/* seçili işareti */}
+                          {active && (
+                            <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-amber-400 text-black grid place-items-center shadow-lg">
+                              <CheckCircle2 size={16} />
+                            </span>
+                          )}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* alt yazı: seçili renk adı */}
+                <div className="flex items-center gap-3 pt-2">
+                  <span
+                    className="w-2.5 h-2.5 rounded-full"
+                    style={{ backgroundColor: selectedColor.hex }}
+                  />
+                  <p className="text-white/70 font-semibold italic">
+                    Seçili renk: <span className="text-white">{selectedColor.label}</span>
+                  </p>
+                </div>
+                <div className="flex gap-10">
+                  <div className="space-y-2 text-center lg:text-left">
+                    <p className="text-amber-500 font-black text-[10px] uppercase tracking-widest leading-none">Dayanım</p>
+                    <p className="text-white font-bold text-lg leading-none">UV Korumalı</p>
+                  </div>
+                  <div className="w-px h-10 bg-white/10" />
+                  <div className="space-y-2 text-center lg:text-left">
+                    <p className="text-amber-500 font-black text-[10px] uppercase tracking-widest leading-none">Yüzey</p>
+                    <p className="text-white font-bold text-lg leading-none">Endüstriyel Boya</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* FINAL CTA */}
+        <section className="py-44 text-center bg-white text-black rounded-t-[5rem] md:rounded-t-[8rem] relative overflow-hidden">
+          <div className="relative z-10 px-6">
+            <h2 className="text-7xl md:text-[10rem] font-black uppercase tracking-tighter mb-16 leading-[0.9] italic">
+              ASPAR <br /> <span className="text-amber-500">GÜCÜ.</span>
+            </h2>
+            <div className="flex flex-col sm:flex-row gap-8 justify-center px-6 max-w-4xl mx-auto">
+              <button className="flex-1 bg-black text-white px-12 py-8 rounded-full font-black text-xl hover:bg-amber-600 transition-all duration-500 flex items-center justify-center gap-4 group italic">
+                KATALOG <FileText size={28} />
+              </button>
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="flex-1 bg-amber-500 text-black px-12 py-8 rounded-full font-black text-xl hover:bg-black hover:text-white transition-all shadow-2xl shadow-amber-500/20 italic font-black uppercase"
+              >
+                TEKLİF TALEBİ
+              </button>
+            </div>
+          </div>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[30vw] font-black text-black/[0.02] select-none pointer-events-none uppercase italic">
+            ASPAR
+          </div>
+        </section>
+      </div>
+
+      {/* MODERN WHITE FORM MODAL */}
+      <AnimatePresence>
+        {isModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsModalOpen(false)}
+              className="absolute inset-0 bg-slate-900/40 backdrop-blur-xl"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative w-full max-w-[480px] bg-white rounded-[2.5rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] overflow-hidden"
+            >
+              {!success && (
+                <button
+                  onClick={() => setIsModalOpen(false)}
+                  className="absolute top-6 right-6 p-2 rounded-full hover:bg-slate-50 text-slate-400 z-50"
+                >
+                  <X size={20} />
+                </button>
+              )}
+
+              <div className="p-10 md:p-14 text-slate-900">
+                {success ? (
+                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="text-center py-6">
+                    <div className="w-20 h-20 bg-emerald-50 text-emerald-500 rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-inner">
+                      <CheckCircle2 size={40} />
+                    </div>
+                    <h2 className="text-3xl font-black italic uppercase tracking-tighter leading-tight">
+                      TALEBİNİZ <br />
+                      <span className="text-amber-500 font-light">KAYDEDİLDİ</span>
+                    </h2>
+                    <p className="text-slate-500 font-medium italic mt-6 leading-relaxed">
+                      Ekibimiz en kısa sürede sizinle iletişime geçecektir.
+                    </p>
+                  </motion.div>
+                ) : (
+                  <>
+                    <div className="mb-10 flex items-center gap-3">
+                      <div className="w-1.5 h-8 bg-amber-500 rounded-full" />
+                      <h2 className="text-3xl font-black uppercase italic tracking-tighter leading-none text-slate-900">
+                        TEKLİF <span className="font-light">ALIN</span>
+                      </h2>
+                    </div>
+
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                      <div className="relative group">
+                        <User
+                          size={16}
+                          className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-amber-500 transition-colors"
+                        />
+                        <input
+                          required
+                          type="text"
+                          placeholder="Ad Soyad"
+                          value={form.adSoyad}
+                          onChange={(e) => setForm({ ...form, adSoyad: e.target.value })}
+                          className="w-full bg-slate-50 border border-slate-100 rounded-2xl pl-14 pr-6 py-4.5 text-slate-900 outline-none focus:bg-white focus:border-amber-500 transition-all font-bold text-sm"
+                        />
+                      </div>
+
+                      <div className="relative group">
+                        <Phone
+                          size={16}
+                          className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-amber-500 transition-colors"
+                        />
+                        <input
+                          required
+                          type="tel"
+                          placeholder="Telefon"
+                          value={form.telefon}
+                          onChange={(e) => setForm({ ...form, telefon: e.target.value })}
+                          className="w-full bg-slate-50 border border-slate-100 rounded-2xl pl-14 pr-6 py-4.5 text-slate-900 outline-none focus:bg-white focus:border-amber-500 transition-all font-bold text-sm"
+                        />
+                      </div>
+
+                      <div className="relative group">
+                        <Mail
+                          size={16}
+                          className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-amber-500 transition-colors"
+                        />
+                        <input
+                          required
+                          type="email"
+                          placeholder="E-Posta"
+                          value={form.email}
+                          onChange={(e) => setForm({ ...form, email: e.target.value })}
+                          className="w-full bg-slate-50 border border-slate-100 rounded-2xl pl-14 pr-6 py-4.5 text-slate-900 outline-none focus:bg-white focus:border-amber-500 transition-all font-bold text-sm"
+                        />
+                      </div>
+
+                      <div className="relative group">
+                        <MessageSquare
+                          size={16}
+                          className="absolute left-5 top-6 text-slate-300 group-focus-within:text-amber-500 transition-colors"
+                        />
+                        <textarea
+                          rows={3}
+                          placeholder="Notlarınız..."
+                          value={form.mesaj}
+                          onChange={(e) => setForm({ ...form, mesaj: e.target.value })}
+                          className="w-full bg-slate-50 border border-slate-100 rounded-2xl pl-14 pr-6 py-5 text-slate-900 outline-none focus:bg-white focus:border-amber-500 transition-all font-bold text-sm resize-none"
+                        />
+                      </div>
+
+                      <button
+                        disabled={loading}
+                        className="w-full bg-slate-900 text-white py-5 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] hover:bg-amber-500 hover:text-black transition-all flex items-center justify-center gap-3 shadow-xl active:scale-[0.98]"
+                      >
+                        {loading ? <Loader2 className="animate-spin" size={18} /> : <>GÖNDER <Send size={14} /></>}
+                      </button>
+                    </form>
+                  </>
+                )}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </main>
+  );
+}

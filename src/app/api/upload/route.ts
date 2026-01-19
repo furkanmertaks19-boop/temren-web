@@ -52,4 +52,4 @@ export async function POST(request: NextRequest) {
             details: error.message
         }, { status: 500 });
     }
-}
+}  

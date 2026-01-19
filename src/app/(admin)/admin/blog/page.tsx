@@ -58,37 +58,67 @@ export default function AdminBlogPage() {
             .replace(/^-+|-+$/g, '');
     };
 
+    // --- YENİLENEN RESİM YÜKLEME FONKSİYONU (VERCEL BLOB) ---
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (!e.target.files?.[0]) return;
-        const file = e.target.files[0];
-        const formData = new FormData();
-        formData.append("file", file);
+        const file = e.target.files?.[0];
+        if (!file) return;
+
         try {
             setSaving(true);
-            const res = await fetch("/api/upload", { method: "POST", body: formData });
+            const formData = new FormData();
+            formData.append("file", file);
+
+            // API'ye filename parametresiyle birlikte gönderiyoruz
+            const res = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}`, {
+                method: "POST",
+                body: formData
+            });
+
             const data = await res.json();
-            if (data.url) setCurrentPost((p: any) => ({ ...p, image: data.url }));
-        } finally { setSaving(false); }
+
+            if (data.url) {
+                setCurrentPost((p: any) => ({ ...p, image: data.url }));
+            } else {
+                alert("Yükleme başarısız: " + (data.error || "Bilinmeyen hata"));
+            }
+        } catch (error) {
+            alert("Sunucuya bağlanılamadı.");
+        } finally {
+            setSaving(false);
+            if (fileInputRef.current) fileInputRef.current.value = "";
+        }
     };
 
+    // --- YENİLENEN GALERİ YÜKLEME FONKSİYONU ---
     const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (!e.target.files?.length) return;
-        const files = Array.from(e.target.files);
+        const files = e.target.files;
+        if (!files || files.length === 0) return;
+
         setSaving(true);
         try {
             const uploadedUrls: string[] = [];
-            for (const file of files) {
+            for (const file of Array.from(files)) {
                 const formData = new FormData();
                 formData.append("file", file);
-                const res = await fetch("/api/upload", { method: "POST", body: formData });
+
+                const res = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}`, {
+                    method: "POST",
+                    body: formData
+                });
+
                 const data = await res.json();
                 if (data.url) uploadedUrls.push(data.url);
             }
+
             setCurrentPost((p: any) => ({
                 ...p, gallery: [...(p.gallery || []), ...uploadedUrls]
             }));
-        } catch (error) { alert("Galeri yükleme hatası."); }
-        finally { setSaving(false); }
+        } catch (error) {
+            alert("Galeri yüklenirken bir hata oluştu.");
+        } finally {
+            setSaving(false);
+            if (galleryInputRef.current) galleryInputRef.current.value = "";
+        }
     };
 
     const handleSave = async () => {
@@ -103,7 +133,10 @@ export default function AdminBlogPage() {
             if (res.ok) {
                 setIsEditorOpen(false);
                 fetchPosts();
+                alert("Haber başarıyla kaydedildi.");
             }
+        } catch (error) {
+            alert("Kayıt sırasında hata oluştu.");
         } finally { setSaving(false); }
     };
 
@@ -151,7 +184,6 @@ export default function AdminBlogPage() {
 
             {/* İÇERİK ALANI */}
             {activeTab === 'posts' ? (
-                /* HABER KARTLARI */
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {posts.map((post) => (
                         <div key={post._id} className="bg-white rounded-[2.5rem] p-6 border border-slate-100 shadow-sm group hover:shadow-xl transition-all">
@@ -171,7 +203,6 @@ export default function AdminBlogPage() {
                     ))}
                 </div>
             ) : (
-                /* ABONE LİSTESİ */
                 <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden">
                     <table className="w-full text-left border-collapse">
                         <thead className="bg-slate-50 border-b border-slate-100">
@@ -199,9 +230,6 @@ export default function AdminBlogPage() {
                                     </td>
                                 </tr>
                             ))}
-                            {subscribers.length === 0 && (
-                                <tr><td colSpan={3} className="p-20 text-center text-slate-300 font-black italic uppercase tracking-widest opacity-40">Henüz abone bulunmuyor</td></tr>
-                            )}
                         </tbody>
                     </table>
                 </div>
@@ -221,9 +249,9 @@ export default function AdminBlogPage() {
                                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                                     <div className="lg:col-span-1 space-y-4">
                                         <label className="text-[10px] font-black uppercase text-slate-400 ml-2 italic leading-none">Kapak Fotoğrafı</label>
-                                        <div onClick={() => fileInputRef.current?.click()} className="relative aspect-square bg-slate-50 border-2 border-dashed border-slate-200 rounded-[2.5rem] flex flex-col items-center justify-center cursor-pointer hover:border-amber-500 transition-all overflow-hidden group shadow-inner">
+                                        <div onClick={() => !saving && fileInputRef.current?.click()} className="relative aspect-square bg-slate-50 border-2 border-dashed border-slate-200 rounded-[2.5rem] flex flex-col items-center justify-center cursor-pointer hover:border-amber-500 transition-all overflow-hidden group shadow-inner">
                                             {currentPost.image ? <img src={currentPost.image} className="w-full h-full object-cover group-hover:opacity-40 transition-all" /> : <div className="text-center text-slate-300"><Upload size={48} /><span className="text-[10px] font-black mt-3 block tracking-widest uppercase italic leading-none text-center">Dosya Seç <br /> Veya Yükle</span></div>}
-                                            {saving && <div className="absolute inset-0 bg-white/60 flex items-center justify-center"><Loader2 className="animate-spin text-amber-500" /></div>}
+                                            {saving && <div className="absolute inset-0 bg-white/60 flex items-center justify-center z-10"><Loader2 className="animate-spin text-amber-500" /></div>}
                                         </div>
                                         <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileUpload} />
                                     </div>
@@ -256,7 +284,7 @@ export default function AdminBlogPage() {
                                 <div className="space-y-4 pt-4">
                                     <div className="flex justify-between items-center ml-2">
                                         <label className="text-[10px] font-black uppercase text-slate-400 italic leading-none">Detay Galeri Görselleri</label>
-                                        <button type="button" onClick={() => galleryInputRef.current?.click()} className="bg-slate-900 text-white px-5 py-2 rounded-full font-black text-[9px] uppercase italic flex items-center gap-2 hover:bg-amber-500 transition-all shadow-xl">
+                                        <button type="button" onClick={() => !saving && galleryInputRef.current?.click()} className="bg-slate-900 text-white px-5 py-2 rounded-full font-black text-[9px] uppercase italic flex items-center gap-2 hover:bg-amber-500 transition-all shadow-xl disabled:opacity-50">
                                             <Plus size={12} /> ÇOKLU GÖRSEL EKLE
                                         </button>
                                     </div>

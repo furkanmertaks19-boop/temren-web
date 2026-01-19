@@ -31,22 +31,22 @@ const cards: QuickCard[] = [
   {
     title: "PALET SİSTEMLERİ",
     subtitle: "Traktör & araç palet çözümleri",
-    href: "/urunler/palet-sistemleri",
-    image: "/aracpalet.png", 
+    href: "/urunler/palet-sistemleri", // ✅ src/app/urunler/palet-sistemleri/page.tsx varsa doğru
+    image: "/aracpalet.png",
     accent: "orange",
   },
   {
     title: "TARIM ARACI",
     subtitle: "Uzaktan kumandalı platformlar & ataşmanlar",
-    href: "/urunler/tarim-araci",
-    image: "/tarimaraci.png", 
+    href: "/urunler/tika", // ⚠️ Eğer klasör adın 'insansiz-tarim-araci' ise bunu öyle değiştir
+    image: "/tarimaraci.png",
     accent: "slate",
   },
   {
     title: "ÜRETİM EKİPMANLARI",
     subtitle: "Vakumlu tabla, takım sıkma, emülsiyon sistemleri",
-    href: "/urunler/uretim-ekipmanlari",
-    image: "/deneme.png", 
+    href: "/faaliyet/uretim", // 💡 Öneri: Doğrudan vakumlu tablanın sayfasına göndermek daha iyi olabilir
+    image: "/deneme.png",
     accent: "blue",
   },
 ];

@@ -1,21 +1,32 @@
 import { connectDB } from "@/lib/db";
 import QuoteRequest from "@/models/QuoteRequest";
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+// Next.js 15+ için params bir Promise olarak tanımlanmalıdır
+export async function PATCH(
+    req: NextRequest,
+    { params }: { params: Promise<{ id: string }> }
+) {
     try {
         await connectDB();
-        const { id } = params;
 
-        // Hem 'status' hem 'okundu' alanlarını güncelliyoruz ki iki taraflı garanti olsun
+        // params bir Promise olduğu için await ile içindeki veriyi alıyoruz
+        const { id } = await params;
+
+        // Hem 'status' hem 'okundu' alanlarını güncelliyoruz
         const updated = await QuoteRequest.findByIdAndUpdate(
             id,
             { status: "Okundu", okundu: true },
             { new: true }
         );
 
+        if (!updated) {
+            return NextResponse.json({ error: "Kayıt bulunamadı" }, { status: 404 });
+        }
+
         return NextResponse.json({ success: true, data: updated });
     } catch (error) {
+        console.error("Güncelleme Hatası:", error);
         return NextResponse.json({ error: "Güncellenemedi" }, { status: 500 });
     }
 }

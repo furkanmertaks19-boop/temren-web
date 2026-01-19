@@ -38,14 +38,14 @@ const cards: QuickCard[] = [
   {
     title: "TARIM ARACI",
     subtitle: "Uzaktan kumandalı platformlar & ataşmanlar",
-    href: "/urunler/tika", // ⚠️ Eğer klasör adın 'insansiz-tarim-araci' ise bunu öyle değiştir
+    href: "/urunler/tika", // 
     image: "/tarimaraci.png",
     accent: "slate",
   },
   {
     title: "ÜRETİM EKİPMANLARI",
     subtitle: "Vakumlu tabla, takım sıkma, emülsiyon sistemleri",
-    href: "/faaliyet/uretim", // 💡 Öneri: Doğrudan vakumlu tablanın sayfasına göndermek daha iyi olabilir
+    href: "/faaliyet/uretim", //  
     image: "/deneme.png",
     accent: "blue",
   },

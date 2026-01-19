@@ -14,7 +14,7 @@
     "@types/three": "^0.182.0",
     "autoprefixer": "^10.4.23",
     "bcryptjs": "^3.0.3",
-    "cloudinary": "^2.9.0",
+    "cloudinary": "^1.41.0",
     "framer-motion": "^12.26.1",
     "globe.gl": "^2.45.0",
     "lucide-react": "^0.562.0",

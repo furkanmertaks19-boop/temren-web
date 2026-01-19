@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { v2 as cloudinary } from "cloudinary";
 
-export const runtime = 'nodejs';
+// Vercel'in bu rotayı kısıtlı bir ortamda çalıştırmasını engelliyoruz
+export const dynamic = 'force-dynamic';
 
 cloudinary.config({
     cloud_name: "dbuyzwlux",
@@ -16,25 +17,39 @@ export async function POST(request: NextRequest) {
         const file = formData.get("file") as Blob | null;
 
         if (!file) {
-            return NextResponse.json({ error: "Dosya bulunamadı" }, { status: 400 });
+            return NextResponse.json({ error: "Dosya form-data içinde bulunamadı" }, { status: 400 });
         }
 
-        const buffer = Buffer.from(await file.arrayBuffer());
+        const arrayBuffer = await file.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
 
+        // Cloudinary yükleme sözü (Promise)
         const result = await new Promise((resolve, reject) => {
-            cloudinary.uploader.upload_stream(
-                { folder: "temren_web", resource_type: "auto" },
+            const uploadStream = cloudinary.uploader.upload_stream(
+                {
+                    folder: "temren_web_yeni",
+                    resource_type: "auto"
+                },
                 (error, result) => {
-                    if (error) reject(error);
-                    else resolve(result);
+                    if (error) {
+                        console.error("Cloudinary Detaylı Hata:", error);
+                        reject(error);
+                    } else {
+                        resolve(result);
+                    }
                 }
-            ).end(buffer);
-        }) as any;
+            );
+            uploadStream.end(buffer);
+        });
 
-        return NextResponse.json({ url: result.secure_url });
+        return NextResponse.json(result);
+
     } catch (error: any) {
-        console.error("Yükleme Hatası:", error);
-        // Hatayı frontend'e detaylı gönderelim ki ne olduğunu anlayalım
-        return NextResponse.json({ error: error.message || "Bilinmeyen hata" }, { status: 500 });
+        // BURASI ÇOK ÖNEMLİ: Hatayı Vercel loglarında açıkça göreceğiz
+        console.error("KRİTİK YÜKLEME HATASI:", error.message);
+        return NextResponse.json({
+            error: "Sunucu Hatası",
+            details: error.message
+        }, { status: 500 });
     }
 }

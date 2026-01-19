@@ -2,18 +2,24 @@ import { connectDB } from "@/lib/db";
 import QuoteRequest from "@/models/QuoteRequest";
 import { NextResponse, NextRequest } from "next/server";
 
-// Next.js 15+ için params bir Promise olarak tanımlanmalıdır
+// ✅ Tip uyuşmazlığını önlemek için params tipini tam Next.js standartına çekiyoruz
+type RouteContext = {
+    params: Promise<{ id: string }>;
+};
+
 export async function PATCH(
     req: NextRequest,
-    { params }: { params: Promise<{ id: string }> }
+    context: RouteContext // params yerine context olarak tanımlamak bazı TSC sürümlerinde daha kararlıdır
 ) {
     try {
         await connectDB();
 
-        // params bir Promise olduğu için await ile içindeki veriyi alıyoruz
-        const { id } = await params;
+        // ✅ params'ı güvenli bir şekilde bekliyoruz
+        const { id } = await context.params;
 
-        // Hem 'status' hem 'okundu' alanlarını güncelliyoruz
+        // body verisini alalım (eğer lazımsa, değilse bu satırı silebilirsin)
+        // const body = await req.json();
+
         const updated = await QuoteRequest.findByIdAndUpdate(
             id,
             { status: "Okundu", okundu: true },
@@ -21,12 +27,19 @@ export async function PATCH(
         );
 
         if (!updated) {
-            return NextResponse.json({ error: "Kayıt bulunamadı" }, { status: 404 });
+            return NextResponse.json(
+                { success: false, error: "Kayıt bulunamadı" },
+                { status: 404 }
+            );
         }
 
         return NextResponse.json({ success: true, data: updated });
-    } catch (error) {
+    } catch (error: unknown) {
+        // ✅ 'error' nesnesine unknown tipi vererek TSC hatasını engelliyoruz
         console.error("Güncelleme Hatası:", error);
-        return NextResponse.json({ error: "Güncellenemedi" }, { status: 500 });
+        return NextResponse.json(
+            { success: false, error: "Güncellenemedi" },
+            { status: 500 }
+        );
     }
 }

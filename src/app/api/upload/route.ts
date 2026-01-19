@@ -1,33 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
 import { v2 as cloudinary } from "cloudinary";
 
-// Senin Cloudinary bağlantı ayarların
 cloudinary.config({
-    cloud_name: "dbuyzwlux",
-    api_key: "582855568923877",
-    api_secret: "An0FxIVioD8lu6myL22PD3JbW5w",
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME || "dbuyzwlux",
+    api_key: process.env.CLOUDINARY_API_KEY || "582855568923877",
+    api_secret: process.env.CLOUDINARY_API_SECRET || "An0FxIVioD8lu6myL22PD3JbW5w",
+    secure: true
 });
 
 export async function POST(request: NextRequest) {
     try {
         const data = await request.formData();
-        const file: File | null = data.get("file") as unknown as File;
+        const file = data.get("file") as File;
 
         if (!file) {
             return NextResponse.json({ error: "Dosya bulunamadı" }, { status: 400 });
         }
 
-        // Dosyayı Vercel'in okuyabileceği formata çeviriyoruz
-        const bytes = await file.arrayBuffer();
-        const buffer = Buffer.from(bytes);
+        // Dosyayı arrayBuffer üzerinden okumak Vercel için daha güvenlidir
+        const arrayBuffer = await file.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
 
-        // Dosyayı Cloudinary bulutuna gönderiyoruz
         const uploadResponse = await new Promise((resolve, reject) => {
             cloudinary.uploader.upload_stream(
-                {
-                    resource_type: "auto",
-                    folder: "temren_blog" // Resimler Cloudinary'de bu klasöre gider
-                },
+                { folder: "temren_web", resource_type: "auto" },
                 (error, result) => {
                     if (error) reject(error);
                     else resolve(result);
@@ -35,11 +31,10 @@ export async function POST(request: NextRequest) {
             ).end(buffer);
         }) as any;
 
-        // Yüklenen resmin internet linkini geri döndürüyoruz
         return NextResponse.json({ url: uploadResponse.secure_url });
 
-    } catch (error) {
-        console.error("Cloudinary Yükleme Hatası:", error);
-        return NextResponse.json({ error: "Yükleme sırasında bir hata oluştu" }, { status: 500 });
+    } catch (error: any) {
+        console.error("Yükleme Hatası:", error);
+        return NextResponse.json({ error: error.message || "Sunucu hatası" }, { status: 500 });
     }
 }

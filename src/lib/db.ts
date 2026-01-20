@@ -1,21 +1,30 @@
-// src/lib/db.ts dosyasını bu şekilde güncelleyin:
+// src/lib/db.ts
 import mongoose from "mongoose";
 
-const MONGODB_URI = process.env.MONGODB_URI!;
+let cached = (global as any).mongoose;
 
-if (!MONGODB_URI) {
-    throw new Error("Lütfen .env.local dosyasına MONGODB_URI ekleyin.");
+if (!cached) {
+    cached = (global as any).mongoose = { conn: null, promise: null };
 }
 
-export const connectDB = async () => {
-    if (mongoose.connection.readyState >= 1) return;
-    try {
-        await mongoose.connect(MONGODB_URI);
-        console.log("🚀 MongoDB bağlantısı başarılı.");
-    } catch (error) {
-        console.error("❌ MongoDB bağlantı hatası:", error);
-    }
-};
+export async function connectDB() {
+    if (cached.conn) return cached.conn;
 
-// Default export ekleyerek hataları gideriyoruz
+    const MONGODB_URI = process.env.MONGODB_URI;
+
+    if (!MONGODB_URI) {
+        throw new Error("MONGODB_URI tanımlı değil (Railway Variables kontrol et)");
+    }
+
+    if (!cached.promise) {
+        cached.promise = mongoose.connect(MONGODB_URI).then((mongoose) => {
+            console.log("✅ MongoDB connected");
+            return mongoose;
+        });
+    }
+
+    cached.conn = await cached.promise;
+    return cached.conn;
+}
+
 export default connectDB;

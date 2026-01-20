@@ -1,94 +1,45 @@
-import { put } from "@vercel/blob";
 import { NextResponse } from "next/server";
+import path from "path";
+import fs from "fs/promises";
 
-export const runtime = "nodejs"; // Blob server-side için güvenli tercih
+export const runtime = "nodejs";
 
-const MAX_BYTES = 4.5 * 1024 * 1024; // Vercel "server upload" pratik limit
+const MAX_BYTES = 20 * 1024 * 1024; // 20MB
+const UPLOAD_DIR = process.env.UPLOAD_DIR || "/data/uploads";
 
-function safeFileName(name: string) {
-    // uzantıyı koru, karakterleri temizle
-    const cleaned = name
+function safeName(name: string) {
+    return (name || "upload")
         .trim()
         .replace(/\s+/g, "-")
         .replace(/[^a-zA-Z0-9._-]/g, "");
-
-    // boşsa default ver
-    return cleaned.length ? cleaned : `file-${Date.now()}`;
 }
 
-export async function POST(request: Request) {
+export async function POST(req: Request) {
     try {
-        const urlObj = new URL(request.url);
-        const filenameParam = urlObj.searchParams.get("filename") || "";
+        const form = await req.formData();
+        const file = form.get("file") as File | null;
 
-        const contentType = request.headers.get("content-type") || "";
-
-        // 1) Senin mevcut yapın: multipart/form-data (FormData)
-        if (contentType.includes("multipart/form-data")) {
-            const formData = await request.formData();
-            const file = formData.get("file") as File | null;
-
-            if (!file) {
-                return NextResponse.json(
-                    { error: "Dosya seçilmedi (file alanı boş)" },
-                    { status: 400 }
-                );
-            }
-
-            if (typeof file.size === "number" && file.size > MAX_BYTES) {
-                return NextResponse.json(
-                    { error: "Dosya çok büyük. Maksimum 4.5MB yükleyebilirsin." },
-                    { status: 413 }
-                );
-            }
-
-            const originalName = filenameParam || file.name || `upload-${Date.now()}`;
-            const finalName = safeFileName(originalName);
-
-            // Klasörlü ve benzersiz isim
-            const key = `uploads/${Date.now()}-${finalName}`;
-
-            const blob = await put(key, file, {
-                access: "public",
-                // contentType: file.type || "application/octet-stream", // istersen aç
-            });
-
-            return NextResponse.json({ url: blob.url });
+        if (!file) {
+            return NextResponse.json({ error: "Dosya seçilmedi" }, { status: 400 });
         }
 
-        // 2) Alternatif: raw body upload (Vercel docs'taki gibi) -> body: file
-        // Bunu kullanacaksan frontend: fetch("/api/upload?filename=xxx", {method:"POST", body:file})
-        const arrayBuffer = await request.arrayBuffer();
-        const size = arrayBuffer.byteLength;
-
-        if (!size) {
-            return NextResponse.json(
-                { error: "İstek gövdesi boş (dosya gelmedi)" },
-                { status: 400 }
-            );
+        if (file.size > MAX_BYTES) {
+            return NextResponse.json({ error: "Dosya çok büyük" }, { status: 413 });
         }
 
-        if (size > MAX_BYTES) {
-            return NextResponse.json(
-                { error: "Dosya çok büyük. Maksimum 4.5MB yükleyebilirsin." },
-                { status: 413 }
-            );
-        }
+        await fs.mkdir(UPLOAD_DIR, { recursive: true });
 
-        const finalName = safeFileName(filenameParam || `upload-${Date.now()}`);
-        const key = `uploads/${Date.now()}-${finalName}`;
+        const ext = path.extname(file.name);
+        const base = safeName(path.basename(file.name, ext));
+        const filename = `${Date.now()}-${base}${ext}`;
+        const filepath = path.join(UPLOAD_DIR, filename);
 
-        const blob = await put(key, arrayBuffer, {
-            access: "public",
-            contentType: contentType || "application/octet-stream",
-        });
+        const bytes = await file.arrayBuffer();
+        await fs.writeFile(filepath, Buffer.from(bytes));
 
-        return NextResponse.json({ url: blob.url });
-    } catch (error: any) {
-        console.error("Upload Hatası:", error);
-        return NextResponse.json(
-            { error: "Yükleme başarısız: " + (error?.message || "Bilinmeyen hata") },
-            { status: 500 }
-        );
+        return NextResponse.json({ url: `/uploads/${filename}` });
+    } catch (e: any) {
+        console.error("UPLOAD_ERROR:", e);
+        return NextResponse.json({ error: e?.message || "Upload hata" }, { status: 500 });
     }
 }

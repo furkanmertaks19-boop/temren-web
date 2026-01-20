@@ -1,33 +1,27 @@
 import { NextResponse } from "next/server";
+import fs from "fs";
 import path from "path";
-import fs from "fs/promises";
 
-export const runtime = "nodejs";
-
-const UPLOAD_DIR = process.env.UPLOAD_DIR || "/data/uploads";
+const UPLOAD_DIR = "/data/uploads";
 
 export async function GET(
-    req: Request,
-    { params }: { params: { filename: string } }
+    request: Request,
+    context: { params: Promise<{ filename: string }> }
 ) {
-    try {
-        const filePath = path.join(UPLOAD_DIR, params.filename);
-        const file = await fs.readFile(filePath);
+    const { filename } = await context.params;
 
-        const ext = path.extname(params.filename).toLowerCase();
-        const type =
-            ext === ".png" ? "image/png" :
-                ext === ".jpg" || ext === ".jpeg" ? "image/jpeg" :
-                    ext === ".webp" ? "image/webp" :
-                        "application/octet-stream";
+    const filePath = path.join(UPLOAD_DIR, filename);
 
-        return new NextResponse(file, {
-            headers: {
-                "Content-Type": type,
-                "Cache-Control": "public, max-age=31536000, immutable",
-            },
-        });
-    } catch {
-        return NextResponse.json({ error: "Dosya bulunamadı" }, { status: 404 });
+    if (!fs.existsSync(filePath)) {
+        return new NextResponse("File not found", { status: 404 });
     }
+
+    const fileBuffer = fs.readFileSync(filePath);
+
+    return new NextResponse(fileBuffer, {
+        headers: {
+            "Content-Type": "application/octet-stream",
+            "Cache-Control": "public, max-age=31536000",
+        },
+    });
 }

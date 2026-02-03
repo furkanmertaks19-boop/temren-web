@@ -8,7 +8,7 @@ import Features from "@/components/home/Features";
 import QuickLinks from "@/components/home/QuickLinks";
 import ExportMap from "@/components/home/ExportMap";
 import Footer from "@/components/layout/Footer";
-
+import TrackSystem from "@/components/home/TrackSystem";
 // ✅ Eskisi gibi akıcı animasyonlar
 const fadeInUp: Variants = {
   initial: { opacity: 0, y: 40 },
@@ -160,6 +160,7 @@ export default function Home() {
       </section>
 
       <Features />
+      <TrackSystem />
       <QuickLinks />
       <ExportMap />
       <Footer />

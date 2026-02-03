@@ -1,27 +1,55 @@
 import { NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
+import { v2 as cloudinary } from "cloudinary";
 
-const UPLOAD_DIR = "/data/uploads";
+export const dynamic = "force-dynamic";
 
-export async function GET(
-    request: Request,
-    context: { params: Promise<{ filename: string }> }
-) {
-    const { filename } = await context.params;
+// Cloudinary config
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME!,
+  api_key: process.env.CLOUDINARY_API_KEY!,
+  api_secret: process.env.CLOUDINARY_API_SECRET!,
+});
 
-    const filePath = path.join(UPLOAD_DIR, filename);
+export async function POST(req: Request) {
+  try {
+    const formData = await req.formData();
+    const file = formData.get("file") as File | null;
 
-    if (!fs.existsSync(filePath)) {
-        return new NextResponse("File not found", { status: 404 });
+    if (!file) {
+      return NextResponse.json({ error: "Dosya yok" }, { status: 400 });
     }
 
-    const fileBuffer = fs.readFileSync(filePath);
+    // İstersen boyut kontrolü (örn: 8MB)
+    const MAX_MB = 8;
+    if (file.size > MAX_MB * 1024 * 1024) {
+      return NextResponse.json(
+        { error: `Dosya çok büyük (max ${MAX_MB}MB)` },
+        { status: 413 }
+      );
+    }
 
-    return new NextResponse(fileBuffer, {
-        headers: {
-            "Content-Type": "application/octet-stream",
-            "Cache-Control": "public, max-age=31536000",
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+
+    const result = await new Promise<any>((resolve, reject) => {
+      cloudinary.uploader.upload_stream(
+        {
+          folder: "temren/uploads", // Cloudinary içinde klasör
+          resource_type: "image",
         },
+        (err, result) => {
+          if (err) reject(err);
+          else resolve(result);
+        }
+      ).end(buffer);
     });
+
+    return NextResponse.json({
+      url: result.secure_url,     // ✅ admin'in beklediği alan
+      publicId: result.public_id, // opsiyonel
+    });
+  } catch (e) {
+    console.error("UPLOAD ERROR:", e);
+    return NextResponse.json({ error: "Upload başarısız" }, { status: 500 });
+  }
 }

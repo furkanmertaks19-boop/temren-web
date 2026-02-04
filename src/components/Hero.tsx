@@ -10,6 +10,7 @@ export default function HeroSlider() {
     useEffect(() => {
         const fetchSlides = async () => {
             try {
+                // cache: 'no-store' ile admin panelindeki değişikliklerin anında yansımasını sağlıyoruz
                 const res = await fetch('/api/slider', { cache: 'no-store' });
                 const data = await res.json();
                 const activeSlides = data.filter((s: any) => s.isActive);
@@ -23,19 +24,20 @@ export default function HeroSlider() {
         fetchSlides();
     }, []);
 
-    // Otomatik geçiş efekti (Opsiyonel: Videolar uzunsa süreyi artırabilirsin)
+    // Slayt geçiş süresi (8 saniye)
     useEffect(() => {
         if (slides.length <= 1) return;
         const timer = setInterval(() => {
             setCurrentIndex((prev) => (prev + 1) % slides.length);
-        }, 8000); // 8 saniyede bir geçiş
+        }, 8000);
         return () => clearInterval(timer);
     }, [slides]);
 
-    // Dosyanın video olup olmadığını anlayan fonksiyon
+    // Cloudinary video URL'lerini ve uzantıları kontrol eden geliştirilmiş fonksiyon
     const isVideo = (url: string) => {
         if (!url) return false;
         const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov'];
+        // Hem dosya uzantısına hem de Cloudinary'nin klasör yapısına bakıyoruz
         return videoExtensions.some(ext => url.toLowerCase().endsWith(ext)) || url.includes('/video/upload/');
     };
 
@@ -47,7 +49,7 @@ export default function HeroSlider() {
         <section className="relative h-screen overflow-hidden bg-black">
             <AnimatePresence mode="wait">
                 <motion.div 
-                    key={currentIndex}
+                    key={currentIndex} // AnimatePresence için currentIndex şart
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
@@ -57,6 +59,8 @@ export default function HeroSlider() {
                     {/* VİDEO VEYA RESİM KONTROLÜ */}
                     {isVideo(currentSlide.image) ? (
                         <video
+                            // key={currentSlide.image} eklendi: Video kaynağı değişince elementin yeniden yüklenmesini sağlar
+                            key={currentSlide.image}
                             src={currentSlide.image}
                             autoPlay
                             muted
@@ -114,7 +118,7 @@ export default function HeroSlider() {
                 </motion.div>
             </AnimatePresence>
 
-            {/* Navigasyon Noktaları (Opsiyonel) */}
+            {/* Navigasyon Noktaları */}
             <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex gap-3 z-20">
                 {slides.map((_, idx) => (
                     <button 

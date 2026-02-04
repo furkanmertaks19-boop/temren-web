@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import PageHeader from "@/components/layout/PageHeader";
 import Footer from "@/components/layout/Footer";
-import { motion, AnimatePresence, Variants } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 import { Calendar, ArrowRight, Sparkles, RefreshCcw, Loader2 } from "lucide-react";
 import Image from "next/image";
 
@@ -17,17 +17,29 @@ export default function BlogPage() {
   const [randomPost, setRandomPost] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  // 1. Veritabanından Haberleri Çek
+  // Tarihleri sıralamak için yardımcı fonksiyon (DD.MM.YYYY -> Date Object)
+  const parseDate = (dateStr: string) => {
+    try {
+      const [day, month, year] = dateStr.split('.');
+      return new Date(parseInt(year), parseInt(month) - 1, parseInt(day)).getTime();
+    } catch (e) {
+      return 0; // Hatalı tarih gelirse en sona atsın
+    }
+  };
+
   useEffect(() => {
     const fetchPosts = async () => {
       try {
         const res = await fetch('/api/blog', { cache: 'no-store' });
         const data = await res.json();
 
-        if (data.length > 0) {
-          setPosts(data);
+        if (data && data.length > 0) {
+          // ⭐ HABERLERİ TARİHE GÖRE SIRALA (YENİDEN ESKİYE)
+          const sortedData = data.sort((a: any, b: any) => parseDate(b.date) - parseDate(a.date));
+          
+          setPosts(sortedData);
           // Rastgele öne çıkan haberi belirle
-          setRandomPost(data[Math.floor(Math.random() * data.length)]);
+          setRandomPost(sortedData[Math.floor(Math.random() * sortedData.length)]);
         }
       } catch (error) {
         console.error("Blog verileri yüklenemedi:", error);
@@ -48,7 +60,6 @@ export default function BlogPage() {
     }
   };
 
-  // Yükleme Ekranı
   if (loading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
@@ -57,7 +68,6 @@ export default function BlogPage() {
     );
   }
 
-  // Veri Yoksa Gösterilecek Alan
   if (posts.length === 0) {
     return (
       <div className="min-h-screen bg-white">
@@ -77,7 +87,7 @@ export default function BlogPage() {
       <main className="py-24">
         <div className="container mx-auto px-8">
 
-          {/* ⭐ Öne Çıkanlar: Asimetrik Modern Grid */}
+          {/* ⭐ Vizyon Akışı: Asimetrik Grid */}
           <section className="mb-40">
             <div className="flex items-center gap-4 mb-16">
               <div className="w-16 h-[2px] bg-[#FF4D00]" />
@@ -87,7 +97,6 @@ export default function BlogPage() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-
               {/* SOL: Rastgele Değişen Ana Haber */}
               {randomPost && (
                 <motion.div
@@ -126,7 +135,7 @@ export default function BlogPage() {
                 </motion.div>
               )}
 
-              {/* SAĞ: Son Eklenen 4 Haber */}
+              {/* SAĞ: Son Eklenen 4 Haber (En Güncel Olanlar) */}
               <div className="lg:col-span-5 flex flex-col gap-6">
                 {posts.slice(0, 4).map((post, index) => (
                   <Link href={`/medya/blog/${post.slug}`} key={post._id}>
@@ -175,7 +184,8 @@ export default function BlogPage() {
                     <div className="p-8">
                       <span className="text-[9px] font-black tracking-[0.2em] text-[#FF4D00] uppercase mb-3 block italic">{news.category}</span>
                       <h4 className="text-base font-black text-slate-900 uppercase tracking-tighter leading-tight line-clamp-2">{news.title}</h4>
-                      <div className="mt-8 flex items-center gap-2 text-[10px] font-black tracking-widest text-slate-400 group-hover:text-[#FF4D00] transition-colors uppercase italic">
+                      <p className="text-slate-400 text-[10px] font-bold mt-4 uppercase italic border-b border-slate-100 pb-4 mb-4">{news.date}</p>
+                      <div className="flex items-center gap-2 text-[10px] font-black tracking-widest text-slate-400 group-hover:text-[#FF4D00] transition-colors uppercase italic">
                         DETAYI GÖR <ArrowRight size={14} />
                       </div>
                     </div>

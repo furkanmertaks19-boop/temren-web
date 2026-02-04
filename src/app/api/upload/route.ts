@@ -1,45 +1,50 @@
 import { NextResponse } from "next/server";
-import path from "path";
-import fs from "fs/promises";
+import { v2 as cloudinary } from "cloudinary";
 
 export const runtime = "nodejs";
 
-const MAX_BYTES = 20 * 1024 * 1024; // 20MB
-const UPLOAD_DIR = process.env.UPLOAD_DIR || "/data/uploads";
-
-function safeName(name: string) {
-    return (name || "upload")
-        .trim()
-        .replace(/\s+/g, "-")
-        .replace(/[^a-zA-Z0-9._-]/g, "");
-}
+// Cloudinary ayarları
+cloudinary.config({
+  cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "dbuyzwlux",
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+  secure: true
+});
 
 export async function POST(req: Request) {
-    try {
-        const form = await req.formData();
-        const file = form.get("file") as File | null;
+  try {
+    const formData = await req.formData();
+    const file = formData.get("file") as File | null;
 
-        if (!file) {
-            return NextResponse.json({ error: "Dosya seçilmedi" }, { status: 400 });
-        }
-
-        if (file.size > MAX_BYTES) {
-            return NextResponse.json({ error: "Dosya çok büyük" }, { status: 413 });
-        }
-
-        await fs.mkdir(UPLOAD_DIR, { recursive: true });
-
-        const ext = path.extname(file.name);
-        const base = safeName(path.basename(file.name, ext));
-        const filename = `${Date.now()}-${base}${ext}`;
-        const filepath = path.join(UPLOAD_DIR, filename);
-
-        const bytes = await file.arrayBuffer();
-        await fs.writeFile(filepath, Buffer.from(bytes));
-
-        return NextResponse.json({ url: `/uploads/${filename}` });
-    } catch (e: any) {
-        console.error("UPLOAD_ERROR:", e);
-        return NextResponse.json({ error: e?.message || "Upload hata" }, { status: 500 });
+    if (!file) {
+      return NextResponse.json({ error: "Dosya seçilmedi" }, { status: 400 });
     }
+
+    // Dosyayı belleğe (Buffer) al
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+
+    // Cloudinary'ye Stream (akış) yöntemiyle yükle
+    const result = await new Promise<any>((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          folder: "temren/uploads", // Cloudinary panelindeki klasör adın
+          resource_type: "auto",
+        },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        }
+      );
+      uploadStream.end(buffer);
+    });
+
+    // Render'da hata almamak için artık yerel URL (/uploads/...) değil,
+    // Cloudinary'den dönen güvenli URL'yi gönderiyoruz.
+    return NextResponse.json({ url: result.secure_url });
+
+  } catch (error: any) {
+    console.error("UPLOAD ERROR:", error);
+    return NextResponse.json({ error: error.message || "Yükleme hatası" }, { status: 500 });
+  }
 }

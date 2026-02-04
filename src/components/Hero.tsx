@@ -10,13 +10,12 @@ export default function HeroSlider() {
     useEffect(() => {
         const fetchSlides = async () => {
             try {
-                // cache: 'no-store' ile admin panelindeki değişikliklerin anında yansımasını sağlıyoruz
                 const res = await fetch('/api/slider', { cache: 'no-store' });
                 const data = await res.json();
                 const activeSlides = data.filter((s: any) => s.isActive);
                 setSlides(activeSlides);
             } catch (error) {
-                console.error("Veri çekme hatası:", error);
+                console.error("Slider hatası:", error);
             } finally {
                 setLoading(false);
             }
@@ -24,7 +23,6 @@ export default function HeroSlider() {
         fetchSlides();
     }, []);
 
-    // Slayt geçiş süresi (8 saniye)
     useEffect(() => {
         if (slides.length <= 1) return;
         const timer = setInterval(() => {
@@ -33,12 +31,12 @@ export default function HeroSlider() {
         return () => clearInterval(timer);
     }, [slides]);
 
-    // Cloudinary video URL'lerini ve uzantıları kontrol eden geliştirilmiş fonksiyon
     const isVideo = (url: string) => {
         if (!url) return false;
-        const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov'];
-        // Hem dosya uzantısına hem de Cloudinary'nin klasör yapısına bakıyoruz
-        return videoExtensions.some(ext => url.toLowerCase().endsWith(ext)) || url.includes('/video/upload/');
+        return url.toLowerCase().includes('.mp4') || 
+               url.toLowerCase().includes('.mov') || 
+               url.toLowerCase().includes('.webm') ||
+               url.includes('/video/upload/');
     };
 
     if (loading || slides.length === 0) return <div className="h-screen bg-black" />;
@@ -49,46 +47,47 @@ export default function HeroSlider() {
         <section className="relative h-screen overflow-hidden bg-black">
             <AnimatePresence mode="wait">
                 <motion.div 
-                    key={currentIndex} // AnimatePresence için currentIndex şart
+                    key={currentIndex} 
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    transition={{ duration: 1 }}
-                    className="absolute inset-0"
+                    transition={{ duration: 1.5 }}
+                    className="absolute inset-0 w-full h-full"
                 >
                     {/* VİDEO VEYA RESİM KONTROLÜ */}
                     {isVideo(currentSlide.image) ? (
                         <video
-                            // key={currentSlide.image} eklendi: Video kaynağı değişince elementin yeniden yüklenmesini sağlar
-                            key={currentSlide.image}
+                            key={currentSlide.image} // Kaynak değiştiğinde DOM'un yenilenmesi için şart
                             src={currentSlide.image}
                             autoPlay
                             muted
                             loop
                             playsInline
-                            className="w-full h-full object-cover opacity-60"
+                            preload="auto"
+                            className="absolute inset-0 w-full h-full object-cover opacity-60 pointer-events-none"
+                            onCanPlay={(e) => (e.target as HTMLVideoElement).play()} // Tarayıcıyı oynamaya zorla
                         />
                     ) : (
                         <img
                             src={currentSlide.image}
                             alt={currentSlide.title}
-                            className="w-full h-full object-cover opacity-60"
+                            className="absolute inset-0 w-full h-full object-cover opacity-60"
                         />
                     )}
 
                     {/* Metin İçerikleri */}
-                    <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 z-10">
+                    <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-4">
                         <motion.span 
-                            initial={{ y: 20, opacity: 0 }}
+                            initial={{ y: 30, opacity: 0 }}
                             animate={{ y: 0, opacity: 1 }}
                             transition={{ delay: 0.2 }}
                             className="text-amber-500 font-black italic tracking-[0.3em] uppercase text-sm mb-4"
                         >
-                            {currentSlide.subtitle}
+                            {currentSlide.subtitle || "ALT BAŞLIK"}
                         </motion.span>
 
                         <motion.h1 
-                            initial={{ y: 20, opacity: 0 }}
+                            initial={{ y: 30, opacity: 0 }}
                             animate={{ y: 0, opacity: 1 }}
                             transition={{ delay: 0.4 }}
                             className="text-white text-5xl md:text-8xl font-black italic uppercase tracking-tighter leading-none mb-6"
@@ -97,7 +96,7 @@ export default function HeroSlider() {
                         </motion.h1>
 
                         <motion.p 
-                            initial={{ y: 20, opacity: 0 }}
+                            initial={{ y: 30, opacity: 0 }}
                             animate={{ y: 0, opacity: 1 }}
                             transition={{ delay: 0.6 }}
                             className="text-white/60 max-w-2xl font-medium text-lg mb-10"
@@ -106,12 +105,12 @@ export default function HeroSlider() {
                         </motion.p>
 
                         <motion.div
-                            initial={{ y: 20, opacity: 0 }}
+                            initial={{ y: 30, opacity: 0 }}
                             animate={{ y: 0, opacity: 1 }}
                             transition={{ delay: 0.8 }}
                         >
-                            <a href={currentSlide.buttonLink || "/"} className="bg-blue-600 hover:bg-blue-500 text-white px-10 py-4 rounded-full font-black italic uppercase text-sm tracking-widest transition-all shadow-xl shadow-blue-900/20">
-                                {currentSlide.buttonText || "İNCELE"}
+                            <a href={currentSlide.buttonLink || "/"} className="bg-blue-600 hover:bg-blue-500 text-white px-10 py-4 rounded-full font-black italic uppercase text-sm tracking-widest transition-all shadow-xl">
+                                İNCELE
                             </a>
                         </motion.div>
                     </div>

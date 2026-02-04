@@ -21,7 +21,7 @@ const fadeInUp: Variants = {
 
 const staggerContainer: Variants = {
   animate: { transition: { staggerChildren: 0.2 } }
-};
+}; 
 
 export default function Home() {
   const [slides, setSlides] = useState<any[]>([]);
@@ -45,7 +45,12 @@ export default function Home() {
     };
     fetchSlides();
   }, []);
-
+  return (
+    <main style={{ padding: 40 }}>
+      <h1>Temren Web Çalışıyor 🚀</h1>
+      <p>Vercel deploy başarılı.</p>
+    </main>
+  ); 
   // 2) Otomatik Geçiş
   useEffect(() => {
     if (slides.length <= 1) return;

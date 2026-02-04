@@ -1,7 +1,6 @@
 import type { NextConfig } from "next";
 
-const nextConfig: NextConfig = {
-  output: 'export', // Netlify/Statik yayınlama için en kritik satır
+const nextConfig: NextConfig = { 
   reactStrictMode: false, // Mevcut tercihin
   
   // Statik export sırasında Next.js yerel resim optimizasyonunu kullanamaz

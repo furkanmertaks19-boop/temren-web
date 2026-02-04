@@ -4,34 +4,33 @@ import PageHeader from "@/components/layout/PageHeader";
 import Footer from "@/components/layout/Footer";
 import Image from "next/image";
 import Link from "next/link";
-import { Facebook, Twitter, Linkedin, Instagram, Share2, Clock, Calendar, ArrowRight, Loader2, CheckCircle2 } from "lucide-react";
+import { 
+  Facebook, Twitter, Linkedin, Instagram, Share2, 
+  Clock, Calendar, ArrowRight, Loader2, CheckCircle2, X, Plus 
+} from "lucide-react";
 import { notFound } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function BlogDetailPage({ params }: { params: Promise<{ slug: string }> }) {
-    // Next.js 15 params unwrap
     const resolvedParams = use(params);
     const { slug } = resolvedParams;
 
-    // States
     const [post, setPost] = useState<any>(null);
     const [otherPosts, setOtherPosts] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [selectedImg, setSelectedImg] = useState<string | null>(null); // Galeri için modal state
 
-    // Newsletter States
     const [email, setEmail] = useState("");
     const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
     const [message, setMessage] = useState("");
 
-    // Veri Çekme
     useEffect(() => {
         const fetchData = async () => {
             try {
                 const res = await fetch(`/api/blog`);
                 const allPosts = await res.json();
                 const currentPost = allPosts.find((p: any) => p.slug === slug);
-
                 if (!currentPost) return;
-
                 setPost(currentPost);
                 setOtherPosts(allPosts.filter((p: any) => p.slug !== slug).slice(0, 5));
             } catch (error) {
@@ -43,7 +42,6 @@ export default function BlogDetailPage({ params }: { params: Promise<{ slug: str
         fetchData();
     }, [slug]);
 
-    // Bülten Kayıt Fonksiyonu
     const handleSubscribe = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!email || !email.includes("@")) {
@@ -51,7 +49,6 @@ export default function BlogDetailPage({ params }: { params: Promise<{ slug: str
             setMessage("Geçerli bir e-posta giriniz.");
             return;
         }
-
         setStatus("loading");
         try {
             const res = await fetch("/api/newsletter", {
@@ -59,9 +56,7 @@ export default function BlogDetailPage({ params }: { params: Promise<{ slug: str
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email })
             });
-
             const data = await res.json();
-
             if (res.ok) {
                 setStatus("success");
                 setEmail("");
@@ -97,7 +92,7 @@ export default function BlogDetailPage({ params }: { params: Promise<{ slug: str
                     </aside>
 
                     {/* 2. ORTA: İÇERİK */}
-                    <div className="flex-grow max-w-4xl">
+                    <div className="flex-grow max-w-4xl overflow-hidden">
                         <div className="relative h-[450px] md:h-[550px] w-full rounded-[40px] md:rounded-[80px] overflow-hidden mb-12 shadow-2xl group border border-slate-50">
                             <Image src={post.image} alt={post.title} fill className="object-cover group-hover:scale-105 transition-transform duration-1000" priority />
                             <div className="absolute top-8 left-8 bg-white/90 backdrop-blur px-6 py-2 rounded-full font-black text-xs uppercase italic tracking-widest text-slate-900 shadow-xl">{post.category}</div>
@@ -109,7 +104,13 @@ export default function BlogDetailPage({ params }: { params: Promise<{ slug: str
                             <div className="flex items-center gap-2"><Share2 size={14} className="text-[#FF4D00]" /> Temren Makina Haber</div>
                         </div>
 
-                        <div className="prose prose-xl max-w-none text-slate-700 font-medium leading-[1.8] italic mb-20 prose-h4:text-3xl prose-h4:font-black prose-h4:uppercase prose-h4:tracking-tighter prose-h4:text-slate-900 prose-h4:not-italic prose-img:rounded-[40px]" dangerouslySetInnerHTML={{ __html: post.content }} />
+                        {/* TAŞMA SORUNU ÇÖZÜLEN İÇERİK ALANI */}
+                        <div 
+                            className="prose prose-xl prose-slate max-w-none text-slate-700 font-medium leading-[1.8] italic mb-20 
+                            prose-h4:text-3xl prose-h4:font-black prose-h4:uppercase prose-h4:tracking-tighter prose-h4:text-slate-900 prose-h4:not-italic 
+                            prose-img:rounded-[40px] break-words overflow-wrap-anywhere"
+                            dangerouslySetInnerHTML={{ __html: post.content }} 
+                        />
 
                         {/* Galeri Bölümü */}
                         {post.gallery && post.gallery.length > 0 && (
@@ -117,9 +118,17 @@ export default function BlogDetailPage({ params }: { params: Promise<{ slug: str
                                 <h3 className="text-2xl font-black tracking-tighter uppercase italic text-slate-900 leading-none mb-10">ETKİNLİK <span className="text-[#FF4D00]">GALERİSİ.</span></h3>
                                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
                                     {post.gallery.map((img: string, idx: number) => (
-                                        <div key={idx} className="relative aspect-square rounded-2xl overflow-hidden border border-slate-100 group shadow-sm hover:shadow-md transition-all cursor-pointer">
-                                            <Image src={img} alt="Galeri" fill className="object-cover group-hover:scale-110 transition-transform duration-500" sizes="200px" />
-                                        </div>
+                                        <motion.div 
+                                            key={idx} 
+                                            whileHover={{ scale: 0.95 }}
+                                            onClick={() => setSelectedImg(img)}
+                                            className="relative aspect-square rounded-2xl overflow-hidden border border-slate-100 group shadow-sm cursor-pointer bg-slate-50"
+                                        >
+                                            <Image src={img} alt="Galeri" fill className="object-cover transition-transform duration-500" sizes="200px" />
+                                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                                                <Plus className="text-white opacity-0 group-hover:opacity-100 transition-opacity" size={24} />
+                                            </div>
+                                        </motion.div>
                                     ))}
                                 </div>
                             </div>
@@ -146,7 +155,6 @@ export default function BlogDetailPage({ params }: { params: Promise<{ slug: str
                                 ))}
                             </div>
 
-                            {/* ÇALIŞAN BÜLTEN KAYIT KARTI */}
                             <div className="bg-slate-900 rounded-[50px] p-10 text-white relative overflow-hidden group shadow-2xl">
                                 <div className="absolute -right-4 -top-4 w-24 h-24 bg-[#FF4D00] rounded-full blur-3xl opacity-20 transition-opacity"></div>
                                 <h4 className="text-xl font-black italic uppercase tracking-tighter mb-4">TAKİPTE <span className="text-[#FF4D00]">KALIN.</span></h4>
@@ -182,6 +190,43 @@ export default function BlogDetailPage({ params }: { params: Promise<{ slug: str
                     </aside>
                 </div>
             </main>
+
+            {/* FOTOĞRAF BÜYÜTME MODALI (LIGHTBOX) */}
+            <AnimatePresence>
+                {selectedImg && (
+                    <motion.div 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setSelectedImg(null)}
+                        className="fixed inset-0 bg-slate-950/95 z-[999] flex items-center justify-center p-4 md:p-10 cursor-zoom-out"
+                    >
+                        <motion.button 
+                            className="absolute top-8 right-8 text-white hover:text-[#FF4D00] transition-colors"
+                            onClick={() => setSelectedImg(null)}
+                        >
+                            <X size={40} />
+                        </motion.button>
+                        
+                        <motion.div 
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.8, opacity: 0 }}
+                            className="relative w-full h-full max-w-6xl max-h-[80vh]"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <Image 
+                                src={selectedImg} 
+                                alt="Büyük Görsel" 
+                                fill 
+                                className="object-contain rounded-3xl"
+                                quality={100}
+                            />
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             <Footer />
         </div>
     );

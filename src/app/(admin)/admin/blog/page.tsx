@@ -137,7 +137,6 @@ export default function AdminBlogPage() {
 
     return (
         <div className="p-8 bg-[#F8F9FA] min-h-screen text-slate-900">
-            {/* ÜST BAR */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
                 <div>
                     <h1 className="text-3xl font-black uppercase italic tracking-tighter text-slate-800">
@@ -159,7 +158,6 @@ export default function AdminBlogPage() {
                 )}
             </div>
 
-            {/* LİSTELER */}
             {activeTab === 'posts' ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {posts.map((post) => (
@@ -204,7 +202,6 @@ export default function AdminBlogPage() {
                 </div>
             )}
 
-            {/* MODAL EDİTÖR */}
             <AnimatePresence>
                 {isEditorOpen && (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 md:p-6">
@@ -214,12 +211,12 @@ export default function AdminBlogPage() {
                                 <button onClick={() => setIsEditorOpen(false)} className="text-slate-400 hover:text-red-500 p-2 transition-colors"><X size={24} /></button>
                             </div>
 
-                            <div className="p-6 md:p-8 overflow-y-auto space-y-8 flex-grow no-scrollbar">
+                            <div className="p-6 md:p-8 overflow-y-auto space-y-8 flex-grow">
                                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                                     <div className="lg:col-span-1 space-y-4">
                                         <label className="text-[10px] font-black uppercase text-slate-400 ml-2 italic">Kapak Görseli</label>
                                         <div onClick={() => !saving && fileInputRef.current?.click()} className="relative aspect-square bg-slate-50 border-2 border-dashed border-slate-200 rounded-[2.5rem] flex flex-col items-center justify-center cursor-pointer hover:border-amber-500 overflow-hidden group">
-                                            {currentPost.image ? <img src={currentPost.image} className="w-full h-full object-cover group-hover:opacity-40 transition-all" /> : <div className="text-center text-slate-300"><Upload size={48} /><span className="text-[10px] font-black mt-3 block uppercase italic">Görsel Seç</span></div>}
+                                            {currentPost.image ? <img src={currentPost.image} className="w-full h-full object-cover group-hover:opacity-40 transition-all" alt="" /> : <div className="text-center text-slate-300"><Upload size={48} /><span className="text-[10px] font-black mt-3 block uppercase italic">Görsel Seç</span></div>}
                                             {saving && <div className="absolute inset-0 bg-white/60 flex items-center justify-center z-10"><Loader2 className="animate-spin text-amber-500" /></div>}
                                         </div>
                                         <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileUpload} />
@@ -252,14 +249,14 @@ export default function AdminBlogPage() {
                                 <div className="space-y-4">
                                     <div className="flex justify-between items-center ml-2">
                                         <label className="text-[10px] font-black uppercase text-slate-400 italic">Haber Galerisi</label>
-                                        <button onClick={() => !saving && galleryInputRef.current?.click()} className="bg-slate-900 text-white px-5 py-2 rounded-full font-black text-[9px] uppercase italic flex items-center gap-2 hover:bg-amber-500 transition-all shadow-xl">
+                                        <button onClick={() => !saving && galleryInputRef.current?.click()} className="bg-slate-900 text-white px-5 py-2 rounded-full font-black text-[9px] uppercase italic flex items-center gap-2 hover:bg-amber-50 transition-all shadow-xl">
                                             <Plus size={12} /> GÖRSEL EKLE
                                         </button>
                                     </div>
                                     <div className="grid grid-cols-3 md:grid-cols-6 gap-4 bg-slate-50 p-6 rounded-[2.5rem] border-2 border-dashed min-h-[140px]">
                                         {(currentPost.gallery || []).map((url: string, index: number) => (
                                             <div key={index} className="relative aspect-square rounded-2xl overflow-hidden shadow-md group">
-                                                <img src={url} className="w-full h-full object-cover transition-transform group-hover:scale-110" />
+                                                <img src={url} className="w-full h-full object-cover transition-transform group-hover:scale-110" alt="" />
                                                 <button onClick={() => setCurrentPost((p: any) => ({ ...p, gallery: p.gallery.filter((_: any, i: number) => i !== index) }))} className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-all shadow-lg"><Trash2 size={10} /></button>
                                             </div>
                                         ))}
@@ -269,7 +266,7 @@ export default function AdminBlogPage() {
 
                                 <div className="space-y-2 pb-10">
                                     <label className="text-[10px] font-black uppercase text-slate-400 ml-2 italic leading-none">
-                                        Haber Detay İçeriği (Formatlanabilir)
+                                        Haber Detay İçeriği
                                     </label>
                                     <div className="quill-editor-container">
                                         <ReactQuill 
@@ -306,11 +303,15 @@ export default function AdminBlogPage() {
                     border-bottom-left-radius: 1.5rem;
                     border-bottom-right-radius: 1.5rem;
                     border: 1px solid #e2e8f0;
-                    min-height: 400px;
+                    height: 400px; /* Sabit yükseklik */
+                    overflow-y: hidden; /* Dış kutu taşmasın */
                     font-size: 15px;
                 }
-                .no-scrollbar::-webkit-scrollbar { display: none; }
-                .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+                /* İçerik yazma alanının scroll olması için */
+                .quill-editor-container .ql-editor {
+                    max-height: 100%;
+                    overflow-y: auto;
+                }
             `}</style>
         </div>
     );

@@ -6,17 +6,16 @@ import {
     Upload, Edit3, X, Calendar, ChevronDown, CheckCircle, Mail, ExternalLink
 } from 'lucide-react';
 import { motion, AnimatePresence } from "framer-motion";
-import 'react-quill/dist/quill.snow.css';
 
-// React-Quill'i React 19 ve Next.js SSR hatası almamak için dinamik yüklüyoruz
-const ReactQuill = dynamic(() => import('react-quill'), {
+// React 19 uyumlu yeni paketi dinamik yüklüyoruz
+import 'react-quill-new/dist/quill.snow.css';
+const ReactQuill = dynamic(() => import('react-quill-new'), {
     ssr: false,
     loading: () => <div className="h-[400px] bg-slate-50 animate-pulse rounded-[2.5rem]" />
 });
 
 const BLOG_CATEGORIES = ["Blog", "Fuar", "Ödül", "Müşteri", "Duyuru", "Teknik"];
 
-// Editör Araç Çubuğu Ayarları
 const quillModules = {
     toolbar: [
         [{ 'header': [1, 2, 3, false] }],
@@ -70,38 +69,23 @@ export default function AdminBlogPage() {
     };
 
     const createSlug = (text: string) => {
-        const trMap: any = {
-            'ğ': 'g', 'Ğ': 'g', 'ü': 'u', 'Ü': 'u', 'ş': 's', 'Ş': 's',
-            'ı': 'i', 'İ': 'i', 'ö': 'o', 'Ö': 'o', 'ç': 'c', 'Ç': 'c'
-        };
+        const trMap: any = { 'ğ': 'g', 'Ğ': 'g', 'ü': 'u', 'Ü': 'u', 'ş': 's', 'Ş': 's', 'ı': 'i', 'İ': 'i', 'ö': 'o', 'Ö': 'o', 'ç': 'c', 'Ç': 'c' };
         let slug = text.replace(/[ğĞüÜşŞıİöÖçÇ]/g, (match) => trMap[match]);
-        return slug.toLowerCase().trim()
-            .replace(/[^a-z0-9\s-]/g, '')
-            .replace(/[\s_-]+/g, '-')
-            .replace(/^-+|-+$/g, '');
+        return slug.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, '');
     };
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
+        setSaving(true);
         try {
-            setSaving(true);
             const formData = new FormData();
             formData.append("file", file);
-            // Cloudinary API'ye giden istekte gereksiz filename parametresini sildik
-            const res = await fetch(`/api/upload`, {
-                method: "POST",
-                body: formData
-            });
+            const res = await fetch(`/api/upload`, { method: "POST", body: formData });
             const data = await res.json();
-            if (data.url) {
-                setCurrentPost((p: any) => ({ ...p, image: data.url }));
-            }
+            if (data.url) setCurrentPost((p: any) => ({ ...p, image: data.url }));
         } catch (error) { alert("Yükleme başarısız."); }
-        finally {
-            setSaving(false);
-            if (fileInputRef.current) fileInputRef.current.value = "";
-        }
+        finally { setSaving(false); if (fileInputRef.current) fileInputRef.current.value = ""; }
     };
 
     const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -113,28 +97,19 @@ export default function AdminBlogPage() {
             for (const file of Array.from(files)) {
                 const formData = new FormData();
                 formData.append("file", file);
-                const res = await fetch(`/api/upload`, {
-                    method: "POST",
-                    body: formData
-                });
+                const res = await fetch(`/api/upload`, { method: "POST", body: formData });
                 const data = await res.json();
                 if (data.url) uploadedUrls.push(data.url);
             }
-            setCurrentPost((p: any) => ({
-                ...p, gallery: [...(p.gallery || []), ...uploadedUrls]
-            }));
+            setCurrentPost((p: any) => ({ ...p, gallery: [...(p.gallery || []), ...uploadedUrls] }));
         } catch (error) { alert("Galeri hatası."); }
-        finally {
-            setSaving(false);
-            if (galleryInputRef.current) galleryInputRef.current.value = "";
-        }
+        finally { setSaving(false); if (galleryInputRef.current) galleryInputRef.current.value = ""; }
     };
 
     const handleSave = async () => {
         if (!currentPost.title || !currentPost.image) return alert("Başlık ve Kapak Görseli zorunludur!");
         setSaving(true);
         try {
-            // Edit işlemi mi yoksa yeni kayıt mı kontrolü
             const method = currentPost._id ? 'PUT' : 'POST';
             const res = await fetch('/api/blog', {
                 method: method,
@@ -150,14 +125,10 @@ export default function AdminBlogPage() {
         finally { setSaving(false); }
     };
 
-    // Build hatasına sebep olan eksik fonksiyon eklendi
     const deleteSubscriber = async (id: string) => {
         if (!confirm("Bu aboneyi silmek istediğinize emin misiniz?")) return;
         try {
-            const res = await fetch('/api/newsletter', {
-                method: 'DELETE',
-                body: JSON.stringify({ id })
-            });
+            const res = await fetch('/api/newsletter', { method: 'DELETE', body: JSON.stringify({ id }) });
             if (res.ok) fetchSubscribers();
         } catch (error) { console.error("Silme hatası:", error); }
     };
@@ -188,7 +159,7 @@ export default function AdminBlogPage() {
                 )}
             </div>
 
-            {/* İÇERİK LİSTESİ */}
+            {/* LİSTELER */}
             {activeTab === 'posts' ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {posts.map((post) => (
@@ -239,7 +210,7 @@ export default function AdminBlogPage() {
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 md:p-6">
                         <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} className="bg-white w-full max-w-5xl max-h-[95vh] rounded-[3rem] overflow-hidden flex flex-col shadow-2xl">
                             <div className="p-6 md:p-8 border-b flex justify-between items-center bg-slate-50">
-                                <h2 className="font-black italic uppercase text-xl">HABER <span className="text-amber-500 font-light text-slate-400">EDİTÖRÜ</span></h2>
+                                <h2 className="font-black italic uppercase text-xl text-slate-800">HABER <span className="text-amber-500 font-light">EDİTÖRÜ</span></h2>
                                 <button onClick={() => setIsEditorOpen(false)} className="text-slate-400 hover:text-red-500 p-2 transition-colors"><X size={24} /></button>
                             </div>
 
@@ -264,16 +235,16 @@ export default function AdminBlogPage() {
                                             </div>
                                             <div className="space-y-2">
                                                 <label className="text-[10px] font-black uppercase text-slate-400 ml-2 italic">Tarih</label>
-                                                <input className="w-full bg-slate-50 rounded-2xl p-4 font-bold text-[10px] outline-none" value={currentPost.date} onChange={e => setCurrentPost({ ...currentPost, date: e.target.value })} />
+                                                <input className="w-full bg-slate-50 rounded-2xl p-4 font-bold text-[10px] outline-none shadow-sm" value={currentPost.date} onChange={e => setCurrentPost({ ...currentPost, date: e.target.value })} />
                                             </div>
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-[10px] font-black uppercase text-slate-400 ml-2 italic">Başlık</label>
-                                            <input className="w-full bg-slate-50 rounded-2xl p-4 font-bold text-sm uppercase italic outline-none focus:ring-2 ring-amber-500" placeholder="BAŞLIĞI YAZIN..." value={currentPost.title} onChange={e => setCurrentPost({ ...currentPost, title: e.target.value, slug: createSlug(e.target.value) })} />
+                                            <input className="w-full bg-slate-50 rounded-2xl p-4 font-bold text-sm uppercase italic outline-none focus:ring-2 ring-amber-500 shadow-sm" placeholder="BAŞLIĞI YAZIN..." value={currentPost.title} onChange={e => setCurrentPost({ ...currentPost, title: e.target.value, slug: createSlug(e.target.value) })} />
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-[10px] font-black uppercase text-slate-400 ml-2 italic">Önizleme</label>
-                                            <textarea className="w-full bg-slate-50 rounded-2xl p-4 font-medium text-xs resize-none outline-none focus:ring-2 ring-amber-500" rows={3} placeholder="Kısa açıklama..." value={currentPost.shortDescription} onChange={e => setCurrentPost({ ...currentPost, shortDescription: e.target.value })} />
+                                            <textarea className="w-full bg-slate-50 rounded-2xl p-4 font-medium text-xs resize-none outline-none focus:ring-2 ring-amber-500 shadow-sm" rows={3} placeholder="Kısa açıklama..." value={currentPost.shortDescription} onChange={e => setCurrentPost({ ...currentPost, shortDescription: e.target.value })} />
                                         </div>
                                     </div>
                                 </div>
@@ -281,7 +252,7 @@ export default function AdminBlogPage() {
                                 <div className="space-y-4">
                                     <div className="flex justify-between items-center ml-2">
                                         <label className="text-[10px] font-black uppercase text-slate-400 italic">Haber Galerisi</label>
-                                        <button onClick={() => !saving && galleryInputRef.current?.click()} className="bg-slate-900 text-white px-5 py-2 rounded-full font-black text-[9px] uppercase italic flex items-center gap-2 hover:bg-amber-500 transition-all">
+                                        <button onClick={() => !saving && galleryInputRef.current?.click()} className="bg-slate-900 text-white px-5 py-2 rounded-full font-black text-[9px] uppercase italic flex items-center gap-2 hover:bg-amber-500 transition-all shadow-xl">
                                             <Plus size={12} /> GÖRSEL EKLE
                                         </button>
                                     </div>
@@ -289,7 +260,7 @@ export default function AdminBlogPage() {
                                         {(currentPost.gallery || []).map((url: string, index: number) => (
                                             <div key={index} className="relative aspect-square rounded-2xl overflow-hidden shadow-md group">
                                                 <img src={url} className="w-full h-full object-cover transition-transform group-hover:scale-110" />
-                                                <button onClick={() => setCurrentPost((p: any) => ({ ...p, gallery: p.gallery.filter((_: any, i: number) => i !== index) }))} className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-all"><Trash2 size={10} /></button>
+                                                <button onClick={() => setCurrentPost((p: any) => ({ ...p, gallery: p.gallery.filter((_: any, i: number) => i !== index) }))} className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-all shadow-lg"><Trash2 size={10} /></button>
                                             </div>
                                         ))}
                                     </div>
@@ -298,7 +269,7 @@ export default function AdminBlogPage() {
 
                                 <div className="space-y-2 pb-10">
                                     <label className="text-[10px] font-black uppercase text-slate-400 ml-2 italic leading-none">
-                                        Haber Detay İçeriği
+                                        Haber Detay İçeriği (Formatlanabilir)
                                     </label>
                                     <div className="quill-editor-container">
                                         <ReactQuill 
@@ -323,7 +294,6 @@ export default function AdminBlogPage() {
                 )}
             </AnimatePresence>
 
-            {/* Editör Özel Stilleri */}
             <style jsx global>{`
                 .quill-editor-container .ql-toolbar {
                     border-top-left-radius: 1.5rem;
@@ -336,7 +306,7 @@ export default function AdminBlogPage() {
                     border-bottom-left-radius: 1.5rem;
                     border-bottom-right-radius: 1.5rem;
                     border: 1px solid #e2e8f0;
-                    min-height: 350px;
+                    min-height: 400px;
                     font-size: 15px;
                 }
                 .no-scrollbar::-webkit-scrollbar { display: none; }

@@ -3,8 +3,6 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   reactStrictMode: false,
 
-  // ✅ Render için önerilen: standalone build üretir
-  // Bu sayede `node .next/standalone/server.js` ile çalışır
   output: "standalone",
 
   images: {
@@ -23,7 +21,6 @@ const nextConfig: NextConfig = {
     ],
   },
 
-  // 🚀 QR KOD YÖNLENDİRMESİ
   async redirects() {
     return [
       {

@@ -8,10 +8,10 @@ import SmoothScroll from "@/components/SmoothScroll";
 const inter = Inter({ 
   subsets: ["latin"],
   display: "swap", 
-  variable: "--font-inter", // CSS değişkeni olarak tanımladık
+  variable: "--font-inter", 
 });
 
-// 📱 MOBİL UYUMLULUK: Viewport ayarlarını buraya taşıdık (Next.js 14+ standardı)
+// 📱 MOBİL UYUMLULUK: Viewport ayarları (Next.js 14+ standardı)
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
@@ -19,20 +19,45 @@ export const viewport: Viewport = {
   themeColor: "#000000",
 };
 
+// 🎯 SEO & METADATA AYARLARI (Hata düzeltildi ve geliştirildi)
 export const metadata: Metadata = {
   title: {
-    default: "Temren Makina | Talaşlı İmalat ve Palet Sistemleri",
+    default: "Temren Makina | Traktör Palet Sistemleri ve Endüstriyel Çözümler",
     template: "%s | Temren Makina"
   },
-  description: "Ankara Kahramankazan'da yüksek hassasiyetli talaşlı imalat, özel tasarım palet sistemleri ve savunma sanayii çözümleri.",
-  keywords: ["talaşlı imalat", "Ankara makina", "palet sistemleri", "savunma sanayi", "hassas üretim"],
+  description: "Temren Makina; yüksek hassasiyetli talaşlı imalat, traktör palet sistemleri ve CNC vakum tablaları ile endüstriyel üretim süreçlerinize profesyonel çözümler sunar.",
+  keywords: [
+    "temren makina", 
+    "talaşlı imalat", 
+    "Ankara makina", 
+    "palet sistemleri", 
+    "traktör palet sistemi", 
+    "vakum tablası", 
+    "CNC ekipmanları", 
+    "hassas üretim"
+  ],
   verification: {
-    google: "google-site-verification-kodunuz",
+    google: "google-site-verification-kodunuz", // Google Search Console'dan aldığın kodu buraya yaz
   },
   robots: "index, follow",
-  // 🔗 CANONICAL URL: SEO için ana linki belirtiyoruz
   alternates: {
     canonical: "https://temrenmakina.com",
+  },
+  openGraph: {
+    title: "Temren Makina | Endüstriyel Verimlilik Çözümleri",
+    description: "Traktör palet sistemleri ve hassas üretim ekipmanlarında öncü çözümler.",
+    url: "https://temrenmakina.com",
+    siteName: "Temren Makina",
+    images: [
+      {
+        url: "/logo.png", // Paylaşımlarda görünecek ana görsel (public klasöründe olmalı)
+        width: 1200,
+        height: 630,
+        alt: "Temren Makina Logo",
+      },
+    ],
+    locale: "tr_TR",
+    type: "website",
   },
 };
 

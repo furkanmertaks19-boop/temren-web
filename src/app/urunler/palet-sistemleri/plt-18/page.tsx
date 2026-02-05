@@ -7,7 +7,32 @@ import {
   Zap, X, Layers, Beaker, Loader2, Maximize2, Camera,
   User, Phone, Mail, MessageSquare, Send
 } from 'lucide-react';
+import { Metadata } from "next";
 
+export const metadata: Metadata = {
+  title: "PLT-18 Ağır Hizmet Tipi Palet Sistemi | Temren Makina",
+  description: "En yüksek taşıma kapasitesine sahip PLT-18 traktör palet sistemi. Ağır endüstriyel şartlar ve maksimum verimlilik için tasarlanmış, dayanıklılığı test edilmiş palet çözümü.",
+  keywords: [
+    "PLT-18", 
+    "ağır hizmet palet sistemi", 
+    "yüksek kapasiteli traktör paleti", 
+    "endüstriyel palet çözümleri", 
+    "en güçlü traktör paleti",
+    "Temren Makina PLT-18 özellikleri"
+  ],
+  openGraph: {
+    title: "PLT-18: Endüstriyel Gücün Zirvesi - Temren Makina",
+    description: "En ağır yükler ve en zorlu zeminler için geliştirilen PLT-18 modelimizi inceleyin.",
+    images: [
+      {
+        url: "/image/plt-18-main.jpg", // PLT-18'in en heybetli görseli
+        width: 1200,
+        height: 630,
+        alt: "Temren Makina PLT-18 Ağır Hizmet Paleti",
+      },
+    ],
+  },
+};
 export default function PLT18Page() {
   const { scrollYProgress } = useScroll();
   const scale = useTransform(scrollYProgress, [0, 0.3], [1, 1.1]);

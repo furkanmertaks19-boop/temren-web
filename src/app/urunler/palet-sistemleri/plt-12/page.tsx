@@ -6,7 +6,32 @@ import {
   ChevronDown, CheckCircle2, FileText, ArrowRight,
   Zap, Settings, X, ShieldCheck, Crosshair, HardHat, Factory, Camera, Maximize2, Send, User, Phone, Mail, MessageSquare, Loader2
 } from 'lucide-react';
+import { Metadata } from "next";
 
+export const metadata: Metadata = {
+  title: "PLT-12 Traktör Palet Sistemi | Arazi Şartlarının Yeni Hakimi",
+  description: "Temren Makina PLT-12; kar, çamur ve en zorlu arazi koşullarında traktörünüz için maksimum çekiş gücü sağlar. Yüksek dayanıklılık ve üstün zemin hakimiyeti için tasarlanmıştır.",
+  keywords: [
+    "PLT-12", 
+    "PLT-12 palet sistemi", 
+    "traktör kar paleti", 
+    "kar palet sistemi", 
+    "Temren Makina PLT serisi", 
+    "yüksek çekişli palet"
+  ],
+  openGraph: {
+    title: "PLT-12: Zorlu Şartların Hakimi - Temren Makina",
+    description: "Traktörünüzü her mevsimde durdurulamaz kılan PLT-12 palet sistemini inceleyin.",
+    images: [
+      {
+        url: "/image/plt-12-snow.jpg", // Karda duran o etkileyici görselin yolu
+        width: 1200,
+        height: 630,
+        alt: "Temren Makina PLT-12 Kar Performansı",
+      },
+    ],
+  },
+};
 export default function PLT12Page() {
   const { scrollYProgress } = useScroll();
   const scale = useTransform(scrollYProgress, [0, 0.3], [1, 1.1]);

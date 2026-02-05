@@ -7,7 +7,31 @@ import {
     Zap, Settings, Layers, Ruler, Loader2, Camera, Maximize2, Send, User, Phone, Mail, MessageSquare, X
 } from 'lucide-react';
 import Footer from "@/components/layout/Footer";
+import { Metadata } from "next";
 
+export const metadata: Metadata = {
+  title: "CNC Vakum Tablası | Yüksek Hassasiyetli Tutucu Sistemler",
+  description: "CNC tezgahlarında seri işler için yüksek tutuculuk ve hassasiyet sağlayan Temren Makina vakum tablaları. Maksimum verimlilik ve tekrarlanabilirlik için tasarlanmıştır.",
+  keywords: [
+    "vakum tablası", 
+    "CNC vakum tablası fiyatları", 
+    "hassas tutucu sistemler", 
+    "vakumlu tabla çalışma prensibi", 
+    "Temren Makina vakum tablası"
+  ],
+  openGraph: {
+    title: "CNC Vakum Tablası - Temren Makina",
+    description: "Üretim süreçlerinizde hız ve hassasiyet kazandıran vakum tablası çözümlerimiz.",
+    images: [
+      {
+        url: "/image/vakum_5.jpg", // Ürünün kendi görseli
+        width: 1200,
+        height: 630,
+        alt: "Temren Makina Vakum Tablası",
+      },
+    ],
+  },
+};
 // ✅ 1. TypeScript Arayüzleri (Interfaces)
 interface GalleryItem {
     src: string;

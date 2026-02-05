@@ -1,10 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = { 
-  reactStrictMode: false, // Mevcut tercihin
+  reactStrictMode: false, 
   
-  // Statik export sırasında Next.js yerel resim optimizasyonunu kullanamaz
-  // Bu yüzden Cloudinary veya uzak resim yolları için bu ayar şarttır
   images: {
     unoptimized: true, 
     remotePatterns: [
@@ -21,6 +19,18 @@ const nextConfig: NextConfig = {
         pathname: '/**',
       },
     ],
+  },
+
+  // 🚀 QR KOD YÖNLENDİRMESİ
+  async redirects() {
+    return [
+      {
+        // Hem /temrenqr hem de /temrenqr/ linklerini yakalar
+        source: '/temrenqr/:path*', 
+        destination: '/iletisim', 
+        permanent: true, 
+      },
+    ]
   },
 };
 

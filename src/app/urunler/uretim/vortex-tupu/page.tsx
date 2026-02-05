@@ -7,7 +7,33 @@ import {
     Zap, Settings, X, Layers, Loader2, Camera, Maximize2, Send, User, Phone, Mail, MessageSquare, Snowflake
 } from 'lucide-react';
 import Footer from "@/components/layout/Footer";
+import { Metadata } from "next";
 
+export const metadata: Metadata = {
+  title: "Vorteks Tüpü | Noktasal Havalı Soğutma Çözümleri",
+  description: "Temren Makina Vorteks Tüpü; hareketli parça içermeden sadece basınçlı hava kullanarak yüksek performanslı noktasal soğutma sağlar. Bakım gerektirmez, endüstriyel verimliliği artırır.",
+  keywords: [
+    "vorteks tüpü", 
+    "vortex tube", 
+    "noktasal soğutma sistemi", 
+    "havalı soğutma", 
+    "basınçlı hava ile soğutma", 
+    "endüstriyel soğutma ekipmanları",
+    "vorteks tüpü çalışma prensibi"
+  ],
+  openGraph: {
+    title: "Vorteks Tüpü: Hareketli Parçasız Soğutma - Temren Makina",
+    description: "Basınçlı havayı soğuk havaya dönüştüren inovatif Vorteks Tüpü teknolojimizi inceleyin.",
+    images: [
+      {
+        url: "/image/vortex_1.jpeg", // Ürünün görseli
+        width: 1200,
+        height: 630,
+        alt: "Temren Makina Vorteks Tüpü Teknolojisi",
+      },
+    ],
+  },
+};
 // ✅ Tip Tanımlamaları
 interface Advantage {
     icon: React.ReactNode;

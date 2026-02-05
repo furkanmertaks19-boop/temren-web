@@ -4,32 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import PageHeader from '@/components/layout/PageHeader';
 import { Tractor, Car, ArrowRight } from 'lucide-react';
-import { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "Traktör Palet Sistemleri | PLT Serisi Yüksek Performanslı Çözümler",
-  description: "Temren Makina PLT-7 ile PLT-18 arası traktör palet sistemleri. Zorlu arazi koşullarında maksimum çekiş gücü, düşük toprak sıkıştırma ve yakıt tasarrufu sağlayan palet çözümlerimiz.",
-  keywords: [
-    "traktör palet sistemi", 
-    "PLT-12 palet", 
-    "tarım makinaları palet sistemleri", 
-    "traktör palet fiyatları", 
-    "kauçuk palet sistemleri",
-    "Ankara palet imalatı"
-  ],
-  openGraph: {
-    title: "Traktör Palet Sistemleri - Temren Makina",
-    description: "Zorlu şartlara meydan okuyan PLT serisi palet sistemlerimizi keşfedin.",
-    images: [
-      {
-        url: "/image/palet_kapak.jpg", // Kapak resmin hangisiyse onu yaz
-        width: 1200,
-        height: 630,
-        alt: "Temren Makina Traktör Palet Sistemleri",
-      },
-    ],
-  },
-};
 const kategoriler = [
     {
         id: "traktor",

@@ -159,13 +159,13 @@ export default function TekliflerPage() {
             {/* DETAY MODAL */}
             <AnimatePresence>
                 {selectedTeklif && (
-                    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xl">
+                    <div className="fixed inset-0 z-200 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xl">
                         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
                             className="bg-white w-full max-w-4xl rounded-[4rem] shadow-2xl border border-white overflow-hidden max-h-[90vh] flex flex-col"
                         >
                             <div className="p-8 md:p-14 overflow-y-auto no-scrollbar text-slate-900">
                                 <div className="flex justify-between items-start mb-10">
-                                    <div className="p-5 bg-slate-900 text-amber-500 rounded-[2rem] shadow-2xl shadow-black/20"><Box size={32} /></div>
+                                    <div className="p-5 bg-slate-900 text-amber-500 rounded-4xl shadow-2xl shadow-black/20"><Box size={32} /></div>
                                     <button onClick={() => setSelectedTeklif(null)} className="p-4 bg-slate-50 hover:bg-red-500 hover:text-white rounded-3xl transition-all shadow-sm"><X size={24} /></button>
                                 </div>
                                 <div className="space-y-10">
@@ -188,7 +188,7 @@ export default function TekliflerPage() {
                                     <div className="bg-slate-900 rounded-[3.5rem] p-12 text-white relative shadow-2xl">
                                         <MessageSquare size={100} className="absolute bottom-8 right-12 text-white/5" />
                                         <p className="text-amber-500/50 font-black italic uppercase tracking-[0.4em] text-[9px] mb-8 leading-none">İletilen Mesaj</p>
-                                        <p className="text-2xl font-medium italic text-slate-200 leading-relaxed italic">"{selectedTeklif.mesaj || "Açıklama bırakılmadı."}"</p>
+                                        <p className="text-2xl font-medium italic text-slate-200 leading-relaxed ">"{selectedTeklif.mesaj || "Açıklama bırakılmadı."}"</p>
                                     </div>
                                 </div>
                             </div>

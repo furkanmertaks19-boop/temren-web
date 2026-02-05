@@ -24,8 +24,8 @@ const kategoriler = [
         icon: <Car size={32} className="text-amber-600" />,
         items: [
             { id: "plt-12", name: "PLT-12", desc: "4x4 Ekstrem" },
-            { id: "plt-08", name: "PLT-08", desc: "Hafif Ticari" },
-            { id: "plt-07", name: "PLT-07", desc: "ATV / UTV" },
+            { id: "plt-8", name: "PLT-8", desc: "Hafif Ticari" },
+            { id: "plt-7", name: "PLT-7", desc: "ATV / UTV" },
         ]
     }
 ];
@@ -51,7 +51,7 @@ export default function PaletSistemleriAnaPage() {
                                 <Link
                                     href={`/urunler/palet-sistemleri/${item.id}`}
                                     key={item.id}
-                                    className="group relative bg-white border border-gray-200 p-10 rounded-[40px] shadow-sm hover:shadow-2xl hover:border-amber-500 transition-all duration-700 overflow-hidden min-h-[340px] flex flex-col justify-between"
+                                    className="group relative bg-white border border-gray-200 p-10 rounded-[40px] shadow-sm hover:shadow-2xl hover:border-amber-500 transition-all duration-700 overflow-hidden min-h-85 flex flex-col justify-between"
                                 >
                                     {/* Ön Plan İçerik */}
                                     <div className="relative z-20">
@@ -79,7 +79,7 @@ export default function PaletSistemleriAnaPage() {
 
                                     {/* Dinamik Arka Plan İkonu - Tüm Ürünler İçin Otomatik */}
                                     <div className="absolute -right-12 -bottom-10 select-none pointer-events-none transition-all duration-700 ease-in-out">
-                                        <div className="relative w-[380px] h-[380px] opacity-[0.12] group-hover:opacity-[0.25] group-hover:scale-110 group-hover:-rotate-6 transition-all duration-700 origin-center">
+                                        <div className="relative w-95 h-95 opacity-[0.12] group-hover:opacity-[0.25] group-hover:scale-110 group-hover:-rotate-6 transition-all duration-700 origin-center">
                                             <Image
                                                 src={`/${item.id.replace('-', '')}-icon.png`}
                                                 alt={`${item.name} Icon`}
@@ -93,7 +93,7 @@ export default function PaletSistemleriAnaPage() {
                                         </div>
                                     </div>
 
-                                    <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/50 to-amber-50/40 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                                    <div className="absolute inset-0 bg-linear-to-br from-transparent via-white/50 to-amber-50/40 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                                 </Link>
                             ))}
                         </div>

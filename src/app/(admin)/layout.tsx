@@ -20,12 +20,11 @@ import {
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-
-  // "Sayfa Ayarları" grubunun başlangıç state'i (Eğer alt linklerden birindeyse açık başlasın)
   const [isPagesOpen, setIsPagesOpen] = useState(false);
 
+  // Sayfa yüklendiğinde aktif grubu otomatik açar
   useEffect(() => {
-    if (pathname?.includes('/admin/slider') || pathname?.includes('/admin/nav') || pathname?.includes('/admin/blog')) {
+    if (pathname?.includes('/admin/slider') || pathname?.includes('/admin/blog') || pathname?.includes('/admin/nav') || pathname?.includes('/admin/gorusler')) {
       setIsPagesOpen(true);
     }
   }, [pathname]);
@@ -43,14 +42,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { name: 'Slider Ayarları', path: '/admin/slider', icon: SlidersHorizontal },
         { name: 'Blog Yönetimi', path: '/admin/blog', icon: Newspaper },
         { name: 'Navbar Ayarları', path: '/admin/nav', icon: MenuIcon },
+        // ✅ Müşteri Görüşleri admin yoluna eklendi
+        { name: 'Müşteri Görüşleri', path: '/admin/gorusler', icon: MessageSquare }
       ]
     },
     { name: 'Teklif Talepleri', path: '/admin/teklifler', icon: MessageSquare, isGroup: false },
     { name: 'Galeri', path: '/admin/galeri', icon: ImageIcon, isGroup: false },
     { name: 'Sistem Ayarları', path: '/admin/ayarlar', icon: Settings, isGroup: false },
-  ], [isPagesOpen]);
+  ], [isPagesOpen, pathname]);
 
-  // Login sayfasında sidebar'ı gösterme
   if (pathname === '/admin/login') return <>{children}</>;
 
   return (
@@ -77,8 +77,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   <div key={`group-${idx}`} className="mb-2">
                     <button
                       onClick={item.toggle}
-                      className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all group ${isAnySubActive ? 'bg-slate-50 text-slate-900' : 'text-slate-400 hover:bg-slate-50 hover:text-slate-900'
-                        }`}
+                      className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all group ${isAnySubActive ? 'bg-slate-50 text-slate-900' : 'text-slate-400 hover:bg-slate-50 hover:text-slate-900'}`}
                     >
                       <div className="flex items-center gap-4">
                         <item.icon size={20} className={isAnySubActive ? 'text-amber-500' : 'group-hover:text-amber-500 transition-colors'} />
@@ -101,16 +100,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                             const isSubActive = pathname === sub.path;
                             return (
                               <Link
-                                key={sub.path}
-                                href={sub.path}
-                                className={`flex items-center gap-4 p-3.5 rounded-xl transition-all ${isSubActive
-                                    ? 'bg-slate-900 text-white shadow-lg shadow-slate-200'
-                                    : 'text-slate-400 hover:text-slate-900 hover:bg-slate-50'
-                                  }`}
-                              >
-                                <sub.icon size={16} className={isSubActive ? 'text-amber-500' : ''} />
-                                <span className="text-[9px] font-bold uppercase tracking-widest">{sub.name}</span>
-                              </Link>
+  key={sub.path}
+  href={sub.path || "#"} // ✅ Hata veren kısma || "#" ekleyerek boş kalmamasını sağladık
+  className={`flex items-center gap-4 p-3.5 rounded-xl transition-all ${
+    isSubActive ? 'bg-slate-900 text-white shadow-lg shadow-slate-200' : 'text-slate-400 hover:text-slate-900 hover:bg-slate-50'
+  }`}
+>
+  <sub.icon size={16} className={isSubActive ? 'text-amber-500' : ''} />
+  <span className="text-[9px] font-bold uppercase tracking-widest">{sub.name}</span>
+</Link>
                             );
                           })}
                         </motion.div>
@@ -155,8 +153,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </aside>
 
       {/* İÇERİK ALANI */}
-      <main className="flex-1 overflow-y-auto relative">
-        {/* Header/Topbar eklenebilir buraya */}
+      <main className="flex-1 overflow-y-auto relative bg-[#F8F9FA]">
         <div className="p-8 md:p-12 min-h-screen max-w-[1600px] mx-auto">
           {children}
         </div>

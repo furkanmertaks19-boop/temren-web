@@ -1,34 +1,36 @@
 import type { NextConfig } from "next";
 
-const nextConfig: NextConfig = {
-  reactStrictMode: false,
-
-  output: "standalone",
-
+const nextConfig: NextConfig = { 
+  reactStrictMode: false, 
+  
   images: {
-    unoptimized: true,
+    unoptimized: true, 
     remotePatterns: [
       {
-        protocol: "https",
-        hostname: "img.youtube.com",
-        pathname: "/vi/**",
+        protocol: 'https',
+        hostname: 'img.youtube.com',
+        port: '',
+        pathname: '/vi/**',
       },
       {
-        protocol: "https",
-        hostname: "res.cloudinary.com",
-        pathname: "/**",
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+        port: '',
+        pathname: '/**',
       },
     ],
   },
 
+  // 🚀 QR KOD YÖNLENDİRMESİ
   async redirects() {
     return [
       {
-        source: "/temrenqr/:path*",
-        destination: "/iletisim",
-        permanent: true,
+        // Hem /temrenqr hem de /temrenqr/ linklerini yakalar
+        source: '/temrenqr/:path*', 
+        destination: '/iletisim', 
+        permanent: true, 
       },
-    ];
+    ]
   },
 };
 

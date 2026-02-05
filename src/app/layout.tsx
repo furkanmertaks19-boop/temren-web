@@ -4,14 +4,14 @@ import { Metadata, Viewport } from "next";
 import ConditionalHeader from "@/components/layout/ConditionalHeader";
 import SmoothScroll from "@/components/SmoothScroll";
 
-// 🚀 FONT OPTİMİZASYONU: display: "swap" ekledik, font inene kadar yazı gizlenmez.
+// 🚀 FONT OPTİMİZASYONU
 const inter = Inter({ 
   subsets: ["latin"],
   display: "swap", 
   variable: "--font-inter", 
 });
 
-// 📱 MOBİL UYUMLULUK: Viewport ayarları (Next.js 14+ standardı)
+// 📱 MOBİL UYUMLULUK
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
@@ -19,8 +19,14 @@ export const viewport: Viewport = {
   themeColor: "#000000",
 };
 
-// 🎯 SEO & METADATA AYARLARI (Hata düzeltildi ve geliştirildi)
+// 🎯 SEO & LOGO & METADATA AYARLARI
 export const metadata: Metadata = {
+  // 🟢 SEKME LOGOSU (FAVICON) AYARLARI
+  icons: {
+    icon: "/logo.png",       // Tarayıcı sekmesindeki logo
+    shortcut: "/logo.png",   // Kısayol ikonu
+    apple: "/logo.png",      // iPhone ana ekrana ekle ikonu
+  },
   title: {
     default: "Temren Makina | Traktör Palet Sistemleri ve Endüstriyel Çözümler",
     template: "%s | Temren Makina"
@@ -37,7 +43,7 @@ export const metadata: Metadata = {
     "hassas üretim"
   ],
   verification: {
-    google: "google-site-verification-kodunuz", // Google Search Console'dan aldığın kodu buraya yaz
+    google: "google-site-verification-kodunuz", 
   },
   robots: "index, follow",
   alternates: {
@@ -50,7 +56,7 @@ export const metadata: Metadata = {
     siteName: "Temren Makina",
     images: [
       {
-        url: "/logo.png", // Paylaşımlarda görünecek ana görsel (public klasöründe olmalı)
+        url: "/logo.png", // Paylaşımlarda görünecek görsel
         width: 1200,
         height: 630,
         alt: "Temren Makina Logo",

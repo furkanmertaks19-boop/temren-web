@@ -200,7 +200,7 @@ export default function MusteriGorusleri() {
                         <CheckCircle2 size={32} />
                       </div>
                       <h3 className="text-xl font-black uppercase mb-2">Teşekkürler!</h3>
-                      <p className="text-slate-500 italic text-sm">Yorumunuz yönetici onayından sonra yayınlanacaktır.</p>
+                      <p className="text-slate-500 italic text-sm">Yorumunuz yönetici  onayından sonra yayınlanacaktır.</p>
                     </motion.div>
                   )}
                 </AnimatePresence>

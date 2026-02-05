@@ -1,22 +1,24 @@
 import type { NextConfig } from "next";
 
-const nextConfig: NextConfig = { 
-  reactStrictMode: false, 
-  
+const nextConfig: NextConfig = {
+  reactStrictMode: false,
+
+  // ✅ Render için önerilen: standalone build üretir
+  // Bu sayede `node .next/standalone/server.js` ile çalışır
+  output: "standalone",
+
   images: {
-    unoptimized: true, 
+    unoptimized: true,
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: 'img.youtube.com',
-        port: '',
-        pathname: '/vi/**',
+        protocol: "https",
+        hostname: "img.youtube.com",
+        pathname: "/vi/**",
       },
       {
-        protocol: 'https',
-        hostname: 'res.cloudinary.com',
-        port: '',
-        pathname: '/**',
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+        pathname: "/**",
       },
     ],
   },
@@ -25,12 +27,11 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
-        // Hem /temrenqr hem de /temrenqr/ linklerini yakalar
-        source: '/temrenqr/:path*', 
-        destination: '/iletisim', 
-        permanent: true, 
+        source: "/temrenqr/:path*",
+        destination: "/iletisim",
+        permanent: true,
       },
-    ]
+    ];
   },
 };
 

@@ -28,8 +28,8 @@ export default function PLT12Page() {
     chips: ["Güçlendirilmiş Gövde", "Yüksek Çekiş & Tork", "Zorlu Arazi Uyumu", "Ağır Yük Stabilitesi"],
     trustLine: "Ağır yükte kararlılık • Optimize tork • Hızlı servis",
     gallery: [
-      "/image/plt12aspar.WEBP",
-      "/image/plt-12-4.PNG",
+      "/image/plt12aspar.webp",
+      "/image/plt-12-4.png",
       "/image/plt-12-2.webp"
     ],
     valueProps: [

@@ -55,11 +55,11 @@ export default function VakumluTablaPage() {
 
     const mainImage = "/image/vakum_4.JPG";
     const gallery: GalleryItem[] = [
-        { src: "/image/vakum_1.JPG", alt: "Vakumlu Tabla Teknik Detay 1" },
-        { src: "/image/vakum_2.JPG", alt: "Vakumlu Tabla Üretim Aşaması" },
-        { src: "/image/vakum_3.JPG", alt: "Hassas Vakum Sabitleme Ünitesi" },
-        { src: "/image/vakum_4.JPG", alt: "CNC Vakum Tablası Genel Görünüm" },
-        { src: "/image/vakum_5.JPG", alt: "Vakumlu Tabla Arka Bağlantı Portları" }
+        { src: "/image/vakum_1.jpg", alt: "Vakumlu Tabla Teknik Detay 1" },
+        { src: "/image/vakum_2.jpg", alt: "Vakumlu Tabla Üretim Aşaması" },
+        { src: "/image/vakum_3.jpg", alt: "Hassas Vakum Sabitleme Ünitesi" },
+        { src: "/image/vakum_4.jpg", alt: "CNC Vakum Tablası Genel Görünüm" },
+        { src: "/image/vakum_5.jpg", alt: "Vakumlu Tabla Arka Bağlantı Portları" }
     ];
 
     const handleFormSubmit = async (e: React.FormEvent) => {

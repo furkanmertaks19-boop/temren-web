@@ -20,7 +20,7 @@ export default function PLT17Page() {
   const [success, setSuccess] = useState(false);
   const [form, setForm] = useState({ adSoyad: "", telefon: "", email: "", traktorModel: "", mesaj: "" });
 
-  const mainImage = "/image/plt-17-2.PNG";
+  const mainImage = "/image/plt-17-2.png";
 
   const data = {
     eyebrow: "Ürün Kodu: PLT-17 Geniş Model",

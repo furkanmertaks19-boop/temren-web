@@ -31,7 +31,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const menuItems = useMemo(() => [
     { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard, isGroup: false },
-    { name: 'Ürün Yönetimi', path: '/admin/urunler', icon: Package, isGroup: false },
+    //{ name: 'Ürün Yönetimi', path: '/admin/urunler', icon: Package, isGroup: false },
     {
       name: 'Sayfa Ayarları',
       isGroup: true,
@@ -41,14 +41,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       subItems: [
         { name: 'Slider Ayarları', path: '/admin/slider', icon: SlidersHorizontal },
         { name: 'Blog Yönetimi', path: '/admin/blog', icon: Newspaper },
-        { name: 'Navbar Ayarları', path: '/admin/nav', icon: MenuIcon },
+      //  { name: 'Navbar Ayarları', path: '/admin/nav', icon: MenuIcon },
         // ✅ Müşteri Görüşleri admin yoluna eklendi
         { name: 'Müşteri Görüşleri', path: '/admin/gorusler', icon: MessageSquare }
       ]
     },
     { name: 'Teklif Talepleri', path: '/admin/teklifler', icon: MessageSquare, isGroup: false },
-    { name: 'Galeri', path: '/admin/galeri', icon: ImageIcon, isGroup: false },
-    { name: 'Sistem Ayarları', path: '/admin/ayarlar', icon: Settings, isGroup: false },
+   // { name: 'Galeri', path: '/admin/galeri', icon: ImageIcon, isGroup: false },
+   // { name: 'Sistem Ayarları', path: '/admin/ayarlar', icon: Settings, isGroup: false },
   ], [isPagesOpen, pathname]);
 
   if (pathname === '/admin/login') return <>{children}</>;

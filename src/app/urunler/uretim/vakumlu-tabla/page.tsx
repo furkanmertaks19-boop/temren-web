@@ -272,7 +272,6 @@ export default function VakumluTablaPage() {
                     </div>
                 )}
             </AnimatePresence>
-            <Footer />
         </main>
     );
 }

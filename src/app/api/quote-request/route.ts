@@ -2,13 +2,39 @@ import { connectDB } from "@/lib/db";
 import QuoteRequest from "@/models/QuoteRequest";
 import { NextResponse } from "next/server";
 
+// GLOBAL BİR KİLİT (Bellekte tutulur)
+let lastSubmissionTime = 0;
+let lastEmail = "";
+
 export async function POST(req: Request) {
     try {
         await connectDB();
         const body = await req.json();
+        const now = Date.now();
 
-        // Mongoose Modelini kullanarak kayıt yapıyoruz. 
-        // Modelde 'teklifler' koleksiyonunu sabitlediğimiz için direkt oraya yazacak.
+        // 1. BELLEK SEVİYESİNDE KİLİTLEME (EN ETKİLİ YOL)
+        // Eğer son 5 saniye içinde aynı maille bir istek geldiyse ANINDA REDDET
+        if (lastEmail === body.email && (now - lastSubmissionTime) < 5000) {
+            console.log("⚠️ [DUPLICATE] Bellek kilidi tetiklendi, ikinci istek yakıldı.");
+            return NextResponse.json({ success: true, status: "blocked" });
+        }
+
+        // Kilidi güncelle
+        lastSubmissionTime = now;
+        lastEmail = body.email;
+
+        // 2. VERİTABANI KONTROLÜ
+        const checkTime = new Date(now - 10000);
+        const existing = await QuoteRequest.findOne({
+            email: body.email,
+            createdAt: { $gt: checkTime }
+        });
+
+        if (existing) {
+            return NextResponse.json({ success: true, message: "Duplicate" });
+        }
+
+        // 3. KAYIT
         const newRequest = await QuoteRequest.create({
             fullName: body.adSoyad,
             phone: body.telefon,
@@ -16,36 +42,21 @@ export async function POST(req: Request) {
             selectedSize: body.olcu,
             message: body.mesaj,
             productName: body.productName || "Vakumlu Tabla",
-            
-            // Dashboard sayacının (unreadCount) çalışması için kritik alanlar:
-            isRead: false, 
+            isRead: false,
             okundu: false
         });
 
-        // Terminale düşen log (Dashboard'daki console.log ile eşleşmeli)
-        console.log(`[VERİTABANI] Yeni kayıt oluşturuldu: ${body.adSoyad}`);
-
-        return NextResponse.json({ 
-            success: true, 
-            data: newRequest 
-        }, { status: 201 });
+        return NextResponse.json({ success: true, data: newRequest }, { status: 201 });
 
     } catch (error: any) {
-        console.error("Kayıt Hatası Detayı:", error.message);
-        return NextResponse.json({ 
-            success: false, 
-            error: "Kayıt sırasında bir hata oluştu." 
-        }, { status: 500 });
+        return NextResponse.json({ success: false }, { status: 500 });
     }
 }
 
 export async function GET() {
     try {
         await connectDB();
-        
-        // QuoteRequest modeli artık otomatik olarak 'teklifler' koleksiyonuna bakıyor.
         const requests = await QuoteRequest.find().sort({ createdAt: -1 }); 
-        
         return NextResponse.json(requests);
     } catch (error) {
         return NextResponse.json({ error: "Veriler alınamadı" }, { status: 500 });

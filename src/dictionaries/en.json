@@ -1,0 +1,11 @@
+{
+  "nav": {
+    "home": "Home",
+    "products": "Products",
+    "contact": "Contact"
+  },
+  "hero": {
+    "title": "Tractor Track Systems",
+    "subtitle": "High precision in industrial production."
+  }
+}

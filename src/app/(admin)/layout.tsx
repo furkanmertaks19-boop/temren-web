@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard,
@@ -20,18 +20,36 @@ import {
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [isPagesOpen, setIsPagesOpen] = useState(false);
 
   // Sayfa yüklendiğinde aktif grubu otomatik açar
   useEffect(() => {
-    if (pathname?.includes('/admin/slider') || pathname?.includes('/admin/blog') || pathname?.includes('/admin/nav') || pathname?.includes('/admin/gorusler')) {
+    if (
+      pathname?.includes('/admin/slider') || 
+      pathname?.includes('/admin/blog') || 
+      pathname?.includes('/admin/nav') || 
+      pathname?.includes('/admin/gorusler')
+    ) {
       setIsPagesOpen(true);
     }
   }, [pathname]);
 
+  // Çıkış İşlemi Fonksiyonu
+  const handleLogout = async () => {
+    try {
+      const res = await fetch("/api/auth/logout", { method: "POST" });
+      if (res.ok) {
+        router.push("/admin/login");
+        router.refresh();
+      }
+    } catch (error) {
+      console.error("Çıkış yapılırken hata oluştu:", error);
+    }
+  };
+
   const menuItems = useMemo(() => [
     { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard, isGroup: false },
-    //{ name: 'Ürün Yönetimi', path: '/admin/urunler', icon: Package, isGroup: false },
     {
       name: 'Sayfa Ayarları',
       isGroup: true,
@@ -41,15 +59,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       subItems: [
         { name: 'Slider Ayarları', path: '/admin/slider', icon: SlidersHorizontal },
         { name: 'Blog Yönetimi', path: '/admin/blog', icon: Newspaper },
-      //  { name: 'Navbar Ayarları', path: '/admin/nav', icon: MenuIcon },
-        // ✅ Müşteri Görüşleri admin yoluna eklendi
         { name: 'Müşteri Görüşleri', path: '/admin/gorusler', icon: MessageSquare }
       ]
     },
     { name: 'Teklif Talepleri', path: '/admin/teklifler', icon: MessageSquare, isGroup: false },
-   // { name: 'Galeri', path: '/admin/galeri', icon: ImageIcon, isGroup: false },
-   // { name: 'Sistem Ayarları', path: '/admin/ayarlar', icon: Settings, isGroup: false },
-  ], [isPagesOpen, pathname]);
+  ], [isPagesOpen]);
 
   if (pathname === '/admin/login') return <>{children}</>;
 
@@ -100,15 +114,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                             const isSubActive = pathname === sub.path;
                             return (
                               <Link
-  key={sub.path}
-  href={sub.path || "#"} // ✅ Hata veren kısma || "#" ekleyerek boş kalmamasını sağladık
-  className={`flex items-center gap-4 p-3.5 rounded-xl transition-all ${
-    isSubActive ? 'bg-slate-900 text-white shadow-lg shadow-slate-200' : 'text-slate-400 hover:text-slate-900 hover:bg-slate-50'
-  }`}
->
-  <sub.icon size={16} className={isSubActive ? 'text-amber-500' : ''} />
-  <span className="text-[9px] font-bold uppercase tracking-widest">{sub.name}</span>
-</Link>
+                                key={sub.path}
+                                href={sub.path || "#"}
+                                className={`flex items-center gap-4 p-3.5 rounded-xl transition-all ${
+                                  isSubActive ? 'bg-slate-900 text-white shadow-lg shadow-slate-200' : 'text-slate-400 hover:text-slate-900 hover:bg-slate-50'
+                                }`}
+                              >
+                                <sub.icon size={16} className={isSubActive ? 'text-amber-500' : ''} />
+                                <span className="text-[9px] font-bold uppercase tracking-widest">{sub.name}</span>
+                              </Link>
                             );
                           })}
                         </motion.div>
@@ -124,8 +138,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   key={item.path}
                   href={item.path || "#"}
                   className={`flex items-center justify-between p-4 rounded-2xl transition-all group ${isActive
-                      ? 'bg-slate-900 text-white shadow-xl shadow-slate-200'
-                      : 'text-slate-400 hover:bg-slate-50 hover:text-slate-900'
+                    ? 'bg-slate-900 text-white shadow-xl shadow-slate-200'
+                    : 'text-slate-400 hover:bg-slate-50 hover:text-slate-900'
                     }`}
                 >
                   <div className="flex items-center gap-4">
@@ -144,7 +158,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
           {/* Çıkış Butonu */}
           <div className="pt-6 border-t border-slate-100 mt-4">
-            <button className="w-full flex items-center gap-4 text-slate-400 hover:text-red-500 transition-all font-black uppercase tracking-widest text-[10px] group px-4 py-2">
+            <button 
+              onClick={handleLogout}
+              className="w-full flex items-center gap-4 text-slate-400 hover:text-red-500 transition-all font-black uppercase tracking-widest text-[10px] group px-4 py-2"
+            >
               <LogOut size={18} className="group-hover:-translate-x-1 transition-transform" />
               Güvenli Çıkış
             </button>

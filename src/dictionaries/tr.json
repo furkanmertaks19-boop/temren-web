@@ -1,0 +1,11 @@
+{
+  "nav": {
+    "home": "Anasayfa",
+    "products": "Ürünler",
+    "contact": "İletişim"
+  },
+  "hero": {
+    "title": "Traktör Palet Sistemleri",
+    "subtitle": "Endüstriyel üretimde yüksek hassasiyet."
+  }
+}

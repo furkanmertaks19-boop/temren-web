@@ -27,7 +27,7 @@ const nextConfig: NextConfig = {
       {
         // Hem /temrenqr hem de /temrenqr/ linklerini yakalar
         source: '/temrenqr/:path*', 
-        destination: '/iletisim', 
+        destination: '/qr-welcome',
         permanent: true, 
       },
     ]

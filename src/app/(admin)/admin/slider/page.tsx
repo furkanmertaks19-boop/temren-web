@@ -2,10 +2,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
     Plus, Trash2, Save, Loader2, Video,
-    Image as ImageIcon, Link as LinkIcon, Eye, EyeOff, Info, Upload, ChevronDown
+    Image as ImageIcon, Link as LinkIcon, Eye, EyeOff, Info, Upload, ChevronDown, GripVertical
 } from 'lucide-react';
+import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 
-const AVAILABLE_PAGES = [
+// Statik sayfalar
+const STATIC_PAGES = [
     { name: "ANA SAYFA", path: "/" },
     { name: "KURUMSAL / HAKKIMIZDA", path: "/kurumsal/hakkimizda" },
     { name: "KURUMSAL / MÜŞTERİ GÖRÜŞLERİ", path: "/kurumsal/musteri-gorusleri" },
@@ -27,6 +29,7 @@ const AVAILABLE_PAGES = [
 
 export default function AdminSliderPage() {
     const [slides, setSlides] = useState<any[]>([]);
+    const [availablePages, setAvailablePages] = useState(STATIC_PAGES);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
@@ -35,33 +38,51 @@ export default function AdminSliderPage() {
     const [activeUploadIndex, setActiveUploadIndex] = useState<number | null>(null);
 
     useEffect(() => {
-        fetch('/api/slider').then(res => res.json()).then(data => {
-            setSlides(data);
-            setLoading(false);
-        });
+        const fetchData = async () => {
+            try {
+                // Slider verilerini çek
+                const sliderRes = await fetch('/api/slider');
+                const sliderData = await sliderRes.json();
+                const formattedSlides = sliderData.map((item: any, idx: number) => ({
+                    ...item,
+                    dragId: item.id?.toString() || `slide-${idx}`
+                }));
+                setSlides(formattedSlides);
+
+                // Blogları çek ve listeye ekle
+                const blogRes = await fetch('/api/blog');
+                const blogs = await blogRes.json();
+                const blogPages = blogs.map((blog: any) => ({
+                    name: `HABER: ${blog.title.toUpperCase()}`,
+                    path: `/medya/blog/${blog.slug}`
+                }));
+
+                setAvailablePages([...STATIC_PAGES, ...blogPages]);
+            } catch (error) {
+                console.error("Veri yükleme hatası:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
     }, []);
 
-    // Dosyanın video olup olmadığını kontrol eden yardımcı fonksiyon
     const isVideo = (url: string) => {
         if (!url) return false;
         const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov'];
-        return videoExtensions.some(ext => url.toLowerCase().endsWith(ext)) || url.includes('/video/upload/');
+        return videoExtensions.some(ext => url.toLowerCase().endsWith(ext));
     };
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (activeUploadIndex === null || !e.target.files?.[0]) return;
-
         const file = e.target.files[0];
-        // 30MB Sınırı Kontrolü
         if (file.size > 30 * 1024 * 1024) {
             alert("Dosya boyutu 30MB'dan büyük olamaz!");
             return;
         }
-
         setUploadingIndex(activeUploadIndex);
         const formData = new FormData();
         formData.append("file", file);
-
         try {
             const res = await fetch("/api/upload", { method: "POST", body: formData });
             const data = await res.json();
@@ -79,6 +100,7 @@ export default function AdminSliderPage() {
 
     const addNewSlide = () => {
         setSlides([...slides, {
+            dragId: `new-${Date.now()}`,
             title: "YENİ BAŞLIK",
             subtitle: "ALT BAŞLIK",
             description: "Açıklama...",
@@ -87,6 +109,15 @@ export default function AdminSliderPage() {
             isActive: true,
             order: slides.length
         }]);
+    };
+
+    const onDragEnd = (result: DropResult) => {
+        if (!result.destination) return;
+        const newSlides = Array.from(slides);
+        const [reorderedItem] = newSlides.splice(result.source.index, 1);
+        newSlides.splice(result.destination.index, 0, reorderedItem);
+        const updatedSlides = newSlides.map((slide, idx) => ({ ...slide, order: idx }));
+        setSlides(updatedSlides);
     };
 
     const handleSave = async () => {
@@ -112,7 +143,7 @@ export default function AdminSliderPage() {
                     <h1 className="text-3xl font-black uppercase italic tracking-tighter text-slate-800">
                         SLIDER <span className="text-amber-500 font-light text-slate-400">YÖNETİMİ</span>
                     </h1>
-                    <p className="text-slate-400 text-sm font-bold uppercase mt-1 italic tracking-widest text-slate-400">Görsel ve Videoları Düzenle</p>
+                    <p className="text-slate-400 text-sm font-bold uppercase mt-1 italic tracking-widest text-slate-400 text-xs">Görsel ve Videoları Düzenle</p>
                 </div>
                 <div className="flex gap-4">
                     <button onClick={addNewSlide} className="bg-slate-200 hover:bg-slate-300 text-slate-700 px-6 py-3 rounded-2xl font-black text-xs uppercase flex items-center gap-2 transition-all">
@@ -124,97 +155,117 @@ export default function AdminSliderPage() {
                 </div>
             </div>
 
-            <div className="space-y-6 max-w-6xl mb-12">
-                {slides.map((slide, index) => (
-                    <div key={index} className="bg-white border border-slate-100 p-6 rounded-[2.5rem] flex flex-col lg:flex-row gap-8 items-center shadow-sm hover:shadow-md transition-all">
-                        
-                        {/* Görsel/Video Önizleme Alanı */}
-                        <div
-                            onClick={() => { setActiveUploadIndex(index); fileInputRef.current?.click(); }}
-                            className="w-full lg:w-64 aspect-video bg-slate-50 rounded-3xl overflow-hidden relative border-2 border-dashed border-slate-200 hover:border-amber-500 transition-all cursor-pointer group"
-                        >
-                            {uploadingIndex === index ? (
-                                <div className="flex flex-col items-center justify-center h-full bg-slate-100 animate-pulse">
-                                    <Loader2 className="animate-spin text-amber-500 mb-2" />
-                                    <span className="text-[10px] font-black uppercase italic text-slate-400">Yükleniyor...</span>
-                                </div>
-                            ) : slide.image ? (
-                                isVideo(slide.image) ? (
-                                    <video src={slide.image} className="w-full h-full object-cover group-hover:opacity-40 transition-opacity" muted />
-                                ) : (
-                                    <img src={slide.image} className="w-full h-full object-cover group-hover:opacity-40 transition-opacity" alt="Preview" />
-                                )
-                            ) : (
-                                <div className="flex flex-col items-center justify-center h-full text-slate-300">
-                                    <Upload size={32} />
-                                    <span className="text-[10px] font-black mt-2 uppercase italic text-center">Medya Seç <br/> (Resim veya Video)</span>
-                                </div>
-                            )}
-                            {slide.image && isVideo(slide.image) && (
-                                <div className="absolute top-2 left-2 bg-black/50 text-white p-1 rounded-lg">
-                                    <Video size={14} />
-                                </div>
-                            )}
-                        </div>
+            <DragDropContext onDragEnd={onDragEnd}>
+                <Droppable droppableId="slides">
+                    {(provided) => (
+                        <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-6 max-w-6xl mb-12">
+                            {slides.map((slide, index) => (
+                                <Draggable key={slide.dragId} draggableId={slide.dragId} index={index}>
+                                    {(provided, snapshot) => (
+                                        <div
+                                            ref={provided.innerRef}
+                                            {...provided.draggableProps}
+                                            className={`bg-white border border-slate-100 p-6 rounded-[2.5rem] flex flex-col lg:flex-row gap-6 items-center shadow-sm transition-all ${snapshot.isDragging ? 'shadow-2xl border-amber-200 scale-[1.01] z-50' : 'hover:shadow-md'}`}
+                                        >
+                                            <div {...provided.dragHandleProps} className="text-slate-300 hover:text-amber-500 cursor-grab active:cursor-grabbing p-2">
+                                                <GripVertical size={24} />
+                                            </div>
 
-                        <div className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-3">
-                                <input
-                                    className="w-full bg-slate-50 border border-slate-100 rounded-xl p-3 outline-none focus:border-amber-500 font-black uppercase text-sm"
-                                    placeholder="Slider Başlığı"
-                                    value={slide.title}
-                                    onChange={e => { const n = [...slides]; n[index].title = e.target.value; setSlides(n); }}
-                                />
-                                <textarea
-                                    className="w-full bg-slate-50 border border-slate-100 rounded-xl p-3 outline-none focus:border-amber-500 text-xs font-bold resize-none"
-                                    placeholder="Slogan Açıklaması"
-                                    rows={2}
-                                    value={slide.description}
-                                    onChange={e => { const n = [...slides]; n[index].description = e.target.value; setSlides(n); }}
-                                />
-                            </div>
-                            <div className="space-y-3">
-                                <div className="relative group">
-                                    <LinkIcon className="absolute left-3 top-3.5 text-slate-300 group-focus-within:text-amber-500 transition-colors" size={16} />
-                                    <select
-                                        className="w-full bg-slate-50 border border-slate-100 rounded-xl p-3 pl-10 outline-none focus:border-amber-500 text-[10px] font-black uppercase appearance-none cursor-pointer"
-                                        value={slide.buttonLink}
-                                        onChange={e => { const n = [...slides]; n[index].buttonLink = e.target.value; setSlides(n); }}
-                                    >
-                                        <option value="">BUTONUN GİDECEĞİ SAYFAYI SEÇİN</option>
-                                        {AVAILABLE_PAGES.map((page) => (
-                                            <option key={page.path} value={page.path}>{page.name}</option>
-                                        ))}
-                                    </select>
-                                    <div className="absolute right-3 top-3.5 pointer-events-none text-slate-400">
-                                        <ChevronDown size={16} />
-                                    </div>
-                                </div>
+                                            <div
+                                                onClick={() => { setActiveUploadIndex(index); fileInputRef.current?.click(); }}
+                                                className="w-full lg:w-48 aspect-video bg-slate-50 rounded-3xl overflow-hidden relative border-2 border-dashed border-slate-200 hover:border-amber-500 transition-all cursor-pointer group shrink-0"
+                                            >
+                                                {uploadingIndex === index ? (
+                                                    <div className="flex flex-col items-center justify-center h-full bg-slate-100 animate-pulse">
+                                                        <Loader2 className="animate-spin text-amber-500 mb-2" />
+                                                        <span className="text-[10px] font-black uppercase italic text-slate-400">Yükleniyor...</span>
+                                                    </div>
+                                                ) : slide.image ? (
+                                                    isVideo(slide.image) ? (
+                                                        <video src={slide.image} className="w-full h-full object-cover group-hover:opacity-40 transition-opacity" muted />
+                                                    ) : (
+                                                        <img src={slide.image} className="w-full h-full object-cover group-hover:opacity-40 transition-opacity" alt="Preview" />
+                                                    )
+                                                ) : (
+                                                    <div className="flex flex-col items-center justify-center h-full text-slate-300">
+                                                        <Upload size={24} />
+                                                        <span className="text-[8px] font-black mt-2 uppercase italic text-center leading-tight">Medya Seç</span>
+                                                    </div>
+                                                )}
+                                            </div>
 
-                                <div className="flex items-center gap-2 p-3 bg-slate-50 border border-slate-100 rounded-xl">
-                                    {isVideo(slide.image) ? <Video className="text-slate-300" size={16} /> : <ImageIcon className="text-slate-300" size={16} />}
-                                    <span className="text-[9px] font-mono text-slate-400 truncate tracking-tighter">{slide.image || "Medya yüklenmedi..."}</span>
-                                </div>
-                            </div>
-                        </div>
+                                            <div className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div className="space-y-3">
+                                                    {/* ✅ YENİ: ALT BAŞLIK INPUTU */}
+                                                    <input
+                                                        className="w-full bg-slate-50 border border-slate-100 rounded-xl p-2 outline-none focus:border-amber-500 font-bold uppercase text-[9px] text-blue-600 italic tracking-widest"
+                                                        placeholder="MAVİ ÜST METİN (ALT BAŞLIK)"
+                                                        value={slide.subtitle || ""}
+                                                        onChange={e => { const n = [...slides]; n[index].subtitle = e.target.value; setSlides(n); }}
+                                                    />
+                                                    
+                                                    <input
+                                                        className="w-full bg-slate-50 border border-slate-100 rounded-xl p-3 outline-none focus:border-amber-500 font-black uppercase text-sm"
+                                                        placeholder="Slider Başlığı"
+                                                        value={slide.title}
+                                                        onChange={e => { const n = [...slides]; n[index].title = e.target.value; setSlides(n); }}
+                                                    />
+                                                    <textarea
+                                                        className="w-full bg-slate-50 border border-slate-100 rounded-xl p-3 outline-none focus:border-amber-500 text-xs font-bold resize-none"
+                                                        placeholder="Slogan Açıklaması"
+                                                        rows={2}
+                                                        value={slide.description}
+                                                        onChange={e => { const n = [...slides]; n[index].description = e.target.value; setSlides(n); }}
+                                                    />
+                                                </div>
+                                                <div className="space-y-3">
+                                                    <div className="relative group">
+                                                        <LinkIcon className="absolute left-3 top-3.5 text-slate-300 group-focus-within:text-amber-500 transition-colors" size={16} />
+                                                        <select
+                                                            className="w-full bg-slate-50 border border-slate-100 rounded-xl p-3 pl-10 outline-none focus:border-amber-500 text-[10px] font-black uppercase appearance-none cursor-pointer"
+                                                            value={slide.buttonLink}
+                                                            onChange={e => { const n = [...slides]; n[index].buttonLink = e.target.value; setSlides(n); }}
+                                                        >
+                                                            <option value="">BUTONUN GİDECEĞİ SAYFAYI SEÇİN</option>
+                                                            {availablePages.map((page) => (
+                                                                <option key={page.path} value={page.path}>{page.name}</option>
+                                                            ))}
+                                                        </select>
+                                                        <div className="absolute right-3 top-3.5 pointer-events-none text-slate-400">
+                                                            <ChevronDown size={16} />
+                                                        </div>
+                                                    </div>
 
-                        <div className="flex lg:flex-col gap-2 border-l border-slate-100 pl-4">
-                            <button
-                                onClick={() => { const n = [...slides]; n[index].isActive = !n[index].isActive; setSlides(n); }}
-                                className={`p-3 rounded-xl transition-all ${slide.isActive ? 'bg-emerald-50 text-emerald-500' : 'bg-slate-100 text-slate-400'}`}
-                            >
-                                {slide.isActive ? <Eye size={20} /> : <EyeOff size={20} />}
-                            </button>
-                            <button
-                                onClick={() => { if(confirm("Silmek istediğinize emin misiniz?")) setSlides(slides.filter((_, i) => i !== index)) }}
-                                className="p-3 bg-red-50 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all"
-                            >
-                                <Trash2 size={20} />
-                            </button>
+                                                    <div className="flex items-center gap-2 p-3 bg-slate-50 border border-slate-100 rounded-xl">
+                                                        {isVideo(slide.image) ? <Video className="text-slate-300" size={16} /> : <ImageIcon className="text-slate-300" size={16} />}
+                                                        <span className="text-[9px] font-mono text-slate-400 truncate tracking-tighter">{slide.image || "Medya yüklenmedi..."}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex lg:flex-col gap-2 border-l border-slate-100 pl-4">
+                                                <button
+                                                    onClick={() => { const n = [...slides]; n[index].isActive = !n[index].isActive; setSlides(n); }}
+                                                    className={`p-3 rounded-xl transition-all ${slide.isActive ? 'bg-emerald-50 text-emerald-500' : 'bg-slate-100 text-slate-400'}`}
+                                                >
+                                                    {slide.isActive ? <Eye size={20} /> : <EyeOff size={20} />}
+                                                </button>
+                                                <button
+                                                    onClick={() => { if(confirm("Silmek istediğinize emin misiniz?")) setSlides(slides.filter((_, i) => i !== index)) }}
+                                                    className="p-3 bg-red-50 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all"
+                                                >
+                                                    <Trash2 size={20} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </Draggable>
+                            ))}
+                            {provided.placeholder}
                         </div>
-                    </div>
-                ))}
-            </div>
+                    )}
+                </Droppable>
+            </DragDropContext>
 
             <input 
                 type="file" 
@@ -224,7 +275,6 @@ export default function AdminSliderPage() {
                 onChange={handleFileUpload} 
             />
 
-            {/* BİLGİ NOTU */}
             <div className="bg-amber-50 border border-amber-100 p-8 rounded-[3rem] max-w-6xl flex items-start gap-5 shadow-sm">
                 <div className="bg-amber-500 p-4 rounded-2xl text-white shadow-lg shadow-amber-200">
                     <Info size={28} />

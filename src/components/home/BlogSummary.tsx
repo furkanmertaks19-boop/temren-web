@@ -5,7 +5,7 @@ import { ArrowUpRight, Calendar } from 'lucide-react';
 import Link from 'next/link';
 
 export default function BlogSummary() {
-    const [blogs, setBlogs] = useState([]);
+    const [blogs, setBlogs] = useState<any[]>([]);
 
     useEffect(() => {
         const fetchBlogs = async () => {
@@ -56,20 +56,21 @@ export default function BlogSummary() {
 
                 {/* Dinamik Kartlar */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-                    {blogs.map((blog: any, index: number) => (
+                    {blogs.map((blog, index) => (
                         <motion.div
-                            key={blog.id}
+                            
+                            key={blog.id || blog._id || `blog-${index}`}
                             initial={{ opacity: 0, y: 40 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
+                            whileInView={{ opacity: 1, y: 0 }} 
+                            viewport={{ once: true, margin: "-100px" }}
                             transition={{ delay: index * 0.1, duration: 0.7 }}
                         >
-                            {/* Doğru dosya yolu: /medya/blog/[slug] */}
                             <Link 
                                 href={`/medya/blog/${blog.slug || blog.id}`} 
                                 className="group flex flex-col h-full cursor-pointer"
                             >
-                                <div className="relative aspect-[16/10] overflow-hidden bg-gray-100 mb-8 transition-all duration-500 group-hover:shadow-[0_20px_50px_rgba(249,115,22,0.15)]">
+                                {/* Görsel Alanı */}
+                                <div className="relative aspect-[16/10] overflow-hidden bg-gray-100 mb-8 transition-all duration-500 group-hover:shadow-[0_20px_50px_rgba(249,115,22,0.15)] rounded-2xl">
                                     <img
                                         src={blog.image || '/images/placeholder.jpg'}
                                         alt={blog.title}
@@ -80,6 +81,7 @@ export default function BlogSummary() {
                                     </div>
                                 </div>
 
+                                {/* İçerik Alanı */}
                                 <div className="flex flex-col flex-grow">
                                     <div className="flex items-center gap-2 text-gray-400 text-[10px] font-bold uppercase tracking-[0.2em] mb-4">
                                         <Calendar size={14} className="text-orange-500" />
@@ -91,7 +93,7 @@ export default function BlogSummary() {
                                     </h3>
 
                                     <p className="text-gray-500 text-sm leading-relaxed mb-8 line-clamp-2 italic border-l-2 border-gray-100 group-hover:border-orange-500 pl-4 transition-all">
-                                        {blog.summary || "En son gelişmeleri ve projelerimizi keşfetmek için tıklayın."}
+                                        {blog.summary || blog.description?.substring(0, 100) + "..." || "Haber detayları için tıklayın."}
                                     </p>
 
                                     <div className="mt-auto flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-[#121212] group-hover:text-orange-500 transition-all duration-300">

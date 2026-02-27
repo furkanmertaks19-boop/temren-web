@@ -1,67 +1,15 @@
 import { MetadataRoute } from "next";
-import path from "path";
-import fs from "fs";
 
 const baseUrl = "https://temrenmakina.com";
 
-/* --------------------------------------------------
-   Helpers
--------------------------------------------------- */
-
-function hasPage(dir: string) {
-  return (
-    fs.existsSync(path.join(dir, "page.tsx")) ||
-    fs.existsSync(path.join(dir, "page.jsx"))
-  );
-}
-
-function isSkip(name: string) {
-  if (name.startsWith("(") && name.endsWith(")")) return true;
-  if (["components", "ui", "api"].includes(name)) return true;
-  return false;
-}
-
-function scanRoutes(rootDir: string, urlPrefix: string): string[] {
-  if (!fs.existsSync(rootDir)) return [];
-
-  const items = fs.readdirSync(rootDir, { withFileTypes: true });
-  let urls: string[] = [];
-
-  if (hasPage(rootDir)) {
-    urls.push(urlPrefix);
-  }
-
-  for (const item of items) {
-    if (!item.isDirectory()) continue;
-    if (isSkip(item.name)) continue;
-
-    const childDir = path.join(rootDir, item.name);
-    const childUrl = `${urlPrefix}/${item.name}`;
-
-    urls = urls.concat(scanRoutes(childDir, childUrl));
-  }
-
-  return urls;
-}
-
-/* --------------------------------------------------
-   MAIN SITEMAP
--------------------------------------------------- */
-
 export default function sitemap(): MetadataRoute.Sitemap {
-  // 🔵 STATİK SAYFALAR
-  const staticPages: MetadataRoute.Sitemap = [
+  return [
+    // ANA SAYFALAR
     {
       url: `${baseUrl}`,
       lastModified: new Date(),
       changeFrequency: "daily",
       priority: 1,
-    },
-    {
-      url: `${baseUrl}/kurumsal`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.8,
     },
     {
       url: `${baseUrl}/urunler`,
@@ -70,16 +18,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.95,
     },
     {
-      url: `${baseUrl}/faaliyet/insaat`,
+      url: `${baseUrl}/kurumsal`,
       lastModified: new Date(),
       changeFrequency: "monthly",
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/faaliyet/uretim`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.7,
+      priority: 0.8,
     },
     {
       url: `${baseUrl}/medya`,
@@ -87,32 +29,29 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "weekly",
       priority: 0.6,
     },
-    {
-      url: `${baseUrl}/iletisim`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.5,
-    },
+
+    // 🔥 PALLET SİSTEMLERİ
+    { url: `${baseUrl}/urunler/palet-sistemleri/plt-7`, priority: 0.95 },
+    { url: `${baseUrl}/urunler/palet-sistemleri/plt-8`, priority: 0.95 },
+    { url: `${baseUrl}/urunler/palet-sistemleri/plt-10`, priority: 0.95 },
+    { url: `${baseUrl}/urunler/palet-sistemleri/plt-12`, priority: 0.95 },
+    { url: `${baseUrl}/urunler/palet-sistemleri/plt-15`, priority: 0.95 },
+    { url: `${baseUrl}/urunler/palet-sistemleri/plt-16`, priority: 0.95 },
+    { url: `${baseUrl}/urunler/palet-sistemleri/plt-17`, priority: 0.95 },
+    { url: `${baseUrl}/urunler/palet-sistemleri/plt-18`, priority: 0.95 },
+
+    // 🔥 ÜRETİM
+    { url: `${baseUrl}/urunler/uretim/byk500`, priority: 0.95 },
+    { url: `${baseUrl}/urunler/uretim/byk1000`, priority: 0.95 },
+    { url: `${baseUrl}/urunler/uretim/konik-temizleme`, priority: 0.95 },
+    { url: `${baseUrl}/urunler/uretim/mini-takim-boy-olcer`, priority: 0.95 },
+    { url: `${baseUrl}/urunler/uretim/takim-sikma`, priority: 0.95 },
+    { url: `${baseUrl}/urunler/uretim/vakumlu-tabla`, priority: 0.95 },
+    { url: `${baseUrl}/urunler/uretim/vortex-tupu`, priority: 1 },
+
+    // DİĞER
+    { url: `${baseUrl}/urunler/tika`, priority: 0.9 },
+    { url: `${baseUrl}/urunler/mini-tika`, priority: 0.9 },
+    { url: `${baseUrl}/urunler/kaucuk-sistemleri`, priority: 0.85 },
   ];
-
-  // 🔵 TÜM ÜRÜNLERİ OTOMATİK TOPLA
-  const urunlerDir = path.join(process.cwd(), "src", "app", "urunler");
-
-  const productUrls = scanRoutes(
-    urunlerDir,
-    `${baseUrl}/urunler`
-  ).filter((u) => !u.includes("/components/"));
-
-  const productEntries: MetadataRoute.Sitemap = productUrls.map((url) => ({
-    url,
-    lastModified: new Date(),
-    changeFrequency: "weekly",
-    priority:
-      url.includes("/urunler/uretim/") ||
-      url.includes("/urunler/palet-sistemleri/")
-        ? 0.95
-        : 0.85,
-  }));
-
-  return [...staticPages, ...productEntries];
 }

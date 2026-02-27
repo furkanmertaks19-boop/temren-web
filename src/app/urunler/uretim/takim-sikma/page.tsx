@@ -68,7 +68,79 @@ export default function TakimSikmaPage() {
                     <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-[#050505]/80" />
                 </motion.div>
             </div>
+{/* ✅ SEO: Takım Sıkma - Product + Breadcrumb + FAQ */}
+<script
+  type="application/ld+json"
+  dangerouslySetInnerHTML={{
+    __html: JSON.stringify([
+      // 1) Breadcrumb
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Anasayfa", "item": "https://temrenmakina.com" },
+          { "@type": "ListItem", "position": 2, "name": "Ürünler", "item": "https://temrenmakina.com/urunler" },
+          { "@type": "ListItem", "position": 3, "name": "Üretim", "item": "https://temrenmakina.com/urunler/uretim" },
+          { "@type": "ListItem", "position": 4, "name": "Takım Sıkma", "item": "https://temrenmakina.com/urunler/uretim/takim-sikma" }
+        ]
+      },
 
+      // 2) Product
+      {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "name": "Takım Sıkma Sistemi",
+        "image": [
+          "https://temrenmakina.com/og/takimsikma_1.jpg"
+        ],
+        "description": "Üretim süreçlerinde hızlı, güvenli ve tekrarlanabilir sıkma için tasarlanmış takım sıkma sistemi.",
+        "brand": { "@type": "Brand", "name": "Temren Makina" },
+        "category": "Üretim Ekipmanları",
+        "url": "https://temrenmakina.com/urunler/uretim/takim-sikma"
+      },
+
+      // 3) FAQ
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Takım sıkma sistemi ne işe yarar?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Üretim sırasında parçaların veya ekipmanların hızlı ve tekrarlanabilir şekilde güvenli biçimde sabitlenmesini sağlar."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Hangi alanlarda kullanılır?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "CNC/imalat hatları, fikstürleme uygulamaları ve tekrarlı montaj süreçlerinde kullanılabilir."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Ölçüler ve bağlantılar özelleştirilebilir mi?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Evet, kullanım alanına göre ölçü, bağlantı ve mekanizma seçenekleri özelleştirilebilir."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Bakım gerektirir mi?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Mekanik yapıya bağlı olarak periyodik kontrol önerilir. Uygun kullanımda uzun ömürlüdür."
+            }
+          }
+        ]
+      }
+    ]),
+  }}
+/>
             <div className="relative z-10 w-full">
                 {/* HERO CONTENT */}
                 <section className="h-screen flex flex-col items-center justify-center text-center px-6">

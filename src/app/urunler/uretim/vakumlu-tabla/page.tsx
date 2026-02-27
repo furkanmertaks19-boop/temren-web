@@ -88,26 +88,79 @@ export default function VakumluTablaPage() {
 
     return (
         <main className="bg-[#050505] min-h-screen relative text-white selection:bg-amber-500 selection:text-black font-sans overflow-x-hidden">
+{/* ✅ SEO: Vakumlu Tabla - Product + Breadcrumb + FAQ */}
+<script
+  type="application/ld+json"
+  dangerouslySetInnerHTML={{
+    __html: JSON.stringify([
+      // 1) Breadcrumb
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Anasayfa", "item": "https://temrenmakina.com" },
+          { "@type": "ListItem", "position": 2, "name": "Ürünler", "item": "https://temrenmakina.com/urunler" },
+          { "@type": "ListItem", "position": 3, "name": "Üretim", "item": "https://temrenmakina.com/urunler/uretim" },
+          { "@type": "ListItem", "position": 4, "name": "Vakumlu Tabla", "item": "https://temrenmakina.com/urunler/uretim/vakumlu-tabla" }
+        ]
+      },
 
-            {/* ✅ SEO Şeması */}
-            <script
-                type="application/ld+json"
-                dangerouslySetInnerHTML={{
-                    __html: JSON.stringify({
-                        "@context": "https://schema.org/",
-                        "@type": "Product",
-                        "name": "Vakumlu Tabla Sistemi",
-                        "image": `https://temrenmakina.com${mainImage}`,
-                        "description": "Hassas yüzeylerde iz ve deformasyon oluşturmadan güçlü sabitleme sağlayan havacılık sınıfı alüminyum vakumlu tabla.",
-                        "brand": { "@type": "Brand", "name": "Temren Makina" },
-                        "offers": {
-                            "@type": "Offer",
-                            "availability": "https://schema.org/InStock",
-                            "priceCurrency": "TRY"
-                        }
-                    })
-                }}
-            />
+      // 2) Product (price yoksa Offer koymuyoruz)
+      {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "name": "Vakumlu Tabla",
+        "image": [
+          "https://temrenmakina.com/og/vakum_5.JPG"
+        ],
+        "description": "CNC ve üretim süreçlerinde parçayı sabitlemek için kullanılan vakumlu tabla. Stabil işleme, yüksek tutuş ve pratik kullanım sağlar.",
+        "brand": { "@type": "Brand", "name": "Temren Makina" },
+        "category": "CNC Bağlama / Vakum Sistemleri",
+        "url": "https://temrenmakina.com/urunler/uretim/vakumlu-tabla"
+      },
+
+      // 3) FAQ
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Vakumlu tabla ne işe yarar?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "CNC ve üretim süreçlerinde iş parçasını vakum ile sabitleyerek stabil ve güvenli işleme imkânı sağlar."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Hangi sektörlerde kullanılır?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "CNC işleme, sac/kompozit işleme, ahşap işleme ve sabitlemenin kritik olduğu üretim hatlarında yaygın kullanılır."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Parçayı nasıl tutar?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Tabla yüzeyindeki vakum kanalları ve sızdırmazlık yapısı ile negatif basınç oluşturarak parçayı yüzeye sabitler."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Ölçü ve tasarım özelleştirilebilir mi?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Evet, uygulamaya göre ölçü, kanal yapısı ve bağlantı detayları ihtiyaca göre uyarlanabilir."
+            }
+          }
+        ]
+      }
+    ]),
+  }}
+/>
 
             {/* HERO BACKDROP */}
             <div className="fixed inset-0 w-full h-screen z-0">

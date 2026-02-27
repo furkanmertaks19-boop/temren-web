@@ -63,7 +63,79 @@ export default function MiniTakimBoyOlcerPage() {
                     <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-[#050505]/80" />
                 </motion.div>
             </div>
+{/* ✅ SEO: Mini Takım Boy Ölçer - Product + Breadcrumb + FAQ */}
+<script
+  type="application/ld+json"
+  dangerouslySetInnerHTML={{
+    __html: JSON.stringify([
+      // 1) Breadcrumb
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Anasayfa", "item": "https://temrenmakina.com" },
+          { "@type": "ListItem", "position": 2, "name": "Ürünler", "item": "https://temrenmakina.com/urunler" },
+          { "@type": "ListItem", "position": 3, "name": "Üretim", "item": "https://temrenmakina.com/urunler/uretim" },
+          { "@type": "ListItem", "position": 4, "name": "Mini Takım Boy Ölçer", "item": "https://temrenmakina.com/urunler/uretim/mini-takim-boy-olcer" }
+        ]
+      },
 
+      // 2) Product
+      {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "name": "Mini Takım Boy Ölçer",
+        "image": [
+          "https://temrenmakina.com/og/takimboy_1.jpg"
+        ],
+        "description": "Üretimde takım boyu ölçümü ve tekrarlanabilir ayar için tasarlanmış kompakt mini takım boy ölçer çözümü.",
+        "brand": { "@type": "Brand", "name": "Temren Makina" },
+        "category": "Ölçüm ve Ayar Ekipmanları",
+        "url": "https://temrenmakina.com/urunler/uretim/mini-takim-boy-olcer"
+      },
+
+      // 3) FAQ
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Mini takım boy ölçer ne işe yarar?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Takım boyunu hızlı ve tekrarlanabilir şekilde ölçmeye yardımcı olur; üretimde ayar sürelerini azaltır."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Hangi alanlarda kullanılır?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "CNC/imalat ortamlarında takım ayarı ve ölçüm süreçlerinde kullanılır."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Kurulum zor mu?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Hayır. Kompakt yapısı sayesinde tezgâh çevresinde pratik şekilde konumlandırılabilir."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Özelleştirilebilir mi?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Evet, kullanım senaryosuna göre ölçü ve bağlantı detayları uyarlanabilir."
+            }
+          }
+        ]
+      }
+    ]),
+  }}
+/>
             <div className="relative z-10 w-full">
                 {/* HERO CONTENT */}
                 <section className="h-screen flex flex-col items-center justify-center text-center px-6">

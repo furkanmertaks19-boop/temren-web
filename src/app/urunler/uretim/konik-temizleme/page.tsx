@@ -63,7 +63,79 @@ export default function KonikTemizlemePage() {
                     <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-[#050505]/80" />
                 </motion.div>
             </div>
+{/* ✅ SEO: Konik Temizleme - Product + Breadcrumb + FAQ */}
+<script
+  type="application/ld+json"
+  dangerouslySetInnerHTML={{
+    __html: JSON.stringify([
+      // 1) Breadcrumb
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Anasayfa", "item": "https://temrenmakina.com" },
+          { "@type": "ListItem", "position": 2, "name": "Ürünler", "item": "https://temrenmakina.com/urunler" },
+          { "@type": "ListItem", "position": 3, "name": "Üretim", "item": "https://temrenmakina.com/urunler/uretim" },
+          { "@type": "ListItem", "position": 4, "name": "Konik Temizleme", "item": "https://temrenmakina.com/urunler/uretim/konik-temizleme" }
+        ]
+      },
 
+      // 2) Product
+      {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "name": "Konik Temizleme",
+        "image": [
+          "https://temrenmakina.com/og/konik_3.jpg"
+        ],
+        "description": "Üretim süreçlerinde konik yüzeylerin etkili temizliği için tasarlanmış pratik ve güvenilir konik temizleme çözümü.",
+        "brand": { "@type": "Brand", "name": "Temren Makina" },
+        "category": "Üretim Ekipmanları / Temizleme",
+        "url": "https://temrenmakina.com/urunler/uretim/konik-temizleme"
+      },
+
+      // 3) FAQ
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Konik temizleme ne işe yarar?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Üretim süreçlerinde konik yüzeylerde biriken kir, çapak veya kalıntıların hızlı ve güvenli şekilde temizlenmesine yardımcı olur."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Hangi alanlarda kullanılır?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "CNC/imalat, bakım-onarım ve konik yüzey temizliği gereken üretim hatlarında kullanılabilir."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Kurulum / kullanım zor mu?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Hayır. Pratik tasarımı sayesinde operatör kullanımına uygundur ve hızlıca devreye alınabilir."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Özelleştirme yapılabilir mi?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Evet, kullanım senaryosuna göre ölçü ve uygulama detayları uyarlanabilir."
+            }
+          }
+        ]
+      }
+    ]),
+  }}
+/>
             <div className="relative z-10 w-full">
                 {/* HERO CONTENT */}
                 <section className="h-screen flex flex-col items-center justify-center text-center px-6">

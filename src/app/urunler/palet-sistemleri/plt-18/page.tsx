@@ -74,7 +74,79 @@ export default function PLT18Page() {
 
   return (
     <main className="bg-[#050505] min-h-screen relative text-white selection:bg-amber-500 selection:text-black font-sans overflow-x-hidden">
+{/* ✅ SEO: PLT-18 - Product + Breadcrumb + FAQ */}
+<script
+  type="application/ld+json"
+  dangerouslySetInnerHTML={{
+    __html: JSON.stringify([
+      // 1) Breadcrumb
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Anasayfa", "item": "https://temrenmakina.com" },
+          { "@type": "ListItem", "position": 2, "name": "Ürünler", "item": "https://temrenmakina.com/urunler" },
+          { "@type": "ListItem", "position": 3, "name": "Palet Sistemleri", "item": "https://temrenmakina.com/urunler/palet-sistemleri" },
+          { "@type": "ListItem", "position": 4, "name": "PLT-18", "item": "https://temrenmakina.com/urunler/palet-sistemleri/plt-18" }
+        ]
+      },
 
+      // 2) Product
+      {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "name": "PLT-18 Palet Sistemi",
+        "image": [
+          "https://temrenmakina.com/og/plt18_1.png"
+        ],
+        "description": "PLT-18 palet sistemi; zorlu saha koşullarında yüksek çekiş, dayanıklılık ve verim için tasarlanmış endüstriyel çözümdür.",
+        "brand": { "@type": "Brand", "name": "Temren Makina" },
+        "category": "Palet Sistemleri",
+        "url": "https://temrenmakina.com/urunler/palet-sistemleri/plt-18"
+      },
+
+      // 3) FAQ
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "PLT-18 palet sistemi nerelerde kullanılır?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Zorlu arazi koşullarında çekiş ve stabilite gereken endüstriyel uygulamalarda kullanılabilir."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "PLT-18’in avantajı nedir?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yüksek çekiş, dayanıklı yapı ve saha koşullarına uygun performans sağlar."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Özelleştirilebilir mi?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Evet, kullanım senaryosuna göre bağlantı ve ölçü detayları uyarlanabilir."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Teklif nasıl alabilirim?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Sayfadaki teklif formu veya iletişim sayfası üzerinden PLT-18 için teklif talep edebilirsiniz."
+            }
+          }
+        ]
+      }
+    ]),
+  }}
+/>
       {/* 1. ARKA PLAN */}
       <div className="fixed inset-0 w-full h-screen z-0">
         <motion.div style={{ scale }} className="relative w-full h-full">

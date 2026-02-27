@@ -63,7 +63,79 @@ export default function BYK1000Page() {
                     <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-[#050505]/80" />
                 </motion.div>
             </div>
+{/* ✅ SEO: BYK1000 - Product + Breadcrumb + FAQ */}
+<script
+  type="application/ld+json"
+  dangerouslySetInnerHTML={{
+    __html: JSON.stringify([
+      // 1) Breadcrumb
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Anasayfa", "item": "https://temrenmakina.com" },
+          { "@type": "ListItem", "position": 2, "name": "Ürünler", "item": "https://temrenmakina.com/urunler" },
+          { "@type": "ListItem", "position": 3, "name": "Üretim", "item": "https://temrenmakina.com/urunler/uretim" },
+          { "@type": "ListItem", "position": 4, "name": "BYK1000", "item": "https://temrenmakina.com/urunler/uretim/byk1000" }
+        ]
+      },
 
+      // 2) Product
+      {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "name": "BYK1000",
+        "image": [
+          "https://temrenmakina.com/og/byk1000.jpg"
+        ],
+        "description": "BYK1000; üretim süreçleri için tasarlanmış, dayanıklı ve verimli endüstriyel çözüm.",
+        "brand": { "@type": "Brand", "name": "Temren Makina" },
+        "category": "Üretim Ekipmanları",
+        "url": "https://temrenmakina.com/urunler/uretim/byk1000"
+      },
+
+      // 3) FAQ
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "BYK1000 ne işe yarar?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Üretim süreçlerinde verimliliği artırmaya yönelik, endüstriyel kullanıma uygun bir çözümdür."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Hangi alanlarda kullanılır?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "İmalat/üretim hatları ve endüstriyel süreçlerde, uygulamaya göre farklı senaryolarda kullanılabilir."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Özelleştirilebilir mi?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Evet, kullanım ihtiyacına göre ölçü ve uygulama detayları Temren Makina tarafından uyarlanabilir."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Teklif nasıl alınır?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Sayfadaki teklif formundan veya iletişim sayfası üzerinden BYK1000 için teklif talep edebilirsiniz."
+            }
+          }
+        ]
+      }
+    ]),
+  }}
+/>
             <div className="relative z-10 w-full">
                 {/* HERO CONTENT */}
                 <section className="h-screen flex flex-col items-center justify-center text-center px-6">

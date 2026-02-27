@@ -78,27 +78,77 @@ export default function VorteksTupuPage() {
 
     return (
         <main className="bg-[#050505] min-h-screen relative text-white selection:bg-amber-500 selection:text-black font-sans overflow-x-hidden">
-
-            {/* ✅ SEO: Google İçin Ürün Şeması */}
-            <script
-                type="application/ld+json"
-                dangerouslySetInnerHTML={{
-                    __html: JSON.stringify({
-                        "@context": "https://schema.org/",
-                        "@type": "Product",
-                        "name": "Endüstriyel Vorteks Tüpü",
-                        "image": `https://temrenmakina.com${mainImage}`,
-                        "description": "Hareketli parça içermeyen, basınçlı havayı anında soğuk havaya dönüştüren endüstriyel soğutma çözümü.",
-                        "brand": { "@type": "Brand", "name": "Temren Makina" },
-                        "offers": {
-                            "@type": "Offer",
-                            "availability": "https://schema.org/InStock",
-                            "priceCurrency": "TRY"
-                        }
-                    })
-                }}
-            />
-
+ 
+            {/* ✅ SEO: Google İçin Ürün + Breadcrumb + FAQ Şemaları */}
+<script
+  type="application/ld+json"
+  dangerouslySetInnerHTML={{
+    __html: JSON.stringify([
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Anasayfa", "item": "https://temrenmakina.com" },
+          { "@type": "ListItem", "position": 2, "name": "Ürünler", "item": "https://temrenmakina.com/urunler" },
+          { "@type": "ListItem", "position": 3, "name": "Üretim", "item": "https://temrenmakina.com/urunler/uretim" },
+          { "@type": "ListItem", "position": 4, "name": "Vorteks Tüpü", "item": "https://temrenmakina.com/urunler/uretim/vortex-tupu" }
+        ]
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "name": "Vorteks Tüpü",
+        "image": [
+          "https://temrenmakina.com/image/vortex_1.jpeg",
+          "https://temrenmakina.com/image/vortex_4.jpeg",
+          "https://temrenmakina.com/image/vortex_3.jpg"
+        ],
+        "description": "Hareketli parça içermeyen, basınçlı havayı anında soğuk havaya dönüştüren endüstriyel soğutma çözümü.",
+        "brand": { "@type": "Brand", "name": "Temren Makina" },
+        "category": "Endüstriyel Soğutma",
+        "url": "https://temrenmakina.com/urunler/uretim/vortex-tupu"
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Vorteks tüpü nasıl çalışır?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Basınçlı havayı hareketli parça olmadan soğuk akıma dönüştürerek lokal soğutma sağlar."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Elektrik gerekir mi?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Hayır. Sistem yalnızca basınçlı hava ile çalışır."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Hangi alanlarda kullanılır?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "CNC işlemleri, elektronik bileşenler ve CCTV gibi ekipmanlarda lokal soğutma için uygundur."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Bakım gerektirir mi?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Hareketli parça içermediği için bakım ihtiyacı düşüktür."
+            }
+          }
+        ]
+      }
+    ]),
+  }}
+/>
             {/* 1. HERO BACKDROP */}
             <div className="fixed inset-0 w-full h-screen z-0">
                 <motion.div style={{ scale }} className="relative w-full h-full">

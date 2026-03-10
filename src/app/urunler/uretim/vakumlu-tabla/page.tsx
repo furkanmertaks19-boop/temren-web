@@ -53,11 +53,10 @@ export default function VakumluTablaPage() {
         mesaj: ""
     });
 
-    const mainImage = "/image/vakum_4.JPG";
+    const mainImage = "/image/vakum_5.JPG";
     const gallery: GalleryItem[] = [
         { src: "/image/vakum_1.JPG", alt: "Vakumlu Tabla Teknik Detay 1" },
         { src: "/image/vakum_2.JPG", alt: "Vakumlu Tabla Üretim Aşaması" },
-        { src: "/image/vakum_3.JPG", alt: "Hassas Vakum Sabitleme Ünitesi" },
         { src: "/image/vakum_4.JPG", alt: "CNC Vakum Tablası Genel Görünüm" },
         { src: "/image/vakum_5.JPG", alt: "Vakumlu Tabla Arka Bağlantı Portları" }
     ];

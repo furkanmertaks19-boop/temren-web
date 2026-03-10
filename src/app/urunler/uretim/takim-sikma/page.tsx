@@ -19,12 +19,12 @@ export default function TakimSikmaPage() {
     const [success, setSuccess] = useState(false);
     const [form, setForm] = useState({ adSoyad: "", telefon: "", email: "", mesaj: "" });
 
-    const mainImage = "/image/takimsikma_1.jpg";
+    const mainImage = "/takimsikma2.png";
     const gallery = [
-        "/image/takimsikma_1.jpg",
-        "/image/takimsikma_2.jpg",
-        "/image/takimsikma_3.jpg",
-        "/image/takimsikma_4.jpg"
+        "/takimsikma1.png",
+        "/takimsikma2.png",
+        "/takimsikma3.png",
+        "/takimsikma4.png"
     ];
 
     const handleFormSubmit = async (e: React.FormEvent) => {

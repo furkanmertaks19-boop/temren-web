@@ -10,6 +10,9 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
+const SITE_URL = "https://temrenmakina.com";
+const DEFAULT_OG_IMAGE = `${SITE_URL}/og/temren-home.jpg`; // yoksa uygun bir görsel yükle
+
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
@@ -17,28 +20,41 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://temrenmakina.com"),
+  metadataBase: new URL(SITE_URL),
 
   title: {
-    default: "Temren Makina | Traktör Palet Sistemleri ve Endüstriyel Çözümler",
+    default: "Temren Makina | Traktör Palet Sistemleri, Talaşlı İmalat ve Endüstriyel Çözümler",
     template: "%s | Temren Makina",
   },
 
   description:
-    "Temren Makina; yüksek hassasiyetli talaşlı imalat, traktör palet sistemleri, CNC vakum tablaları ve endüstriyel üretim çözümleri ile işletmelere profesyonel sistemler sunar.",
+    "Temren Makina; traktör palet sistemleri, talaşlı imalat, CNC vakum tablaları, takım sıkma sistemleri ve endüstriyel üretim ekipmanlarında profesyonel çözümler sunar.",
 
   keywords: [
     "Temren Makina",
-    "talaşlı imalat",
-    "Ankara makina",
-    "palet sistemleri",
-    "traktör palet sistemi",
-    "vakum tablası",
-    "CNC ekipmanları",
-    "hassas üretim",
+    "temren makina ankara",
+    "makina",
+    "makina firması",
+    "ankara makina",
     "endüstriyel çözümler",
-    "konik temizleme makinesi",
-    "takım sıkma",
+    "endüstriyel üretim",
+     "endüstriyel imalat",
+    "talaşlı imalat",
+    "hassas üretim",
+    "CNC ekipmanları",
+    "CNC vakum tablası",
+    "vakum tablası",
+    "takım sıkma sistemi",
+    "mini takım boy ölçer",
+    "konik temizleme",
+    "traktör palet sistemi",
+    "araç palet sistemi",
+    "palet sistemleri",
+    "en büyük firma",
+    "palet sistemleri",
+    "endüstriyel palet sistemi",
+    "üretim ekipmanları",
+    "özel makina imalatı",
   ],
 
   applicationName: "Temren Makina",
@@ -54,6 +70,7 @@ export const metadata: Metadata = {
   robots: {
     index: true,
     follow: true,
+    nocache: false,
     googleBot: {
       index: true,
       follow: true,
@@ -69,27 +86,27 @@ export const metadata: Metadata = {
 
   icons: {
     icon: [
-      { url: "/logo.png", type: "image/png" },
       { url: "/favicon.ico", sizes: "any" },
+      { url: "/logo.png", type: "image/png" },
     ],
-    shortcut: ["/favicon.ico", "/logo.png"],
+    shortcut: ["/favicon.ico"],
     apple: [{ url: "/logo.png", type: "image/png" }],
   },
 
   openGraph: {
     type: "website",
     locale: "tr_TR",
-    url: "https://temrenmakina.com",
+    url: SITE_URL,
     siteName: "Temren Makina",
-    title: "Temren Makina | Traktör Palet Sistemleri ve Endüstriyel Çözümler",
+    title: "Temren Makina | Traktör Palet Sistemleri, Talaşlı İmalat ve Endüstriyel Çözümler",
     description:
       "Temren Makina; traktör palet sistemleri, talaşlı imalat, CNC vakum tablaları ve özel endüstriyel üretim çözümleri sunar.",
     images: [
       {
-        url: "/logo.png",
+        url: DEFAULT_OG_IMAGE,
         width: 1200,
         height: 630,
-        alt: "Temren Makina Logo",
+        alt: "Temren Makina Endüstriyel Çözümler",
       },
     ],
   },
@@ -99,7 +116,13 @@ export const metadata: Metadata = {
     title: "Temren Makina | Traktör Palet Sistemleri ve Endüstriyel Çözümler",
     description:
       "Temren Makina; traktör palet sistemleri, talaşlı imalat, CNC vakum tablaları ve özel endüstriyel üretim çözümleri sunar.",
-    images: ["/logo.png"],
+    images: [DEFAULT_OG_IMAGE],
+  },
+
+  other: {
+    "geo.region": "TR-06",
+    "geo.placename": "Ankara",
+    "format-detection": "telephone=no",
   },
 };
 
@@ -108,6 +131,35 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const organizationSchema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "Temren Makina",
+    url: SITE_URL,
+    logo: `${SITE_URL}/logo.png`,
+    sameAs: [],
+    contactPoint: [
+      {
+        "@type": "ContactPoint",
+        contactType: "customer support",
+        areaServed: "TR",
+        availableLanguage: ["Turkish", "English"],
+      },
+    ],
+  };
+
+  const websiteSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "Temren Makina",
+    url: SITE_URL,
+    inLanguage: "tr-TR",
+    publisher: {
+      "@type": "Organization",
+      name: "Temren Makina",
+    },
+  };
+
   return (
     <html lang="tr" className="scroll-smooth">
       <body
@@ -121,6 +173,12 @@ export default function RootLayout({
           text-white
         `}
       >
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify([organizationSchema, websiteSchema]),
+          }}
+        />
         <SmoothScroll>
           <ConditionalHeader />
           <main className="min-h-screen">{children}</main>

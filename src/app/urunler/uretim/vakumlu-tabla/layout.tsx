@@ -6,16 +6,20 @@ const CANONICAL = `${SITE_URL}${PATH}`;
 const OG_IMAGE = `${SITE_URL}/og/vakum_5.JPG`;
 
 export const metadata: Metadata = {
-  title: "Vakumlu Tabla | CNC Vakum Tablası | Temren Makina",
+  title: "Vakumlu Tabla | CNC Vakum Tablası",
   description:
-    "CNC ve üretim süreçleri için vakumlu tabla çözümleri. Yüksek tutuş gücü, stabil işleme ve pratik kullanım avantajlarıyla Temren Makina endüstriyel üretim ihtiyaçlarına profesyonel çözümler sunar.",
+    "Temren Makina vakumlu tabla çözümleri; CNC ve üretim süreçlerinde yüksek tutuş gücü, stabil işleme ve pratik kullanım avantajları sunar.",
   alternates: {
     canonical: CANONICAL,
   },
+  robots: {
+    index: true,
+    follow: true,
+  },
   openGraph: {
-    title: "Vakumlu Tabla | Temren Makina",
+    title: "Vakumlu Tabla | CNC Vakum Tablası | Temren Makina",
     description:
-      "CNC ve üretim süreçleri için vakum tablası. Stabil işleme, yüksek tutuş ve pratik kullanım.",
+      "CNC ve üretim süreçleri için vakum tablası. Stabil işleme, yüksek tutuş ve pratik kullanım avantajları sunar.",
     url: CANONICAL,
     siteName: "Temren Makina",
     locale: "tr_TR",
@@ -31,14 +35,10 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Vakumlu Tabla | Temren Makina",
+    title: "Vakumlu Tabla | CNC Vakum Tablası | Temren Makina",
     description:
-      "CNC ve üretim süreçleri için vakum tablası. Stabil işleme, yüksek tutuş ve pratik kullanım.",
+      "CNC ve üretim süreçleri için vakum tablası. Stabil işleme, yüksek tutuş ve pratik kullanım avantajları sunar.",
     images: [OG_IMAGE],
-  },
-  robots: {
-    index: true,
-    follow: true,
   },
 };
 

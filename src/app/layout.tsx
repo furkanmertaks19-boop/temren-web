@@ -1,69 +1,105 @@
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { Metadata, Viewport } from "next";
+import type { Metadata, Viewport } from "next";
 import ConditionalHeader from "@/components/layout/ConditionalHeader";
 import SmoothScroll from "@/components/SmoothScroll";
 
-// 🚀 FONT OPTİMİZASYONU
-const inter = Inter({ 
+const inter = Inter({
   subsets: ["latin"],
-  display: "swap", 
-  variable: "--font-inter", 
+  display: "swap",
+  variable: "--font-inter",
 });
 
-// 📱 MOBİL UYUMLULUK
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
   themeColor: "#000000",
 };
 
-// 🎯 SEO & LOGO & METADATA AYARLARI
 export const metadata: Metadata = {
-  // 🟢 SEKME LOGOSU (FAVICON) AYARLARI
-  icons: {
-    icon: "/logo.png",       // Tarayıcı sekmesindeki logo
-    shortcut: "/logo.png",   // Kısayol ikonu
-    apple: "/logo.png",      // iPhone ana ekrana ekle ikonu
-  },
+  metadataBase: new URL("https://temrenmakina.com"),
+
   title: {
     default: "Temren Makina | Traktör Palet Sistemleri ve Endüstriyel Çözümler",
-    template: "%s | Temren Makina"
+    template: "%s | Temren Makina",
   },
-  description: "Temren Makina; yüksek hassasiyetli talaşlı imalat, traktör palet sistemleri ve CNC vakum tablaları ile endüstriyel üretim süreçlerinize profesyonel çözümler sunar.",
+
+  description:
+    "Temren Makina; yüksek hassasiyetli talaşlı imalat, traktör palet sistemleri, CNC vakum tablaları ve endüstriyel üretim çözümleri ile işletmelere profesyonel sistemler sunar.",
+
   keywords: [
-    "temren makina", 
-    "talaşlı imalat", 
-    "Ankara makina", 
-    "palet sistemleri", 
-    "traktör palet sistemi", 
-    "vakum tablası", 
-    "CNC ekipmanları", 
-    "hassas üretim"
+    "Temren Makina",
+    "talaşlı imalat",
+    "Ankara makina",
+    "palet sistemleri",
+    "traktör palet sistemi",
+    "vakum tablası",
+    "CNC ekipmanları",
+    "hassas üretim",
+    "endüstriyel çözümler",
+    "konik temizleme makinesi",
+    "takım sıkma",
   ],
+
+  applicationName: "Temren Makina",
+  referrer: "origin-when-cross-origin",
+  creator: "Temren Makina",
+  publisher: "Temren Makina",
+  category: "industrial manufacturing",
+
   verification: {
-    google: "google-site-verification-kodunuz", 
+    google: "google-site-verification-kodunuz",
   },
-  robots: "index, follow",
+
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+
   alternates: {
-    canonical: "https://temrenmakina.com",
+    canonical: "/",
   },
+
+  icons: {
+    icon: [
+      { url: "/logo.png", type: "image/png" },
+      { url: "/favicon.ico", sizes: "any" },
+    ],
+    shortcut: ["/favicon.ico", "/logo.png"],
+    apple: [{ url: "/logo.png", type: "image/png" }],
+  },
+
   openGraph: {
-    title: "Temren Makina | Endüstriyel Verimlilik Çözümleri",
-    description: "Traktör palet sistemleri ve hassas üretim ekipmanlarında öncü çözümler.",
+    type: "website",
+    locale: "tr_TR",
     url: "https://temrenmakina.com",
     siteName: "Temren Makina",
+    title: "Temren Makina | Traktör Palet Sistemleri ve Endüstriyel Çözümler",
+    description:
+      "Temren Makina; traktör palet sistemleri, talaşlı imalat, CNC vakum tablaları ve özel endüstriyel üretim çözümleri sunar.",
     images: [
       {
-        url: "/logo.png", // Paylaşımlarda görünecek görsel
+        url: "/logo.png",
         width: 1200,
         height: 630,
         alt: "Temren Makina Logo",
       },
     ],
-    locale: "tr_TR",
-    type: "website",
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    title: "Temren Makina | Traktör Palet Sistemleri ve Endüstriyel Çözümler",
+    description:
+      "Temren Makina; traktör palet sistemleri, talaşlı imalat, CNC vakum tablaları ve özel endüstriyel üretim çözümleri sunar.",
+    images: ["/logo.png"],
   },
 };
 
@@ -74,22 +110,20 @@ export default function RootLayout({
 }) {
   return (
     <html lang="tr" className="scroll-smooth">
-      <body 
+      <body
         className={`
-          ${inter.variable} 
-          ${inter.className} 
-          antialiased 
-          overflow-x-hidden 
-          relative 
-          bg-black 
+          ${inter.variable}
+          ${inter.className}
+          antialiased
+          overflow-x-hidden
+          relative
+          bg-black
           text-white
         `}
       >
         <SmoothScroll>
           <ConditionalHeader />
-          <main className="min-h-screen">
-            {children}
-          </main>
+          <main className="min-h-screen">{children}</main>
         </SmoothScroll>
       </body>
     </html>

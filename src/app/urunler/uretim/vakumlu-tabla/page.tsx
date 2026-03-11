@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import {
     ChevronDown, CheckCircle2, ArrowRight, ShieldCheck,
-    Zap, Settings, Layers, Ruler, Loader2, Camera, Maximize2, Send, User, Phone, Mail, MessageSquare, X
+    Zap, Settings, Layers, Ruler, Loader2, Maximize2, Send, User, Phone, Mail, MessageSquare, X
 } from 'lucide-react';
 import Footer from "@/components/layout/Footer";
 

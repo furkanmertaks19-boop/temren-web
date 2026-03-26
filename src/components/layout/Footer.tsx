@@ -102,11 +102,14 @@ export default function Footer() {
                   <MapPin size={18} />
                 </div>
                 <div>
-                  <div className="text-[10px] font-black text-gray-400 tracking-widest uppercase mb-1">Fabrika</div>
-                  <p className="text-xs text-slate-700 font-bold leading-relaxed uppercase tracking-tight">
-                    Saray Mah. 154. Sokak No: 7/A <br /> Kahramankazan / Ankara
-                  </p>
-                </div>
+  <div className="text-[10px] font-black text-gray-400 tracking-widest uppercase mb-1">
+    Fabrika
+  </div>
+  <p className="text-xs text-slate-700 font-bold leading-relaxed uppercase tracking-tight">
+    Saray Mah. 100.Yıl Blv. No: 75 <br />
+    Kahramankazan / Ankara
+  </p>
+</div>
               </div>
 
               <div className="flex gap-4">

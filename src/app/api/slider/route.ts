@@ -10,17 +10,12 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
     try {
         await connectDB();
+        // Sıralamaya (order) göre tüm listeyi getir
         const slides = await Slider.find({}).sort({ order: 1 });
         return NextResponse.json(slides, { status: 200 });
-    } catch (error: any) {
+    } catch (error) {
         console.error("GET Error:", error);
-        return NextResponse.json(
-            {
-                error: "Veriler veritabanından alınamadı",
-                detail: error?.message || String(error),
-            },
-            { status: 500 }
-        );
+        return NextResponse.json({ error: "Veriler veritabanından alınamadı" }, { status: 500 });
     }
 }
 

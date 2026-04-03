@@ -24,7 +24,7 @@ export async function connectDB() {
     }
 
     cached.conn = await cached.promise;
-    return cached.conn;
+    return cached.conn; 
 }
 
 export default connectDB;

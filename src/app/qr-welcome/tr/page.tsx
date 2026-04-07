@@ -52,11 +52,10 @@ export default function QRWelcomeDetail({ params }: { params: { lang: string } }
   const [isOpen, setIsOpen] = useState(false);
   const [toast, setToast] = useState("");
 
-  // çalışma saati
   useEffect(() => {
     const calc = () => {
       const now = new Date();
-      const day = now.getDay(); // 0 pazar
+      const day = now.getDay();
       const totalMinutes = now.getHours() * 60 + now.getMinutes();
       const start = 7 * 60 + 30;
       const end = 17 * 60 + 30;
@@ -84,7 +83,6 @@ export default function QRWelcomeDetail({ params }: { params: { lang: string } }
         return;
       }
     } catch (_) {
-      // kullanıcı iptal ettiyse sessiz geç
       return;
     }
 
@@ -113,13 +111,11 @@ export default function QRWelcomeDetail({ params }: { params: { lang: string } }
 
   return (
     <main className="relative z-[9999] min-h-dvh overflow-x-hidden font-sans text-slate-900">
-      {/* Background */}
       <div className="fixed inset-0 bg-[radial-gradient(1200px_circle_at_10%_10%,rgba(255,122,0,0.10),transparent_45%),radial-gradient(900px_circle_at_90%_20%,rgba(59,130,246,0.10),transparent_40%),radial-gradient(900px_circle_at_50%_90%,rgba(16,185,129,0.08),transparent_45%)]" />
       <div className="fixed inset-0 bg-gradient-to-b from-white via-[#F7F9FC] to-white" />
       <div className="fixed inset-0 pointer-events-none opacity-[0.06] [background-image:radial-gradient(#000_1px,transparent_1px)] [background-size:18px_18px]" />
 
       <div className="relative mx-auto max-w-2xl px-5 pb-44">
-        {/* Top brand */}
         <header className="pt-10 pb-6">
           <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-center">
             <div className="inline-flex items-center gap-2 rounded-full bg-white/70 px-4 py-2 backdrop-blur-xl ring-1 ring-black/5 shadow-sm">
@@ -138,7 +134,6 @@ export default function QRWelcomeDetail({ params }: { params: { lang: string } }
           </motion.div>
         </header>
 
-        {/* HERO */}
         <motion.section
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
@@ -161,9 +156,7 @@ export default function QRWelcomeDetail({ params }: { params: { lang: string } }
             </div>
 
             <h2 className="mt-6 text-[28px] font-black tracking-tight leading-tight">
-              Palet Sistemleri &{" "}
-              <span className="text-orange-600">TİKA</span>{" "}
-              Platformu
+              Palet Sistemleri & <span className="text-orange-600">TİKA</span> Platformu
             </h2>
             <p className="mt-3 text-[13px] leading-relaxed text-slate-600">
               Tek dokunuşla iletişime geçin, ürünleri inceleyin, medya içeriklerine hızlıca ulaşın.
@@ -182,6 +175,7 @@ export default function QRWelcomeDetail({ params }: { params: { lang: string } }
               <a
                 href="https://wa.me/905389733439"
                 target="_blank"
+                rel="noreferrer"
                 className="group inline-flex items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-[#25D366] to-[#1fb357] px-4 py-4 text-white shadow-lg shadow-green-500/15 transition hover:translate-y-[-1px] hover:shadow-xl active:translate-y-[0px]"
               >
                 <MessageCircle size={18} className="opacity-95" />
@@ -192,7 +186,6 @@ export default function QRWelcomeDetail({ params }: { params: { lang: string } }
           </div>
         </motion.section>
 
-        {/* INFO ROW */}
         <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-2">
           <div className="rounded-[26px] bg-white/65 backdrop-blur-xl ring-1 ring-black/5 shadow-sm p-6">
             <div className="flex items-center gap-4">
@@ -227,7 +220,6 @@ export default function QRWelcomeDetail({ params }: { params: { lang: string } }
           </button>
         </div>
 
-        {/* PRODUCTS */}
         <section className="mt-10">
           <div className="mb-5 flex items-center gap-4">
             <h3 className="text-[11px] font-extrabold uppercase tracking-[0.35em] text-slate-400">
@@ -278,7 +270,6 @@ export default function QRWelcomeDetail({ params }: { params: { lang: string } }
           </div>
         </section>
 
-        {/* MEDIA */}
         <section className="mt-10">
           <div className="mb-5 flex items-center gap-4">
             <h3 className="text-[11px] font-extrabold uppercase tracking-[0.35em] text-slate-400">
@@ -314,43 +305,79 @@ export default function QRWelcomeDetail({ params }: { params: { lang: string } }
               </div>
             </Link>
 
-            <a
-              href="https://youtube.com/@temrenmakina"
-              target="_blank"
-              className="group relative overflow-hidden rounded-[28px] bg-white/70 backdrop-blur-xl ring-1 ring-black/5 shadow-sm transition hover:shadow-md"
-            >
-              <div className="relative h-60">
-                <img
-                  src="/youtube.png"
-                  alt="Temren YouTube"
-                  className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-[1.06]"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent" />
-                <div className="absolute inset-0 grid place-items-center">
-                  <div className="flex items-center gap-3 rounded-full bg-white/15 px-5 py-3 backdrop-blur-md ring-1 ring-white/20 transition group-hover:scale-[1.03]">
-                    <div className="grid h-11 w-11 place-items-center rounded-full bg-white/20 ring-1 ring-white/25">
-                      <Play className="text-white fill-white ml-0.5" size={22} />
+            <div className="space-y-3">
+              <motion.div
+                initial={{ opacity: 0, y: 18, scale: 0.985 }}
+                whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                viewport={{ once: true, amount: 0.25 }}
+                transition={{ duration: 0.55, ease: "easeOut" }}
+                className="relative overflow-hidden rounded-[28px] bg-white/70 backdrop-blur-xl ring-1 ring-black/5 shadow-sm transition hover:shadow-md"
+              >
+                <div className="relative h-60 overflow-hidden">
+                  <iframe
+                    className="absolute inset-0 h-full w-full"
+                    src="https://www.youtube.com/embed/VjNI_bmhznc?rel=0&modestbranding=1"
+                    title="TİKA Tanıtım Videosu"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                  />
+
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+
+                  <motion.div
+                    initial={{ opacity: 0, y: 12 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.15, duration: 0.45 }}
+                    className="pointer-events-none absolute left-6 bottom-6"
+                  >
+                    <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-2 backdrop-blur-md ring-1 ring-white/20">
+                      <Play className="text-white fill-white" size={16} />
+                      <span className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-white/90">
+                        Öne Çıkan Video
+                      </span>
                     </div>
-                    <div>
-                      <p className="text-white text-[13px] font-black uppercase tracking-[0.2em]">YouTube</p>
-                      <p className="text-white/70 text-[11px] font-semibold">Videolara git</p>
-                    </div>
+
+                    <p className="text-white text-[20px] font-black tracking-tight">
+                      TİKA Tanıtım Videosu
+                    </p>
+                    <p className="mt-1 text-white/70 text-[11px] font-bold tracking-[0.25em] uppercase">
+                      Ürünü hareket halinde izleyin
+                    </p>
+                  </motion.div>
+                </div>
+              </motion.div>
+
+              <a
+                href="https://youtube.com/@temrenmakina"
+                target="_blank"
+                rel="noreferrer"
+                className="group flex items-center justify-between gap-4 rounded-[22px] bg-gradient-to-r from-red-500 to-red-600 px-5 py-4 text-white shadow-lg shadow-red-500/20 transition hover:translate-y-[-1px] hover:shadow-xl"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="grid h-11 w-11 place-items-center rounded-full bg-white/15 ring-1 ring-white/20">
+                    <Play className="fill-white text-white ml-0.5" size={20} />
+                  </div>
+                  <div>
+                    <p className="text-[12px] font-black uppercase tracking-[0.2em]">
+                      Daha Fazla Video
+                    </p>
+                    <p className="text-[11px] text-white/80">
+                      YouTube kanalımızı ziyaret edin
+                    </p>
                   </div>
                 </div>
 
-                <div className="absolute left-6 bottom-6">
-                  <p className="text-white text-[20px] font-black tracking-tight">Videolar</p>
-                  <p className="mt-1 text-white/70 text-[11px] font-bold tracking-[0.25em] uppercase">
-                    @temrenmakina
-                  </p>
-                </div>
-              </div>
-            </a>
+                <ChevronRight
+                  size={18}
+                  className="shrink-0 opacity-80 transition group-hover:translate-x-1"
+                />
+              </a>
+            </div>
           </div>
         </section>
       </div>
 
-      {/* BOTTOM DOCK */}
       <nav className="fixed bottom-5 left-1/2 z-[100] w-[92%] max-w-md -translate-x-1/2">
         <div className="rounded-full bg-white/75 backdrop-blur-xl ring-1 ring-black/5 shadow-[0_20px_60px_-30px_rgba(0,0,0,0.35)] px-2 py-2">
           <div className="grid grid-cols-3 gap-2">
@@ -367,6 +394,7 @@ export default function QRWelcomeDetail({ params }: { params: { lang: string } }
             <a
               href="https://maps.google.com"
               target="_blank"
+              rel="noreferrer"
               className="group flex flex-col items-center justify-center rounded-full py-3 transition hover:bg-black/5 active:scale-[0.99]"
             >
               <MapPin size={18} className="text-slate-900 group-hover:text-orange-600 transition" />
@@ -388,7 +416,6 @@ export default function QRWelcomeDetail({ params }: { params: { lang: string } }
         </div>
       </nav>
 
-      {/* TOAST */}
       <AnimatePresence>
         {toast && (
           <motion.div

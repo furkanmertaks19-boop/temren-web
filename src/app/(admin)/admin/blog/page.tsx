@@ -6,9 +6,8 @@ import {
     Upload, Edit3, X, Calendar, ChevronDown, CheckCircle, Mail, ExternalLink
 } from 'lucide-react';
 import { motion, AnimatePresence } from "framer-motion";
-
-// React 19 uyumlu yeni paketi dinamik yüklüyoruz
 import 'react-quill-new/dist/quill.snow.css';
+// React 19 uyumlu yeni paketi dinamik yüklüyoruz 
 const ReactQuill = dynamic(() => import('react-quill-new'), {
     ssr: false,
     loading: () => <div className="h-[400px] bg-slate-50 animate-pulse rounded-[2.5rem]" />
@@ -18,16 +17,34 @@ const BLOG_CATEGORIES = ["Blog", "Fuar", "Ödül", "Müşteri", "Duyuru", "Tekni
 
 const quillModules = {
     toolbar: [
-        [{ 'header': [1, 2, 3, false] }],
-        ['bold', 'italic', 'underline', 'strike'],
-        [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-        ['link', 'clean']
+        [{ header: [1, 2, 3, 4, false] }],
+        [{ size: ["small", false, "large", "huge"] }],
+        ["bold", "italic", "underline", "strike"],
+        [{ color: [] }, { background: [] }],
+        [{ align: [] }],
+        [{ list: "ordered" }, { list: "bullet" }],
+        ["blockquote", "code-block"],
+        ["link", "image", "video"],
+        ["clean"],
     ],
 };
-
 const quillFormats = [
-    'header', 'bold', 'italic', 'underline', 'strike',
-    'list', 'bullet', 'link'
+    "header",
+    "size",
+    "bold",
+    "italic",
+    "underline",
+    "strike",
+    "color",
+    "background",
+    "align",
+    "list",
+    "bullet",
+    "blockquote",
+    "code-block",
+    "link",
+    "image",
+    "video",
 ];
 
 export default function AdminBlogPage() {
@@ -292,27 +309,104 @@ export default function AdminBlogPage() {
             </AnimatePresence>
 
             <style jsx global>{`
-                .quill-editor-container .ql-toolbar {
-                    border-top-left-radius: 1.5rem;
-                    border-top-right-radius: 1.5rem;
-                    border: 1px solid #e2e8f0;
-                    background: #f8fafc;
-                    padding: 12px;
-                }
-                .quill-editor-container .ql-container {
-                    border-bottom-left-radius: 1.5rem;
-                    border-bottom-right-radius: 1.5rem;
-                    border: 1px solid #e2e8f0;
-                    height: 400px; /* Sabit yükseklik */
-                    overflow-y: hidden; /* Dış kutu taşmasın */
-                    font-size: 15px;
-                }
-                /* İçerik yazma alanının scroll olması için */
-                .quill-editor-container .ql-editor {
-                    max-height: 100%;
-                    overflow-y: auto;
-                }
-            `}</style>
+    .quill-editor-container {
+        background: white;
+        border-radius: 2rem;
+        box-shadow: 0 25px 80px rgba(15, 23, 42, 0.08);
+        overflow: hidden;
+        border: 1px solid #e2e8f0;
+    }
+
+    .quill-editor-container .ql-toolbar {
+        border: none;
+        border-bottom: 1px solid #e2e8f0;
+        background: #f8fafc;
+        padding: 16px;
+        position: sticky;
+        top: 0;
+        z-index: 5;
+    }
+
+    .quill-editor-container .ql-container {
+        border: none;
+        min-height: 560px;
+        font-size: 18px;
+        font-family: inherit;
+    }
+
+    .quill-editor-container .ql-editor {
+        min-height: 560px;
+        padding: 45px;
+        line-height: 1.9;
+        color: #1e293b;
+        max-width: 850px;
+        margin: 0 auto;
+    }
+
+    .quill-editor-container .ql-editor h1 {
+        font-size: 42px;
+        line-height: 1.15;
+        font-weight: 900;
+        color: #0f172a;
+        margin: 32px 0 18px;
+    }
+
+    .quill-editor-container .ql-editor h2 {
+        font-size: 32px;
+        line-height: 1.25;
+        font-weight: 900;
+        color: #0f172a;
+        margin: 30px 0 16px;
+    }
+
+    .quill-editor-container .ql-editor h3 {
+        font-size: 24px;
+        font-weight: 800;
+        color: #ff4d00;
+        margin: 24px 0 12px;
+    }
+
+    .quill-editor-container .ql-editor p {
+        margin-bottom: 18px;
+    }
+
+    .quill-editor-container .ql-editor img {
+        width: 100%;
+        max-height: 560px;
+        object-fit: cover;
+        border-radius: 32px;
+        margin: 32px 0;
+        box-shadow: 0 25px 70px rgba(15, 23, 42, 0.18);
+    }
+
+    .quill-editor-container .ql-editor blockquote {
+        border-left: 6px solid #ff4d00;
+        background: #fff7ed;
+        padding: 24px 28px;
+        border-radius: 0 24px 24px 0;
+        font-size: 22px;
+        font-weight: 800;
+        color: #0f172a;
+        margin: 32px 0;
+    }
+
+    .quill-editor-container .ql-editor iframe {
+        width: 100%;
+        min-height: 420px;
+        border-radius: 30px;
+        margin: 32px 0;
+    }
+
+    .quill-editor-container .ql-editor ul,
+    .quill-editor-container .ql-editor ol {
+        padding-left: 28px;
+        margin: 20px 0;
+    }
+
+    .quill-editor-container .ql-editor li {
+        margin-bottom: 10px;
+    }
+`}</style>
         </div>
     );
 }

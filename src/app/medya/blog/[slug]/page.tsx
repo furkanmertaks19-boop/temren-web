@@ -1,233 +1,609 @@
 "use client";
-import React, { use, useState, useEffect } from "react";
+
+import React, { use, useEffect, useState } from "react";
 import PageHeader from "@/components/layout/PageHeader";
 import Footer from "@/components/layout/Footer";
 import Image from "next/image";
 import Link from "next/link";
-import { 
-  Facebook, Twitter, Linkedin, Instagram, Share2, 
-  Clock, Calendar, ArrowRight, Loader2, CheckCircle2, X, Plus 
+import {
+  Facebook,
+  Linkedin,
+  Instagram,
+  Share2,
+  Clock,
+  Calendar,
+  ArrowRight,
+  Loader2,
+  CheckCircle2,
+  X,
+  Plus,
+  Mail,
 } from "lucide-react";
 import { notFound } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function BlogDetailPage({ params }: { params: Promise<{ slug: string }> }) {
-    const resolvedParams = use(params);
-    const { slug } = resolvedParams;
+export default function BlogDetailPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const resolvedParams = use(params);
+  const { slug } = resolvedParams;
 
-    const [post, setPost] = useState<any>(null);
-    const [otherPosts, setOtherPosts] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [selectedImg, setSelectedImg] = useState<string | null>(null); // Galeri için modal state
+  const [post, setPost] = useState<any>(null);
+  const [otherPosts, setOtherPosts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedImg, setSelectedImg] = useState<string | null>(null);
 
-    const [email, setEmail] = useState("");
-    const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
-    const [message, setMessage] = useState("");
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">(
+    "idle"
+  );
+  const [message, setMessage] = useState("");
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const res = await fetch(`/api/blog`);
-                const allPosts = await res.json();
-                const currentPost = allPosts.find((p: any) => p.slug === slug);
-                if (!currentPost) return;
-                setPost(currentPost);
-                setOtherPosts(allPosts.filter((p: any) => p.slug !== slug).slice(0, 5));
-            } catch (error) {
-                console.error("Hata:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchData();
-    }, [slug]);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await fetch(`/api/blog`, { cache: "no-store" });
+        const allPosts = await res.json();
 
-    const handleSubscribe = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!email || !email.includes("@")) {
-            setStatus("error");
-            setMessage("Geçerli bir e-posta giriniz.");
-            return;
+        const currentPost = allPosts.find((p: any) => p.slug === slug);
+
+        if (!currentPost) {
+          setPost(null);
+          return;
         }
-        setStatus("loading");
-        try {
-            const res = await fetch("/api/newsletter", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email })
-            });
-            const data = await res.json();
-            if (res.ok) {
-                setStatus("success");
-                setEmail("");
-            } else {
-                setStatus("error");
-                setMessage(data.error || "Bir hata oluştu.");
-            }
-        } catch (error) {
-            setStatus("error");
-            setMessage("Sunucu hatası oluştu.");
-        }
+
+        setPost(currentPost);
+        setOtherPosts(
+          allPosts.filter((p: any) => p.slug !== slug).slice(0, 5)
+        );
+      } catch (error) {
+        console.error("Blog detay hatası:", error);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    if (loading) return <div className="min-h-screen flex items-center justify-center italic font-black uppercase tracking-tighter text-slate-300 text-3xl animate-pulse">Yükleniyor...</div>;
-    if (!post) return notFound();
+    fetchData();
+  }, [slug]);
 
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!email || !email.includes("@")) {
+      setStatus("error");
+      setMessage("Geçerli bir e-posta giriniz.");
+      return;
+    }
+
+    setStatus("loading");
+
+    try {
+      const res = await fetch("/api/newsletter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setStatus("success");
+        setEmail("");
+      } else {
+        setStatus("error");
+        setMessage(data.error || "Bir hata oluştu.");
+      }
+    } catch (error) {
+      setStatus("error");
+      setMessage("Sunucu hatası oluştu.");
+    }
+  };
+
+  const readingTime = post?.content
+    ? Math.max(
+        1,
+        Math.ceil(
+          post.content.replace(/<[^>]+>/g, "").trim().split(/\s+/).length / 180
+        )
+      )
+    : 3;
+
+  if (loading) {
     return (
-        <div className="bg-white min-h-screen font-sans overflow-x-hidden">
-            <PageHeader title={post.category} subtitle={post.title} />
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="animate-spin text-[#FF4D00]" size={42} />
+          <p className="text-xs font-black uppercase tracking-[0.3em] text-slate-400">
+            Haber yükleniyor
+          </p>
+        </div>
+      </div>
+    );
+  }
 
-            <main className="py-20 container mx-auto px-6 lg:px-12">
-                <div className="flex flex-col lg:flex-row gap-16 relative">
+  if (!post) return notFound();
 
-                    {/* 1. SOL SÜTUN: SOSYAL MEDYA */}
-                    <aside className="hidden lg:flex flex-col gap-6 sticky top-32 h-fit">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-300 mb-4 [writing-mode:vertical-lr] rotate-180">BİZİ TAKİP EDİN</span>
-                        <a href="https://www.facebook.com/temrenmakina" target="_blank" className="w-11 h-11 rounded-full border border-slate-100 flex items-center justify-center text-slate-400 hover:bg-[#1877F2] hover:text-white transition-all shadow-sm"><Facebook size={16} /></a>
-                        <a href="https://www.linkedin.com/company/temrenmakina/" target="_blank" className="w-11 h-11 rounded-full border border-slate-100 flex items-center justify-center text-slate-400 hover:bg-[#0A66C2] hover:text-white transition-all shadow-sm"><Linkedin size={16} /></a>
-                        <a href="https://www.instagram.com/temrenmakina/" target="_blank" className="w-11 h-11 rounded-full border border-slate-100 flex items-center justify-center text-slate-400 hover:bg-[#E4405F] hover:text-white transition-all shadow-sm"><Instagram size={16} /></a>
-                        <a href="https://www.youtube.com/channel/UCxAZfJE_4m6iMZ1QfzwgjjQ" target="_blank" className="w-11 h-11 rounded-full border border-slate-100 flex items-center justify-center text-slate-400 hover:bg-[#FF0000] hover:text-white transition-all shadow-sm">
-                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" /></svg>
-                        </a>
-                    </aside>
+  return (
+    <div className="bg-[#fafafa] min-h-screen font-sans overflow-x-hidden text-slate-900">
+      <PageHeader title={post.category} subtitle={post.title} />
 
-                    {/* 2. ORTA: İÇERİK */}
-                    <div className="flex-grow max-w-4xl overflow-hidden">
-                        <div className="relative h-[450px] md:h-[550px] w-full rounded-[40px] md:rounded-[80px] overflow-hidden mb-12 shadow-2xl group border border-slate-50">
-                            <Image src={post.image} alt={post.title} fill className="object-cover group-hover:scale-105 transition-transform duration-1000" priority />
-                            <div className="absolute top-8 left-8 bg-white/90 backdrop-blur px-6 py-2 rounded-full font-black text-xs uppercase italic tracking-widest text-slate-900 shadow-xl">{post.category}</div>
-                        </div>
+      <main className="relative">
+        <section className="container mx-auto px-5 lg:px-12 pt-16 pb-10">
+          <div className="grid grid-cols-1 xl:grid-cols-[90px_minmax(0,900px)_340px] gap-10 xl:gap-14 items-start">
+            <aside className="hidden xl:flex flex-col items-center gap-5 sticky top-28">
+              <span className="text-[10px] font-black uppercase tracking-[0.28em] text-slate-300 [writing-mode:vertical-lr] rotate-180 mb-3">
+                Paylaş
+              </span>
 
-                        <div className="flex flex-wrap items-center gap-8 mb-10 text-[11px] font-black uppercase italic tracking-widest text-slate-400 border-b pb-8 border-slate-50">
-                            <div className="flex items-center gap-2"><Calendar size={14} className="text-[#FF4D00]" /> {post.date}</div>
-                            <div className="flex items-center gap-2"><Clock size={14} className="text-[#FF4D00]" /> 3 Dakika Okuma</div>
-                            <div className="flex items-center gap-2"><Share2 size={14} className="text-[#FF4D00]" /> Temren Makina Haber</div>
-                        </div>
+              <a
+                href="https://www.facebook.com/temrenmakina"
+                target="_blank"
+                className="social-btn hover:bg-[#1877F2] hover:text-white"
+              >
+                <Facebook size={16} />
+              </a>
 
-                        {/* TAŞMA SORUNU ÇÖZÜLEN İÇERİK ALANI */}
-                        <div 
-                            className="prose prose-xl prose-slate max-w-none text-slate-700 font-medium leading-[1.8] italic mb-20 
-                            prose-h4:text-3xl prose-h4:font-black prose-h4:uppercase prose-h4:tracking-tighter prose-h4:text-slate-900 prose-h4:not-italic 
-                            prose-img:rounded-[40px] break-words overflow-wrap-anywhere"
-                            dangerouslySetInnerHTML={{ __html: post.content }} 
-                        />
+              <a
+                href="https://www.linkedin.com/company/temrenmakina/"
+                target="_blank"
+                className="social-btn hover:bg-[#0A66C2] hover:text-white"
+              >
+                <Linkedin size={16} />
+              </a>
 
-                        {/* Galeri Bölümü */}
-                        {post.gallery && post.gallery.length > 0 && (
-                            <div className="mt-24 pt-16 border-t border-slate-100">
-                                <h3 className="text-2xl font-black tracking-tighter uppercase italic text-slate-900 leading-none mb-10">ETKİNLİK <span className="text-[#FF4D00]">GALERİSİ.</span></h3>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                                    {post.gallery.map((img: string, idx: number) => (
-                                        <motion.div 
-                                            key={idx} 
-                                            whileHover={{ scale: 0.95 }}
-                                            onClick={() => setSelectedImg(img)}
-                                            className="relative aspect-square rounded-2xl overflow-hidden border border-slate-100 group shadow-sm cursor-pointer bg-slate-50"
-                                        >
-                                            <Image src={img} alt="Galeri" fill className="object-cover transition-transform duration-500" sizes="200px" />
-                                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                                                <Plus className="text-white opacity-0 group-hover:opacity-100 transition-opacity" size={24} />
-                                            </div>
-                                        </motion.div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
+              <a
+                href="https://www.instagram.com/temrenmakina/"
+                target="_blank"
+                className="social-btn hover:bg-[#E4405F] hover:text-white"
+              >
+                <Instagram size={16} />
+              </a>
+            </aside>
+
+            <article className="min-w-0">
+              <div className="bg-white rounded-[34px] md:rounded-[56px] p-4 md:p-6 shadow-[0_30px_100px_rgba(15,23,42,0.08)] border border-slate-100">
+                <div className="relative h-[320px] md:h-[540px] w-full rounded-[28px] md:rounded-[46px] overflow-hidden bg-slate-100 group">
+                  <Image
+                    src={post.image}
+                    alt={post.title}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-1000"
+                    priority
+                  />
+
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
+
+                  <div className="absolute left-5 md:left-8 bottom-5 md:bottom-8 right-5 md:right-8">
+                    <div className="inline-flex items-center gap-2 bg-white/90 backdrop-blur px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.18em] text-slate-900 mb-5 shadow-xl">
+                      <span className="w-2 h-2 rounded-full bg-[#FF4D00]" />
+                      {post.category}
                     </div>
 
-                    {/* 3. SAĞ SÜTUN: SIDEBAR */}
-                    <aside className="lg:w-80 flex flex-col gap-12">
-                        <div className="sticky top-32">
-                            <h4 className="text-sm font-black uppercase italic tracking-[0.2em] text-slate-900 mb-8 flex items-center gap-3">
-                                <div className="w-8 h-1 bg-[#FF4D00]"></div> SON PAYLAŞIMLAR
-                            </h4>
-                            <div className="flex flex-col gap-10 mb-16">
-                                {otherPosts.map((other) => (
-                                    <Link href={`/medya/blog/${other.slug}`} key={other._id} className="group">
-                                        <div className="relative h-44 rounded-[35px] overflow-hidden mb-4 border border-slate-50 shadow-sm transition-all group-hover:shadow-lg">
-                                            <Image src={other.image} alt={other.title} fill className="object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-700" />
-                                        </div>
-                                        <div className="px-2">
-                                            <span className="text-[9px] font-black text-[#FF4D00] uppercase italic tracking-widest">{other.category}</span>
-                                            <h5 className="text-[13px] font-black uppercase italic tracking-tighter text-slate-800 leading-tight group-hover:text-[#FF4D00] transition-colors line-clamp-2 mt-2">{other.title}</h5>
-                                        </div>
-                                    </Link>
-                                ))}
-                            </div>
-
-                            <div className="bg-slate-900 rounded-[50px] p-10 text-white relative overflow-hidden group shadow-2xl">
-                                <div className="absolute -right-4 -top-4 w-24 h-24 bg-[#FF4D00] rounded-full blur-3xl opacity-20 transition-opacity"></div>
-                                <h4 className="text-xl font-black italic uppercase tracking-tighter mb-4">TAKİPTE <span className="text-[#FF4D00]">KALIN.</span></h4>
-                                <p className="text-[10px] font-medium text-slate-400 italic mb-8 leading-relaxed uppercase tracking-widest">En yeni gelişmelerden ilk siz haberdar olun.</p>
-
-                                {status === "success" ? (
-                                    <div className="bg-emerald-500/20 border border-emerald-500/50 p-6 rounded-[25px] text-center">
-                                        <CheckCircle2 className="text-emerald-500 mx-auto mb-3" size={32} />
-                                        <p className="text-[10px] font-black uppercase italic text-emerald-500">Kayıt Başarılı!</p>
-                                    </div>
-                                ) : (
-                                    <form onSubmit={handleSubscribe}>
-                                        <input
-                                            type="email"
-                                            required
-                                            value={email}
-                                            onChange={(e) => setEmail(e.target.value)}
-                                            placeholder="E-POSTA ADRESİNİZ"
-                                            className="w-full bg-slate-800 border-none rounded-2xl p-4 text-[10px] font-bold text-white mb-4 outline-none focus:ring-1 ring-[#FF4D00] transition-all"
-                                        />
-                                        <button
-                                            type="submit"
-                                            disabled={status === "loading"}
-                                            className="w-full bg-[#FF4D00] text-white font-black text-[10px] py-4 rounded-2xl uppercase tracking-[0.2em] italic hover:bg-white hover:text-slate-900 transition-all flex items-center justify-center gap-2"
-                                        >
-                                            {status === "loading" ? <Loader2 className="animate-spin" size={14} /> : "KAYIT OL"} <ArrowRight size={14} />
-                                        </button>
-                                        {status === "error" && <p className="text-red-400 text-[9px] mt-3 font-bold uppercase italic text-center">{message}</p>}
-                                    </form>
-                                )}
-                            </div>
-                        </div>
-                    </aside>
+                    <h1 className="text-white text-3xl md:text-5xl lg:text-6xl font-black tracking-[-0.06em] leading-[0.98] max-w-4xl drop-shadow-xl">
+                      {post.title}
+                    </h1>
+                  </div>
                 </div>
-            </main>
+              </div>
 
-            {/* FOTOĞRAF BÜYÜTME MODALI (LIGHTBOX) */}
-            <AnimatePresence>
-                {selectedImg && (
-                    <motion.div 
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        onClick={() => setSelectedImg(null)}
-                        className="fixed inset-0 bg-slate-950/95 z-[999] flex items-center justify-center p-4 md:p-10 cursor-zoom-out"
-                    >
-                        <motion.button 
-                            className="absolute top-8 right-8 text-white hover:text-[#FF4D00] transition-colors"
-                            onClick={() => setSelectedImg(null)}
-                        >
-                            <X size={40} />
-                        </motion.button>
-                        
-                        <motion.div 
-                            initial={{ scale: 0.8, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.8, opacity: 0 }}
-                            className="relative w-full h-full max-w-6xl max-h-[80vh]"
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            <Image 
-                                src={selectedImg} 
-                                alt="Büyük Görsel" 
-                                fill 
-                                className="object-contain rounded-3xl"
-                                quality={100}
-                            />
-                        </motion.div>
-                    </motion.div>
+              <div className="mt-8 bg-white rounded-[28px] border border-slate-100 shadow-sm p-5 md:p-6">
+                <div className="flex flex-wrap items-center gap-4 md:gap-7 text-[10px] md:text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">
+                  <div className="flex items-center gap-2">
+                    <Calendar size={15} className="text-[#FF4D00]" />
+                    {post.date}
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Clock size={15} className="text-[#FF4D00]" />
+                    {readingTime} Dakika Okuma
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Share2 size={15} className="text-[#FF4D00]" />
+                    Temren Makina Haber
+                  </div>
+                </div>
+
+                {post.shortDescription && (
+                  <p className="mt-6 text-xl md:text-2xl leading-relaxed font-bold text-slate-700 tracking-[-0.03em] border-l-4 border-[#FF4D00] pl-6">
+                    {post.shortDescription}
+                  </p>
                 )}
-            </AnimatePresence>
+              </div>
 
-            <Footer />
-        </div>
-    );
+              <div className="mt-10 bg-white rounded-[30px] md:rounded-[46px] border border-slate-100 shadow-[0_30px_90px_rgba(15,23,42,0.06)] px-5 py-8 md:px-12 md:py-14">
+                <div
+                  className="news-content"
+                  dangerouslySetInnerHTML={{ __html: post.content }}
+                />
+              </div>
+
+              {post.gallery && post.gallery.length > 0 && (
+                <section className="mt-16 bg-white rounded-[34px] md:rounded-[50px] border border-slate-100 shadow-sm p-5 md:p-8">
+                  <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
+                    <div>
+                      <span className="text-[10px] font-black uppercase tracking-[0.25em] text-[#FF4D00]">
+                        Fotoğraf Arşivi
+                      </span>
+                      <h2 className="text-3xl md:text-5xl font-black tracking-[-0.06em] uppercase mt-2">
+                        Etkinlik Galerisi
+                      </h2>
+                    </div>
+
+                    <p className="text-sm text-slate-400 font-bold max-w-sm">
+                      Fuardan öne çıkan kareleri görüntülemek için fotoğraflara
+                      tıklayın.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {post.gallery.map((img: string, idx: number) => (
+                      <motion.div
+                        key={idx}
+                        whileHover={{ y: -6, scale: 0.98 }}
+                        onClick={() => setSelectedImg(img)}
+                        className={`relative overflow-hidden rounded-[28px] bg-slate-100 cursor-pointer group shadow-sm border border-slate-100 ${
+                          idx === 0 ? "col-span-2 row-span-2 aspect-square" : "aspect-square"
+                        }`}
+                      >
+                        <Image
+                          src={img}
+                          alt="Etkinlik Galerisi"
+                          fill
+                          className="object-cover group-hover:scale-110 transition-transform duration-700"
+                          sizes="400px"
+                        />
+
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors flex items-center justify-center">
+                          <div className="w-12 h-12 rounded-full bg-white text-slate-900 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-xl">
+                            <Plus size={22} />
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </section>
+              )}
+            </article>
+
+            <aside className="xl:w-[340px]">
+              <div className="sticky top-28 space-y-8">
+                <div className="bg-white rounded-[34px] border border-slate-100 shadow-sm p-7">
+                  <h3 className="text-xs font-black uppercase tracking-[0.25em] text-slate-900 flex items-center gap-3 mb-7">
+                    <span className="w-9 h-1.5 rounded-full bg-[#FF4D00]" />
+                    Son Haberler
+                  </h3>
+
+                  <div className="space-y-6">
+                    {otherPosts.map((other) => (
+                      <Link
+                        href={`/medya/blog/${other.slug}`}
+                        key={other._id}
+                        className="group grid grid-cols-[96px_1fr] gap-4 items-center"
+                      >
+                        <div className="relative h-24 rounded-[24px] overflow-hidden bg-slate-100">
+                          <Image
+                            src={other.image}
+                            alt={other.title}
+                            fill
+                            className="object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-700"
+                          />
+                        </div>
+
+                        <div className="min-w-0">
+                          <span className="text-[9px] font-black text-[#FF4D00] uppercase tracking-[0.18em]">
+                            {other.category}
+                          </span>
+
+                          <h4 className="mt-2 text-sm font-black leading-tight tracking-[-0.04em] text-slate-800 group-hover:text-[#FF4D00] transition-colors line-clamp-3">
+                            {other.title}
+                          </h4>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="bg-slate-950 rounded-[40px] p-8 text-white relative overflow-hidden shadow-2xl">
+                  <div className="absolute -right-8 -top-8 w-32 h-32 bg-[#FF4D00] rounded-full blur-3xl opacity-25" />
+
+                  <div className="relative">
+                    <div className="w-13 h-13 rounded-2xl bg-white/10 flex items-center justify-center mb-6">
+                      <Mail className="text-[#FF4D00]" size={22} />
+                    </div>
+
+                    <h3 className="text-2xl font-black tracking-[-0.06em] uppercase leading-none mb-4">
+                      Takipte Kalın
+                    </h3>
+
+                    <p className="text-sm text-slate-400 leading-relaxed mb-7">
+                      Temren Makina’daki yeni gelişmelerden ve etkinliklerden
+                      haberdar olun.
+                    </p>
+
+                    {status === "success" ? (
+                      <div className="bg-emerald-500/15 border border-emerald-500/40 p-6 rounded-[26px] text-center">
+                        <CheckCircle2
+                          className="text-emerald-400 mx-auto mb-3"
+                          size={34}
+                        />
+                        <p className="text-[11px] font-black uppercase tracking-[0.18em] text-emerald-400">
+                          Kayıt Başarılı
+                        </p>
+                      </div>
+                    ) : (
+                      <form onSubmit={handleSubscribe}>
+                        <input
+                          type="email"
+                          required
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          placeholder="E-posta adresiniz"
+                          className="w-full bg-white/10 border border-white/10 rounded-2xl p-4 text-sm font-bold text-white mb-4 outline-none focus:ring-2 ring-[#FF4D00] transition-all placeholder:text-slate-500"
+                        />
+
+                        <button
+                          type="submit"
+                          disabled={status === "loading"}
+                          className="w-full bg-[#FF4D00] text-white font-black text-[11px] py-4 rounded-2xl uppercase tracking-[0.18em] hover:bg-white hover:text-slate-950 transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+                        >
+                          {status === "loading" ? (
+                            <Loader2 className="animate-spin" size={15} />
+                          ) : (
+                            "Kayıt Ol"
+                          )}
+                          <ArrowRight size={15} />
+                        </button>
+
+                        {status === "error" && (
+                          <p className="text-red-400 text-[10px] mt-3 font-bold uppercase text-center">
+                            {message}
+                          </p>
+                        )}
+                      </form>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </aside>
+          </div>
+        </section>
+      </main>
+
+      <AnimatePresence>
+        {selectedImg && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSelectedImg(null)}
+            className="fixed inset-0 bg-slate-950/95 z-[999] flex items-center justify-center p-4 md:p-10 cursor-zoom-out"
+          >
+            <button
+              className="absolute top-6 right-6 md:top-8 md:right-8 text-white hover:text-[#FF4D00] transition-colors z-10"
+              onClick={() => setSelectedImg(null)}
+            >
+              <X size={40} />
+            </button>
+
+            <motion.div
+              initial={{ scale: 0.88, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.88, opacity: 0 }}
+              className="relative w-full h-full max-w-6xl max-h-[82vh]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Image
+                src={selectedImg}
+                alt="Büyük Görsel"
+                fill
+                className="object-contain rounded-3xl"
+                quality={100}
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <style jsx global>{`
+        .social-btn {
+          width: 46px;
+          height: 46px;
+          border-radius: 999px;
+          border: 1px solid #e2e8f0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #94a3b8;
+          background: #ffffff;
+          box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+          transition: all 0.25s ease;
+        }
+
+        .news-content {
+          max-width: 820px;
+          margin: 0 auto;
+          color: #334155;
+          font-size: 19px;
+          line-height: 1.95;
+          font-weight: 500;
+          overflow-wrap: anywhere;
+        }
+
+        .news-content h1 {
+          font-size: clamp(36px, 5vw, 58px);
+          line-height: 1.05;
+          font-weight: 950;
+          color: #0f172a;
+          letter-spacing: -0.06em;
+          margin: 52px 0 22px;
+        }
+
+        .news-content h2 {
+          font-size: clamp(30px, 4vw, 44px);
+          line-height: 1.15;
+          font-weight: 950;
+          color: #0f172a;
+          letter-spacing: -0.05em;
+          margin: 52px 0 20px;
+          position: relative;
+        }
+
+        .news-content h2::before {
+          content: "";
+          display: block;
+          width: 64px;
+          height: 7px;
+          border-radius: 999px;
+          background: #ff4d00;
+          margin-bottom: 18px;
+        }
+
+        .news-content h3 {
+          font-size: 28px;
+          line-height: 1.25;
+          font-weight: 900;
+          color: #ff4d00;
+          letter-spacing: -0.04em;
+          margin: 40px 0 14px;
+        }
+
+        .news-content h4 {
+          font-size: 23px;
+          line-height: 1.3;
+          font-weight: 900;
+          color: #0f172a;
+          margin: 32px 0 12px;
+        }
+
+        .news-content p {
+          margin: 0 0 25px;
+        }
+
+        .news-content strong {
+          color: #0f172a;
+          font-weight: 900;
+        }
+
+        .news-content em {
+          color: #475569;
+        }
+
+        .news-content a {
+          color: #ff4d00;
+          font-weight: 850;
+          text-decoration: underline;
+          text-underline-offset: 5px;
+        }
+
+        .news-content img {
+          display: block;
+          width: 100%;
+          height: auto;
+          max-height: 640px;
+          object-fit: cover;
+          border-radius: 36px;
+          margin: 46px auto;
+          box-shadow: 0 32px 90px rgba(15, 23, 42, 0.16);
+        }
+
+        .news-content blockquote {
+          margin: 48px 0;
+          padding: 34px 38px;
+          border-left: 8px solid #ff4d00;
+          background: linear-gradient(135deg, #fff7ed 0%, #ffffff 100%);
+          border-radius: 0 34px 34px 0;
+          color: #0f172a;
+          font-size: 24px;
+          line-height: 1.55;
+          font-weight: 850;
+          box-shadow: 0 20px 60px rgba(15, 23, 42, 0.08);
+        }
+
+        .news-content ul,
+        .news-content ol {
+          margin: 28px 0;
+          padding-left: 30px;
+        }
+
+        .news-content li {
+          margin-bottom: 12px;
+          padding-left: 4px;
+        }
+
+        .news-content iframe {
+          width: 100%;
+          min-height: 460px;
+          border-radius: 34px;
+          margin: 46px 0;
+          box-shadow: 0 30px 90px rgba(15, 23, 42, 0.14);
+        }
+
+        .news-content .ql-align-center {
+          text-align: center;
+        }
+
+        .news-content .ql-align-right {
+          text-align: right;
+        }
+
+        .news-content .ql-align-justify {
+          text-align: justify;
+        }
+
+        .news-content .ql-size-small {
+          font-size: 0.85em;
+        }
+
+        .news-content .ql-size-large {
+          font-size: 1.35em;
+        }
+
+        .news-content .ql-size-huge {
+          font-size: 1.8em;
+          line-height: 1.35;
+          font-weight: 850;
+          color: #0f172a;
+        }
+
+        @media (max-width: 768px) {
+          .news-content {
+            font-size: 17px;
+            line-height: 1.8;
+          }
+
+          .news-content h1 {
+            font-size: 34px;
+          }
+
+          .news-content h2 {
+            font-size: 30px;
+          }
+
+          .news-content h3 {
+            font-size: 24px;
+          }
+
+          .news-content img,
+          .news-content iframe {
+            border-radius: 24px;
+          }
+
+          .news-content iframe {
+            min-height: 250px;
+          }
+
+          .news-content blockquote {
+            padding: 26px;
+            font-size: 20px;
+            border-radius: 0 26px 26px 0;
+          }
+        }
+      `}</style>
+
+      <Footer />
+    </div>
+  );
 }

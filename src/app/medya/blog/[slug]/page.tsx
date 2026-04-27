@@ -36,9 +36,7 @@ export default function BlogDetailPage({
   const [selectedImg, setSelectedImg] = useState<string | null>(null);
 
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">(
-    "idle"
-  );
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
 
   useEffect(() => {
@@ -55,9 +53,7 @@ export default function BlogDetailPage({
         }
 
         setPost(currentPost);
-        setOtherPosts(
-          allPosts.filter((p: any) => p.slug !== slug).slice(0, 5)
-        );
+        setOtherPosts(allPosts.filter((p: any) => p.slug !== slug).slice(0, 5));
       } catch (error) {
         console.error("Blog detay hatası:", error);
       } finally {
@@ -130,41 +126,32 @@ export default function BlogDetailPage({
       <PageHeader title={post.category} subtitle={post.title} />
 
       <main className="relative">
-        <section className="container mx-auto px-5 lg:px-12 pt-16 pb-10">
-          <div className="grid grid-cols-1 xl:grid-cols-[90px_minmax(0,900px)_340px] gap-10 xl:gap-14 items-start">
+        <section className="container mx-auto px-5 lg:px-10 pt-16 pb-10">
+          <div className="grid grid-cols-1 xl:grid-cols-[70px_minmax(0,820px)_300px] gap-8 xl:gap-10 items-start justify-center">
+            
+            {/* SOL PAYLAŞIM ÇUBUĞU */}
             <aside className="hidden xl:flex flex-col items-center gap-5 sticky top-28">
               <span className="text-[10px] font-black uppercase tracking-[0.28em] text-slate-300 [writing-mode:vertical-lr] rotate-180 mb-3">
                 Paylaş
               </span>
 
-              <a
-                href="https://www.facebook.com/temrenmakina"
-                target="_blank"
-                className="social-btn hover:bg-[#1877F2] hover:text-white"
-              >
+              <a href="https://www.facebook.com/temrenmakina" target="_blank" className="social-btn hover:bg-[#1877F2] hover:text-white">
                 <Facebook size={16} />
               </a>
 
-              <a
-                href="https://www.linkedin.com/company/temrenmakina/"
-                target="_blank"
-                className="social-btn hover:bg-[#0A66C2] hover:text-white"
-              >
+              <a href="https://www.linkedin.com/company/temrenmakina/" target="_blank" className="social-btn hover:bg-[#0A66C2] hover:text-white">
                 <Linkedin size={16} />
               </a>
 
-              <a
-                href="https://www.instagram.com/temrenmakina/"
-                target="_blank"
-                className="social-btn hover:bg-[#E4405F] hover:text-white"
-              >
+              <a href="https://www.instagram.com/temrenmakina/" target="_blank" className="social-btn hover:bg-[#E4405F] hover:text-white">
                 <Instagram size={16} />
               </a>
             </aside>
 
-            <article className="min-w-0">
-              <div className="bg-white rounded-[34px] md:rounded-[56px] p-4 md:p-6 shadow-[0_30px_100px_rgba(15,23,42,0.08)] border border-slate-100">
-                <div className="relative h-[320px] md:h-[540px] w-full rounded-[28px] md:rounded-[46px] overflow-hidden bg-slate-100 group">
+            <article className="min-w-0 w-full">
+              {/* ANA GÖRSEL KARTI */}
+              <div className="bg-white rounded-[34px] md:rounded-[50px] p-4 md:p-6 shadow-[0_30px_100px_rgba(15,23,42,0.08)] border border-slate-100">
+                <div className="relative h-[320px] md:h-[520px] w-full rounded-[28px] md:rounded-[42px] overflow-hidden bg-slate-100 group">
                   <Image
                     src={post.image}
                     alt={post.title}
@@ -173,7 +160,7 @@ export default function BlogDetailPage({
                     priority
                   />
 
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/15 to-transparent" />
 
                   <div className="absolute left-5 md:left-8 bottom-5 md:bottom-8 right-5 md:right-8">
                     <div className="inline-flex items-center gap-2 bg-white/90 backdrop-blur px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.18em] text-slate-900 mb-5 shadow-xl">
@@ -181,13 +168,14 @@ export default function BlogDetailPage({
                       {post.category}
                     </div>
 
-                    <h1 className="text-white text-3xl md:text-5xl lg:text-6xl font-black tracking-[-0.06em] leading-[0.98] max-w-4xl drop-shadow-xl">
+                    <h1 className="text-white text-3xl md:text-5xl lg:text-6xl font-black tracking-[-0.05em] leading-[1.05] max-w-5xl drop-shadow-xl break-words">
                       {post.title}
                     </h1>
                   </div>
                 </div>
               </div>
 
+              {/* META BİLGİ KARTI */}
               <div className="mt-8 bg-white rounded-[28px] border border-slate-100 shadow-sm p-5 md:p-6">
                 <div className="flex flex-wrap items-center gap-4 md:gap-7 text-[10px] md:text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">
                   <div className="flex items-center gap-2">
@@ -207,19 +195,21 @@ export default function BlogDetailPage({
                 </div>
 
                 {post.shortDescription && (
-                  <p className="mt-6 text-xl md:text-2xl leading-relaxed font-bold text-slate-700 tracking-[-0.03em] border-l-4 border-[#FF4D00] pl-6">
+                  <p className="mt-6 text-lg md:text-2xl leading-relaxed font-bold text-slate-700 tracking-[-0.02em] border-l-4 border-[#FF4D00] pl-6">
                     {post.shortDescription}
                   </p>
                 )}
               </div>
 
-              <div className="mt-10 bg-white rounded-[30px] md:rounded-[46px] border border-slate-100 shadow-[0_30px_90px_rgba(15,23,42,0.06)] px-5 py-8 md:px-12 md:py-14">
+              {/* İÇERİK KARTI */}
+              <div className="mt-10 bg-white rounded-[30px] md:rounded-[42px] border border-slate-100 shadow-[0_30px_90px_rgba(15,23,42,0.06)] px-5 py-8 md:px-12 md:py-14 overflow-hidden">
                 <div
-                  className="news-content"
+                  className="news-content mx-auto"
                   dangerouslySetInnerHTML={{ __html: post.content }}
                 />
               </div>
 
+              {/* GALERİ BÖLÜMÜ */}
               {post.gallery && post.gallery.length > 0 && (
                 <section className="mt-16 bg-white rounded-[34px] md:rounded-[50px] border border-slate-100 shadow-sm p-5 md:p-8">
                   <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
@@ -227,14 +217,13 @@ export default function BlogDetailPage({
                       <span className="text-[10px] font-black uppercase tracking-[0.25em] text-[#FF4D00]">
                         Fotoğraf Arşivi
                       </span>
-                      <h2 className="text-3xl md:text-5xl font-black tracking-[-0.06em] uppercase mt-2">
+                      <h2 className="text-3xl md:text-5xl font-black tracking-[-0.05em] uppercase mt-2">
                         Etkinlik Galerisi
                       </h2>
                     </div>
 
                     <p className="text-sm text-slate-400 font-bold max-w-sm">
-                      Fuardan öne çıkan kareleri görüntülemek için fotoğraflara
-                      tıklayın.
+                      Fuardan öne çıkan kareleri görüntülemek için fotoğraflara tıklayın.
                     </p>
                   </div>
 
@@ -253,7 +242,7 @@ export default function BlogDetailPage({
                           alt="Etkinlik Galerisi"
                           fill
                           className="object-cover group-hover:scale-110 transition-transform duration-700"
-                          sizes="400px"
+                          sizes="(max-width: 768px) 50vw, 25vw"
                         />
 
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors flex items-center justify-center">
@@ -268,7 +257,8 @@ export default function BlogDetailPage({
               )}
             </article>
 
-            <aside className="xl:w-[340px]">
+            {/* SAĞ SIDEBAR */}
+            <aside className="xl:w-[320px]">
               <div className="sticky top-28 space-y-8">
                 <div className="bg-white rounded-[34px] border border-slate-100 shadow-sm p-7">
                   <h3 className="text-xs font-black uppercase tracking-[0.25em] text-slate-900 flex items-center gap-3 mb-7">
@@ -278,11 +268,7 @@ export default function BlogDetailPage({
 
                   <div className="space-y-6">
                     {otherPosts.map((other) => (
-                      <Link
-                        href={`/medya/blog/${other.slug}`}
-                        key={other._id}
-                        className="group grid grid-cols-[96px_1fr] gap-4 items-center"
-                      >
+                      <Link href={`/medya/blog/${other.slug}`} key={other._id} className="group grid grid-cols-[92px_1fr] gap-4 items-center">
                         <div className="relative h-24 rounded-[24px] overflow-hidden bg-slate-100">
                           <Image
                             src={other.image}
@@ -297,7 +283,7 @@ export default function BlogDetailPage({
                             {other.category}
                           </span>
 
-                          <h4 className="mt-2 text-sm font-black leading-tight tracking-[-0.04em] text-slate-800 group-hover:text-[#FF4D00] transition-colors line-clamp-3">
+                          <h4 className="mt-2 text-sm font-black leading-tight tracking-[-0.03em] text-slate-800 group-hover:text-[#FF4D00] transition-colors line-clamp-3">
                             {other.title}
                           </h4>
                         </div>
@@ -314,21 +300,17 @@ export default function BlogDetailPage({
                       <Mail className="text-[#FF4D00]" size={22} />
                     </div>
 
-                    <h3 className="text-2xl font-black tracking-[-0.06em] uppercase leading-none mb-4">
+                    <h3 className="text-2xl font-black tracking-[-0.05em] uppercase leading-none mb-4">
                       Takipte Kalın
                     </h3>
 
                     <p className="text-sm text-slate-400 leading-relaxed mb-7">
-                      Temren Makina’daki yeni gelişmelerden ve etkinliklerden
-                      haberdar olun.
+                      Temren Makina’daki yeni gelişmelerden ve etkinliklerden haberdar olun.
                     </p>
 
                     {status === "success" ? (
                       <div className="bg-emerald-500/15 border border-emerald-500/40 p-6 rounded-[26px] text-center">
-                        <CheckCircle2
-                          className="text-emerald-400 mx-auto mb-3"
-                          size={34}
-                        />
+                        <CheckCircle2 className="text-emerald-400 mx-auto mb-3" size={34} />
                         <p className="text-[11px] font-black uppercase tracking-[0.18em] text-emerald-400">
                           Kayıt Başarılı
                         </p>
@@ -372,6 +354,7 @@ export default function BlogDetailPage({
         </section>
       </main>
 
+      {/* GÖRSEL MODAL */}
       <AnimatePresence>
         {selectedImg && (
           <motion.div
@@ -407,6 +390,7 @@ export default function BlogDetailPage({
         )}
       </AnimatePresence>
 
+      {/* STYLES */}
       <style jsx global>{`
         .social-btn {
           width: 46px;
@@ -422,187 +406,121 @@ export default function BlogDetailPage({
           transition: all 0.25s ease;
         }
 
+        /* 🔥 ANA İÇERİK DÜZENLEMESİ */
         .news-content {
-          max-width: 820px;
-          margin: 0 auto;
+          width: 100%;
+          max-width: 760px;
           color: #334155;
-          font-size: 19px;
-          line-height: 1.95;
+          font-size: 18px;
+          line-height: 1.85;
           font-weight: 500;
-          overflow-wrap: anywhere;
+          /* Taşmayı engellemek için kritik ayarlar */
+          word-wrap: break-word;
+          overflow-wrap: break-word;
+          word-break: normal;
+        }
+
+        /* Tüm alt elemanların dışarı taşmasını engelle */
+        .news-content * {
+          max-width: 100% !important;
+          box-sizing: border-box;
+          overflow-wrap: break-word !important;
+        }
+
+        .news-content h1,
+        .news-content h2,
+        .news-content h3,
+        .news-content h4 {
+          color: #0f172a;
+          word-break: normal;
+          overflow-wrap: break-word;
         }
 
         .news-content h1 {
-          font-size: clamp(36px, 5vw, 58px);
-          line-height: 1.05;
-          font-weight: 950;
-          color: #0f172a;
-          letter-spacing: -0.06em;
-          margin: 52px 0 22px;
+          font-size: clamp(26px, 4vw, 36px);
+          line-height: 1.2;
+          font-weight: 900;
+          letter-spacing: -0.03em;
+          margin: 30px 0 16px;
         }
 
         .news-content h2 {
-          font-size: clamp(30px, 4vw, 44px);
-          line-height: 1.15;
-          font-weight: 950;
-          color: #0f172a;
-          letter-spacing: -0.05em;
-          margin: 52px 0 20px;
+          font-size: clamp(22px, 3.5vw, 32px);
+          line-height: 1.2;
+          font-weight: 900;
+          margin: 40px 0 16px;
           position: relative;
         }
 
         .news-content h2::before {
           content: "";
           display: block;
-          width: 64px;
-          height: 7px;
+          width: 50px;
+          height: 5px;
           border-radius: 999px;
           background: #ff4d00;
-          margin-bottom: 18px;
+          margin-bottom: 14px;
         }
 
         .news-content h3 {
-          font-size: 28px;
-          line-height: 1.25;
-          font-weight: 900;
+          font-size: 24px;
+          font-weight: 800;
           color: #ff4d00;
-          letter-spacing: -0.04em;
-          margin: 40px 0 14px;
-        }
-
-        .news-content h4 {
-          font-size: 23px;
-          line-height: 1.3;
-          font-weight: 900;
-          color: #0f172a;
-          margin: 32px 0 12px;
+          margin: 30px 0 10px;
         }
 
         .news-content p {
-          margin: 0 0 25px;
+          margin: 0 0 20px;
         }
 
         .news-content strong {
           color: #0f172a;
-          font-weight: 900;
-        }
-
-        .news-content em {
-          color: #475569;
-        }
-
-        .news-content a {
-          color: #ff4d00;
-          font-weight: 850;
-          text-decoration: underline;
-          text-underline-offset: 5px;
+          font-weight: 800;
         }
 
         .news-content img {
           display: block;
           width: 100%;
-          height: auto;
-          max-height: 640px;
+          height: auto !important;
+          max-height: 600px;
           object-fit: cover;
-          border-radius: 36px;
-          margin: 46px auto;
-          box-shadow: 0 32px 90px rgba(15, 23, 42, 0.16);
+          border-radius: 20px;
+          margin: 36px auto;
+          box-shadow: 0 20px 60px rgba(15, 23, 42, 0.12);
         }
 
         .news-content blockquote {
-          margin: 48px 0;
-          padding: 34px 38px;
-          border-left: 8px solid #ff4d00;
-          background: linear-gradient(135deg, #fff7ed 0%, #ffffff 100%);
-          border-radius: 0 34px 34px 0;
+          margin: 36px 0;
+          padding: 24px 28px;
+          border-left: 6px solid #ff4d00;
+          background: #fff7ed;
+          border-radius: 0 24px 24px 0;
           color: #0f172a;
-          font-size: 24px;
-          line-height: 1.55;
-          font-weight: 850;
-          box-shadow: 0 20px 60px rgba(15, 23, 42, 0.08);
-        }
-
-        .news-content ul,
-        .news-content ol {
-          margin: 28px 0;
-          padding-left: 30px;
-        }
-
-        .news-content li {
-          margin-bottom: 12px;
-          padding-left: 4px;
+          font-size: 20px;
+          font-weight: 700;
         }
 
         .news-content iframe {
-          width: 100%;
-          min-height: 460px;
-          border-radius: 34px;
-          margin: 46px 0;
-          box-shadow: 0 30px 90px rgba(15, 23, 42, 0.14);
-        }
-
-        .news-content .ql-align-center {
-          text-align: center;
-        }
-
-        .news-content .ql-align-right {
-          text-align: right;
-        }
-
-        .news-content .ql-align-justify {
-          text-align: justify;
-        }
-
-        .news-content .ql-size-small {
-          font-size: 0.85em;
-        }
-
-        .news-content .ql-size-large {
-          font-size: 1.35em;
-        }
-
-        .news-content .ql-size-huge {
-          font-size: 1.8em;
-          line-height: 1.35;
-          font-weight: 850;
-          color: #0f172a;
+          width: 100% !important;
+          aspect-ratio: 16 / 9;
+          border-radius: 20px;
+          margin: 36px 0;
+          height: auto;
         }
 
         @media (max-width: 768px) {
           .news-content {
-            font-size: 17px;
-            line-height: 1.8;
+            font-size: 16px;
+            line-height: 1.7;
           }
-
-          .news-content h1 {
-            font-size: 34px;
-          }
-
-          .news-content h2 {
-            font-size: 30px;
-          }
-
-          .news-content h3 {
-            font-size: 24px;
-          }
-
-          .news-content img,
-          .news-content iframe {
-            border-radius: 24px;
-          }
-
-          .news-content iframe {
-            min-height: 250px;
-          }
-
+          .news-content h1 { font-size: 26px; }
+          .news-content h2 { font-size: 22px; }
           .news-content blockquote {
-            padding: 26px;
-            font-size: 20px;
-            border-radius: 0 26px 26px 0;
+            font-size: 18px;
+            padding: 20px;
           }
         }
       `}</style>
-
       <Footer />
     </div>
   );

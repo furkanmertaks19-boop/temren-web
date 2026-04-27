@@ -1,7 +1,7 @@
 // src/lib/db.ts
 import mongoose from "mongoose";
 
-const MONGODB_URI = process.env.MONGODB_URI;
+const MONGODB_URI = process.env.MONGODB_URI as string;
 
 if (!MONGODB_URI) {
   throw new Error("MONGODB_URI tanımlı değil. Render Environment Variables kontrol et.");
@@ -28,10 +28,10 @@ export async function connectDB() {
         console.log("✅ MongoDB connected");
         return mongoose;
       })
-      .catch((error) => {
+      .catch((err) => {
+        console.error("❌ MongoDB connection error:", err);
         cached.promise = null;
-        console.error("❌ MongoDB connection error:", error);
-        throw error;
+        throw err;
       });
   }
 

@@ -1,9 +1,9 @@
 "use client";
+
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import { ChevronRight, ChevronLeft, ArrowRight, Loader2 } from "lucide-react";
 
-// Bileşen Importları
 import Features from "@/components/home/Features";
 import QuickLinks from "@/components/home/QuickLinks";
 import ExportMap from "@/components/home/ExportMap";
@@ -36,59 +36,27 @@ type SlideItem = {
   order?: number;
 };
 
-const fallbackSlides: SlideItem[] = [
-{
-  title: "Güçlü İş Birlikleri, Güçlü Yarınlar",
-  subtitle: "ROKETSAN STRATEJİK İŞ ORTAKLIĞI ZİRVESİ",
-  description: "ROKETSAN tarafından düzenlenen Stratejik İş Ortaklığı Zirvesi’nde yer almaktan büyük gurur duyduk. Temren Makina olarak, yüksek teknoloji, mühendislik gücü ve üretim kabiliyetimizle savunma sanayi ekosistemine katkı sunmaya kararlılıkla devam ediyoruz.",
-  image: "/roketsan.jpg",
-  isActive: true,
-  order: 0,
-},
-{
-  title: "Mini-Tika",
-  subtitle: "GÜÇLÜ VE MODERN SİSTEMLER",
-  description: "Güçlü Şartların Yeni Nesil Çözümü",
-  image: "/tika7.png",
-  buttonText: "ÜRÜNLER",
-  buttonLink: "/urunler/mini-tika",
-  isActive: true,
-  order: 1,
-},
-{
-  title: "TİKA",
-  subtitle: "UZAKTAN KUMANDALI MODÜLER PLATFORM",
-  description: "Zorlu arazi koşullarında maksimum performans sunan TİKA, tarım, belediye ve endüstriyel kullanım için geliştirilmiş yeni nesil çok amaçlı bir platformdur.",
-  image: "/tika8.png",
-  buttonText: "DETAY",
-  buttonLink: "/urunler/tika",
-  isActive: true,
-  order: 2,
-},
-];
-
 export default function Home() {
   const [slides, setSlides] = useState<SlideItem[]>([]);
   const [current, setCurrent] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  // Slider verilerini çek
   useEffect(() => {
     const fetchSlides = async () => {
       try {
         const res = await fetch("/api/slider", { cache: "no-store" });
         const data = await res.json();
 
-        const slidesArray: SlideItem[] = Array.isArray(data) ? data : fallbackSlides;
+        const slidesArray: SlideItem[] = Array.isArray(data) ? data : [];
 
         const activeSlides = slidesArray
           .filter((s) => s && s.isActive !== false)
           .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
-        setSlides(activeSlides.length > 0 ? activeSlides : fallbackSlides);
+        setSlides(activeSlides);
       } catch (error) {
         console.error("Slider hatası:", error);
-        setSlides(fallbackSlides);
+        setSlides([]);
       } finally {
         setLoading(false);
       }
@@ -97,14 +65,12 @@ export default function Home() {
     fetchSlides();
   }, []);
 
-  // Güvenlik: current index taşarsa sıfırla
   useEffect(() => {
     if (current >= slides.length && slides.length > 0) {
       setCurrent(0);
     }
   }, [slides, current]);
 
-  // Otomatik geçiş
   useEffect(() => {
     if (slides.length <= 1) return;
 
@@ -115,11 +81,15 @@ export default function Home() {
     return () => clearInterval(timer);
   }, [slides]);
 
-  const nextSlide = () =>
+  const nextSlide = () => {
+    if (slides.length === 0) return;
     setCurrent((p) => (p === slides.length - 1 ? 0 : p + 1));
+  };
 
-  const prevSlide = () =>
+  const prevSlide = () => {
+    if (slides.length === 0) return;
     setCurrent((p) => (p === 0 ? slides.length - 1 : p - 1));
+  };
 
   if (loading) {
     return (
@@ -132,17 +102,6 @@ export default function Home() {
   if (slides.length === 0) {
     return (
       <main className="w-full bg-white overflow-x-hidden scroll-smooth">
-        <section className="relative min-h-screen w-full bg-black flex items-center justify-center px-6 text-center">
-          <div>
-            <h1 className="text-white text-4xl md:text-6xl font-black uppercase italic mb-6">
-              Temren Makina
-            </h1>
-            <p className="text-gray-300 max-w-2xl mx-auto text-lg">
-              İçerikler geçici olarak yüklenemiyor. Lütfen daha sonra tekrar deneyin.
-            </p>
-          </div>
-        </section>
-
         <Features />
         <TrackSystem />
         <QuickLinks />
@@ -153,14 +112,14 @@ export default function Home() {
     );
   }
 
-  const activeSlide = slides[current] || fallbackSlides[0];
+  const activeSlide = slides[current];
 
   return (
     <main className="w-full bg-white overflow-x-hidden scroll-smooth">
       <section className="relative h-screen w-full overflow-hidden bg-black">
         <AnimatePresence mode="wait">
           <motion.div
-            key={current}
+            key={activeSlide._id || current}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -249,6 +208,7 @@ export default function Home() {
       <TrackSystem />
       <QuickLinks />
       <ExportMap />
+      <BlogSummary />
       <Footer />
     </main>
   );

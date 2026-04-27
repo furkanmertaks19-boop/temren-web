@@ -10,15 +10,19 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
     try {
         await connectDB();
-        // Sıralamaya (order) göre tüm listeyi getir
-        const slides = await Slider.find({}).sort({ order: 1 });
-        return NextResponse.json(slides, { status: 200 });
+
+        const slides = await Slider.find({})
+            .sort({ order: 1 })
+            .lean();
+
+        return NextResponse.json(Array.isArray(slides) ? slides : [], { status: 200 });
     } catch (error) {
         console.error("GET Error:", error);
-        return NextResponse.json({ error: "Veriler veritabanından alınamadı" }, { status: 500 });
+
+        // Frontend .filter yapacağı için object değil array dönüyoruz
+        return NextResponse.json([], { status: 200 });
     }
 }
-
 /**
  * 2. POST: Tam Senkronizasyon (Eskileri sil, yenileri yaz)
  */

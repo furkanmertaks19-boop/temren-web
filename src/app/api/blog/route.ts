@@ -6,13 +6,19 @@ import Blog from "@/models/Blog";
 export async function GET() {
     try {
         await connectDB();
-        const blogs = await Blog.find({}).sort({ createdAt: -1 }).lean();
-        return NextResponse.json(blogs);
+
+        const blogs = await Blog.find({})
+            .sort({ createdAt: -1 })
+            .lean();
+
+        return NextResponse.json(Array.isArray(blogs) ? blogs : [], { status: 200 });
     } catch (error) {
-        return NextResponse.json({ error: "Veriler çekilirken hata oluştu" }, { status: 500 });
+        console.error("BLOG_GET_ERROR:", error);
+
+        // Frontend .sort yapacağı için object değil array dönüyoruz
+        return NextResponse.json([], { status: 200 });
     }
 }
-
 // 2. YENİ HABER OLUŞTUR
 export async function POST(req: NextRequest) {
     try {

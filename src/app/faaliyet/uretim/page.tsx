@@ -21,7 +21,7 @@ const products: Product[] = [
     tags: ["CNC", "Hassas Tutma"],
     description: "CNC tezgahlarında yüksek tutuculuk sağlar; seri işlerde hız ve tekrarlanabilirlik kazandırır.",
     image: "/image/vakum_5.jpg",
-    href: "/urunler/uretim/vakumlu-tabla" // Resimdeki klasör yapına göre
+    href: "/urunler/uretim/vakum-tablasi" // Resimdeki klasör yapına göre
   },
   {
     id: 2,

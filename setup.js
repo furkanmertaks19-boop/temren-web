@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const products = [
-  "vakumlu-tabla",
+  "vakum-tablasi",
   "vortex-tupu",
   "takim-sikma",
   "konik-temizleme",

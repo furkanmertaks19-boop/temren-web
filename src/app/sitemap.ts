@@ -46,7 +46,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${baseUrl}/urunler/uretim/konik-temizleme`, priority: 0.95 },
     { url: `${baseUrl}/urunler/uretim/mini-takim-boy-olcer`, priority: 0.95 },
     { url: `${baseUrl}/urunler/uretim/takim-sikma`, priority: 0.95 },
-    { url: `${baseUrl}/urunler/uretim/vakumlu-tabla`, priority: 0.95 },
+    { url: `${baseUrl}/urunler/uretim/vakum-tablasi`, priority: 0.95 },
     { url: `${baseUrl}/urunler/uretim/vortex-tupu`, priority: 1 },
 
     // DİĞER

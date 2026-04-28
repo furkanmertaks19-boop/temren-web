@@ -74,7 +74,7 @@ export const NAV_LINKS = [
           {
             name: "Hassas Sabitleme & Ölçüm",
             items: [
-              { name: "Vakumlu Tabla", href: "/urunler/uretim/vakumlu-tabla" },
+              { name: "Vakumlu Tabla", href: "/urunler/uretim/vakum-tablasi" },
               { name: "Takım Sıkma Mekanizması", href: "/urunler/uretim/takim-sikma" },
               { name: "Mini Takım Boy Ölçer", href: "/urunler/uretim/mini-takim-boy-olcer" },
               { name: "Konik Temizleme", href: "/urunler/uretim/konik-temizleme" },

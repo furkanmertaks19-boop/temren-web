@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 const SITE_URL = "https://temrenmakina.com";
-const PATH = "/urunler/uretim/vakumlu-tabla";
+const PATH = "/urunler/uretim/vakum-tablasi";
 const CANONICAL = `${SITE_URL}${PATH}`;
 const OG_IMAGE = `${SITE_URL}/og/vakum_5.JPG`;
 

@@ -100,7 +100,7 @@ export default function VakumluTablaPage() {
           { "@type": "ListItem", "position": 1, "name": "Anasayfa", "item": "https://temrenmakina.com" },
           { "@type": "ListItem", "position": 2, "name": "Ürünler", "item": "https://temrenmakina.com/urunler" },
           { "@type": "ListItem", "position": 3, "name": "Üretim", "item": "https://temrenmakina.com/urunler/uretim" },
-          { "@type": "ListItem", "position": 4, "name": "Vakumlu Tabla", "item": "https://temrenmakina.com/urunler/uretim/vakumlu-tabla" }
+          { "@type": "ListItem", "position": 4, "name": "Vakumlu Tabla", "item": "https://temrenmakina.com/urunler/uretim/vakum-tablasi" }
         ]
       },
 
@@ -115,7 +115,7 @@ export default function VakumluTablaPage() {
         "description": "CNC ve üretim süreçlerinde parçayı sabitlemek için kullanılan vakumlu tabla. Stabil işleme, yüksek tutuş ve pratik kullanım sağlar.",
         "brand": { "@type": "Brand", "name": "Temren Makina" },
         "category": "CNC Bağlama / Vakum Sistemleri",
-        "url": "https://temrenmakina.com/urunler/uretim/vakumlu-tabla"
+        "url": "https://temrenmakina.com/urunler/uretim/vakum-tablasi"
       },
 
       // 3) FAQ

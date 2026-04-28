@@ -17,15 +17,24 @@ import {
 const footerLinks = {
   kurumsal: [
     { name: "Hakkımızda", href: "/kurumsal/hakkimizda" },
-    { name: "Vizyon & Misyon", href: "/kurumsal/vizyon-misyon" },
-    { name: "Kalite Politikamız", href: "/kurumsal/kalite" },
-    { name: "Sertifikalar", href: "/kurumsal/sertifikalar" },
+    { name: "Belgelerimiz", href: "/kurumsal/belgelerimiz" },
+    { name: "Politikalarımız", href: "/kurumsal/politikalarimiz" },
+    { name: "Referanslarımız", href: "/kurumsal/referanslarimiz" },
+    { name: "İnsan Kaynakları", href: "/kurumsal/insan-kaynaklari" },
+    { name: "İletişim", href: "/iletisim" },
   ],
+
   urunler: [
-    { name: "Palet Sistemleri", href: "/urunler/palet-sistemleri" },
-    { name: "Tarım Araçları", href: "/urunler/tarim-araci" },
-    { name: "Vakumlu Tablalar", href: "/urunler/uretim-ekipmanlari" },
-    { name: "Savunma Çözümleri", href: "/urunler/savunma" },
+    { name: "Traktör Palet Sistemleri", href: "/urunler" },
+    { name: "PLT-18", href: "/urunler/palet-sistemleri/plt-18" },
+    { name: "PLT-17", href: "/urunler/palet-sistemleri/plt-17" },
+    { name: "PLT-16", href: "/urunler/palet-sistemleri/plt-16" },
+    { name: "CNC Vakum Tablası", href: "/urunler/uretim/vakum-tablasi" },
+    { name: "Takım Sıkma Mekanizması", href: "/urunler/uretim/takim-sikma" },
+    { name: "Mini Takım Boy Ölçer", href: "/urunler/uretim/mini-takim-boy-olcer" },
+    { name: "Vortex Tüpü", href: "/urunler/uretim/vortex-tupu" },
+    { name: "TİKA", href: "/urunler/tika" },
+    { name: "Mini TİKA", href: "/urunler/mini-tika" },
   ],
 };
 

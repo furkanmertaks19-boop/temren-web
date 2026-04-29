@@ -64,37 +64,78 @@ export default function BYK500Page() {
                 </motion.div>
             </div>
 {/* ✅ SEO: BYK500 - Product + Breadcrumb + FAQ */}
+{/* ✅ SEO: BYK500 - Product + Breadcrumb + FAQ */}
 <script
   type="application/ld+json"
   dangerouslySetInnerHTML={{
     __html: JSON.stringify([
-      // 1) Breadcrumb
       {
         "@context": "https://schema.org",
         "@type": "BreadcrumbList",
         "itemListElement": [
-          { "@type": "ListItem", "position": 1, "name": "Anasayfa", "item": "https://temrenmakina.com" },
-          { "@type": "ListItem", "position": 2, "name": "Ürünler", "item": "https://temrenmakina.com/urunler" },
-          { "@type": "ListItem", "position": 3, "name": "Üretim", "item": "https://temrenmakina.com/urunler/uretim" },
-          { "@type": "ListItem", "position": 4, "name": "BYK500", "item": "https://temrenmakina.com/urunler/uretim/byk500" }
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Anasayfa",
+            "item": "https://temrenmakina.com"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Ürünler",
+            "item": "https://temrenmakina.com/urunler"
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": "Üretim",
+            "item": "https://temrenmakina.com/urunler/uretim"
+          },
+          {
+            "@type": "ListItem",
+            "position": 4,
+            "name": "BYK500",
+            "item": "https://temrenmakina.com/urunler/uretim/byk500"
+          }
         ]
       },
-
-      // 2) Product
       {
         "@context": "https://schema.org",
         "@type": "Product",
-        "name": "BYK500",
+        "name": "BYK500 Bor Yağı Karışım Cihazı",
+        "alternateName": "BYK-500 Emülsiyon Cihazı",
         "image": [
-          "https://temrenmakina.com/og/byk500_1.jpg"
+          "https://temrenmakina.com/image/boryag_1.jpg",
+          "https://temrenmakina.com/image/boryag_2.jpg",
+          "https://temrenmakina.com/image/boryag_3.jpg"
         ],
-        "description": "BYK500; üretim süreçlerinde verimlilik ve dayanıklılık odaklı endüstriyel çözüm.",
-        "brand": { "@type": "Brand", "name": "Temren Makina" },
-        "category": "Üretim Ekipmanları",
-        "url": "https://temrenmakina.com/urunler/uretim/byk500"
+        "description": "BYK500; bor yağı karışımlarında hassas yoğunluk ayarı, stabil çalışma ve pratik montaj avantajı sunan endüstriyel emülsiyon cihazıdır.",
+        "sku": "BYK500",
+        "mpn": "BYK500",
+        "brand": {
+          "@type": "Brand",
+          "name": "Temren Makina"
+        },
+        "manufacturer": {
+          "@type": "Organization",
+          "name": "Temren Makina",
+          "url": "https://temrenmakina.com"
+        },
+        "category": "Endüstriyel Üretim Ekipmanları",
+        "url": "https://temrenmakina.com/urunler/uretim/byk500",
+        "offers": {
+          "@type": "Offer",
+          "url": "https://temrenmakina.com/urunler/uretim/byk500",
+          "priceCurrency": "TRY",
+          "price": "0",
+          "availability": "https://schema.org/InStock",
+          "itemCondition": "https://schema.org/NewCondition",
+          "seller": {
+            "@type": "Organization",
+            "name": "Temren Makina"
+          }
+        }
       },
-
-      // 3) FAQ
       {
         "@context": "https://schema.org",
         "@type": "FAQPage",
@@ -104,31 +145,31 @@ export default function BYK500Page() {
             "name": "BYK500 ne işe yarar?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Üretim süreçlerinde verimliliği artırmaya yönelik, endüstriyel kullanıma uygun bir çözümdür."
+              "text": "BYK500, bor yağı ve su karışımlarında yoğunluk oranını kontrollü şekilde ayarlamak için kullanılan endüstriyel bir emülsiyon cihazıdır."
             }
           },
           {
             "@type": "Question",
-            "name": "Hangi alanlarda kullanılır?",
+            "name": "BYK500 hangi yoğunluk aralığında çalışır?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "İmalat/üretim hatlarında ve endüstriyel süreçlerde, uygulamaya göre farklı senaryolarda kullanılabilir."
+              "text": "BYK500, uygulama ihtiyacına göre yaklaşık yüzde 1 ile yüzde 5 yoğunluk aralığında ayarlanabilir."
             }
           },
           {
             "@type": "Question",
-            "name": "Özelleştirilebilir mi?",
+            "name": "BYK500 nerelerde kullanılır?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Evet, kullanım ihtiyacına göre ölçü ve uygulama detayları Temren Makina tarafından uyarlanabilir."
+              "text": "CNC tezgahları, üretim hatları ve bor yağı kullanılan endüstriyel sistemlerde kullanılabilir."
             }
           },
           {
             "@type": "Question",
-            "name": "Teklif nasıl alınır?",
+            "name": "BYK500 için teklif nasıl alınır?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Sayfadaki teklif formundan veya iletişim sayfası üzerinden BYK500 için teklif talep edebilirsiniz."
+              "text": "Sayfadaki teklif formu üzerinden veya Temren Makina iletişim kanallarından BYK500 için teklif talep edilebilir."
             }
           }
         ]

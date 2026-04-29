@@ -1,23 +1,36 @@
 "use client";
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Lock, User, Eye, EyeOff, ShieldCheck, ArrowRight } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import {
+  Lock,
+  User,
+  Eye,
+  EyeOff,
+  ShieldCheck,
+  ArrowRight,
+  Loader2,
+  AlertTriangle,
+  LayoutDashboard,
+} from "lucide-react";
 
 export default function AdminLoginPage() {
-  const [showPassword, setShowPassword] = useState(false);
-  const [formData, setFormData] = useState({ username: '', password: '' });
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
   const router = useRouter();
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [formData, setFormData] = useState({ username: "", password: "" });
+  const [isLoading, setIsLoading] = useState(false);
+  const [isToggled, setIsToggled] = useState(false);
+  const [error, setError] = useState("");
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+
     setError("");
+    setIsLoading(true);
+    setIsToggled(true);
 
     try {
-      // SAHTE KONTROL KALDIRILDI, GERÇEK API'YE GİDİLİYOR
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -27,108 +40,871 @@ export default function AdminLoginPage() {
       const data = await res.json();
 
       if (res.ok) {
-        // Tarayıcıya giriş yapıldığını kaydet
         localStorage.setItem("isLoggedIn", "true");
-        // Dashboard'a uçur
-        router.push('/admin/dashboard');
+
+        setTimeout(() => {
+          router.push("/admin/dashboard");
+        }, 2300);
       } else {
-        // Veritabanından gelen hata mesajını göster (Kullanıcı yok veya şifre yanlış)
-        setError(data.error || "Giriş başarısız.");
+        setTimeout(() => {
+          setIsToggled(false);
+          setIsLoading(false);
+          setError(data.error || "Kullanıcı adı veya şifre hatalı.");
+        }, 1900);
       }
-    } catch (err) {
-      setError("Sunucuya bağlanılamadı. İnterneti veya veritabanını kontrol et.");
-    } finally {
-      setIsLoading(false);
+    } catch {
+      setTimeout(() => {
+        setIsToggled(false);
+        setIsLoading(false);
+        setError("Sunucuya bağlanılamadı. Veritabanını kontrol et.");
+      }, 1900);
     }
   };
 
   return (
-    <main className="min-h-screen w-full bg-[#050505] flex items-center justify-center p-6 relative overflow-hidden font-sans">
-      {/* Dekoratif Işıklar */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-amber-600/5 blur-[120px] rounded-full pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-amber-900/5 blur-[120px] rounded-full pointer-events-none" />
+    <main className="admin-auth-page">
+      <div className="auth-bg-grid" />
+      <div className="auth-glow auth-glow-one" />
+      <div className="auth-glow auth-glow-two" />
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-[440px] relative z-10 text-white"
+      <div
+        className={`auth-wrapper ${isToggled ? "toggled" : ""} ${
+          error ? "has-error" : ""
+        }`}
       >
-        <div className="text-center mb-10">
-          <div className="inline-flex p-5 rounded-[2rem] bg-amber-500/10 border border-amber-500/20 mb-6">
-            <ShieldCheck size={48} className="text-amber-500" />
+        <div className="background-shape" />
+        <div className="secondary-shape" />
+
+        <div className="credentials-panel signin">
+          <div className="brand-box slide-element">
+            <ShieldCheck size={38} />
           </div>
-          <h1 className="text-4xl font-black italic uppercase tracking-tighter leading-none">
-            TEMREN<span className="text-amber-500">.OS</span>
-          </h1>
-        </div>
 
-        <div className="bg-white/[0.02] border border-white/5 p-8 md:p-12 rounded-[2.5rem] backdrop-blur-3xl shadow-2xl">
-          <form onSubmit={handleLogin} className="space-y-6">
-            <AnimatePresence mode="wait">
-              {error && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0 }}
-                  className="bg-red-500/10 border border-red-500/20 text-red-500 text-[11px] font-bold uppercase p-3 rounded-xl text-center"
-                >
-                  {error}
-                </motion.div>
-              )}
-            </AnimatePresence>
+          <h2 className="slide-element">
+            TEMREN<span>.OS</span>
+          </h2>
 
-            <div className="space-y-3">
-              <label className="text-[10px] font-black uppercase text-amber-500/70 ml-1 tracking-widest">Kullanıcı Erişimi</label>
-              <div className="relative group">
-                <User className="absolute left-5 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-amber-500" size={18} />
-                <input
-                  type="text"
-                  required
-                  className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-4.5 pl-14 pr-4 outline-none focus:border-amber-500 text-white"
-                  placeholder="Kullanıcı adı"
-                  onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                />
-              </div>
+          <p className="panel-desc slide-element">
+            Yönetim paneline güvenli erişim sağlayın.
+          </p>
+
+          {error && (
+            <div className="error-box slide-element">
+              <AlertTriangle size={16} />
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleLogin}>
+            <div className="field-wrapper slide-element">
+              <input
+                type="text"
+                required
+                value={formData.username}
+                disabled={isLoading}
+                onChange={(e) =>
+                  setFormData({ ...formData, username: e.target.value })
+                }
+              />
+              <label>Kullanıcı Adı</label>
+              <User size={18} />
             </div>
 
-            <div className="space-y-3">
-              <label className="text-[10px] font-black uppercase text-amber-500/70 ml-1 tracking-widest">Güvenlik Anahtarı</label>
-              <div className="relative">
-                <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-amber-500" size={18} />
-                <input
-                  type={showPassword ? "text" : "password"}
-                  required
-                  className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-4.5 pl-14 pr-14 outline-none focus:border-amber-500 text-white"
-                  placeholder="••••••••"
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-5 top-1/2 -translate-y-1/2 text-white/20 hover:text-amber-500 transition-colors px-2"
-                >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
+            <div className="field-wrapper slide-element">
+              <input
+                type={showPassword ? "text" : "password"}
+                required
+                value={formData.password}
+                disabled={isLoading}
+                onChange={(e) =>
+                  setFormData({ ...formData, password: e.target.value })
+                }
+              />
+              <label>Şifre</label>
+
+              <button
+                type="button"
+                className="eye-btn"
+                disabled={isLoading}
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+              </button>
+
+              <Lock className="lock-icon" size={18} />
             </div>
 
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-amber-500 text-black font-black py-5 rounded-2xl hover:bg-white transition-all uppercase tracking-widest flex items-center justify-center gap-3"
-            >
-              {isLoading ? (
-                <div className="w-5 h-5 border-3 border-black/20 border-t-black rounded-full animate-spin" />
-              ) : (
-                <>Sisteme Bağlan <ArrowRight size={18} /></>
-              )}
-            </button>
+            <div className="field-wrapper slide-element button-field">
+              <button className="submit-button" type="submit" disabled={isLoading}>
+                <span className="button-glow" />
+                <span className="button-content">
+                  {isLoading ? (
+                    <>
+                      Kontrol Ediliyor
+                      <Loader2 size={18} className="spin-icon" />
+                    </>
+                  ) : (
+                    <>
+                      Sisteme Bağlan
+                      <ArrowRight size={18} />
+                    </>
+                  )}
+                </span>
+              </button>
+            </div>
           </form>
         </div>
-        <p className="text-center text-white/5 text-[9px] mt-10 font-bold uppercase tracking-[0.4em]">
-          TEMREN MAKINA INDUSTRIAL OS • 2026
-        </p>
-      </motion.div>
+
+        <div className="welcome-section signin">
+          <div className="admin-card slide-element">
+            <div className="admin-icon">
+              <LayoutDashboard size={30} />
+            </div>
+
+            <span className="admin-chip">ADMIN PANEL</span>
+
+            <h2>
+              CONTROL
+              <br />
+              CENTER
+            </h2>
+
+            <p>
+              İçerik, slider, blog, ürün ve medya yönetimini tek merkezden
+              güvenli şekilde kontrol edin.
+            </p>
+          </div>
+        </div>
+
+        <div className="credentials-panel signup loading-panel">
+          <div className="loading-orb slide-element">
+            <Loader2 size={54} />
+          </div>
+
+          <h2 className="slide-element">Doğrulanıyor</h2>
+
+          <p className="loading-text slide-element">
+            Bilgiler kontrol ediliyor, lütfen bekleyin.
+          </p>
+
+          <div className="loading-line slide-element">
+            <span />
+          </div>
+        </div>
+
+        <div className="welcome-section signup">
+          <h2 className="slide-element">
+            PANEL
+            <br />
+            AÇILIYOR
+          </h2>
+          <p className="slide-element">
+            Yetki doğrulaması tamamlandığında yönetim ekranına aktarılacaksınız.
+          </p>
+        </div>
+      </div>
+
+      <p className="auth-footer">TEMREN MAKINA INDUSTRIAL OS • 2026</p>
+
+      <style jsx global>{`
+        .admin-auth-page {
+          min-height: 100vh;
+          width: 100%;
+          background: #111426;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 20px;
+          position: relative;
+          overflow: hidden;
+          font-family: "Poppins", sans-serif;
+          color: #fff;
+        }
+
+        .auth-bg-grid {
+          position: absolute;
+          inset: 0;
+          background-image:
+            linear-gradient(rgba(0, 212, 255, 0.045) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(0, 212, 255, 0.045) 1px, transparent 1px);
+          background-size: 54px 54px;
+          opacity: 0.8;
+        }
+
+        .auth-glow {
+          position: absolute;
+          border-radius: 999px;
+          filter: blur(125px);
+          pointer-events: none;
+        }
+
+        .auth-glow-one {
+          width: 430px;
+          height: 430px;
+          top: -140px;
+          left: -120px;
+          background: rgba(0, 212, 255, 0.18);
+          animation: floatOne 9s ease-in-out infinite;
+        }
+
+        .auth-glow-two {
+          width: 520px;
+          height: 520px;
+          right: -130px;
+          bottom: -160px;
+          background: rgba(0, 100, 255, 0.18);
+          animation: floatTwo 11s ease-in-out infinite;
+        }
+
+        .auth-wrapper {
+          position: relative;
+          width: 100%;
+          max-width: 860px;
+          height: 520px;
+          border: 2px solid #00d4ff;
+          box-shadow: 0 0 30px rgba(0, 212, 255, 0.85);
+          overflow: hidden;
+          background: rgba(26, 26, 46, 0.96);
+          z-index: 5;
+          transition: 0.45s ease;
+        }
+
+        .auth-wrapper::after {
+          content: "";
+          position: absolute;
+          inset: 18px;
+          border: 1px solid rgba(255, 255, 255, 0.05);
+          pointer-events: none;
+          z-index: 4;
+        }
+
+        .auth-wrapper.has-error {
+          border-color: #ff4d6d;
+          box-shadow: 0 0 35px rgba(255, 77, 109, 0.8);
+          animation: errorShake 0.45s ease;
+        }
+
+        .auth-wrapper.has-error .background-shape {
+          background: linear-gradient(45deg, #1a1a2e, #ff4d6d);
+        }
+
+        .auth-wrapper.has-error .secondary-shape {
+          border-top-color: #ff4d6d;
+        }
+
+        .background-shape {
+          position: absolute;
+          right: -255px;
+          top: -120px;
+          height: 760px;
+          width: 760px;
+          background: linear-gradient(135deg, #0c172d 5%, #00d4ff 100%);
+          transform: rotate(10deg) skewY(40deg);
+          transform-origin: bottom right;
+          transition: 1.5s ease;
+          transition-delay: 1.6s;
+          z-index: 1;
+          opacity: 0.95;
+        }
+
+        .auth-wrapper.toggled .background-shape {
+          right: 0;
+          top: -5px;
+          height: 620px;
+          width: 900px;
+          transform: rotate(0deg) skewY(0deg);
+          transition-delay: 0.5s;
+        }
+
+        .secondary-shape {
+          position: absolute;
+          left: 300px;
+          top: 100%;
+          height: 730px;
+          width: 900px;
+          background: #1a1a2e;
+          border-top: 3px solid #00d4ff;
+          transform: rotate(0deg) skewY(0deg);
+          transform-origin: bottom left;
+          transition: 1.5s ease;
+          transition-delay: 0.5s;
+          z-index: 2;
+        }
+
+        .auth-wrapper.toggled .secondary-shape {
+          transform: rotate(-11deg) skewY(-41deg);
+          transition-delay: 1.2s;
+        }
+
+        .credentials-panel {
+          position: absolute;
+          top: 0;
+          width: 50%;
+          height: 100%;
+          display: flex;
+          justify-content: center;
+          flex-direction: column;
+          z-index: 3;
+        }
+
+        .credentials-panel.signin {
+          left: 0;
+          padding: 0 42px;
+        }
+
+        .credentials-panel.signin .slide-element {
+          transform: translateX(0%);
+          transition: 0.7s ease;
+          opacity: 1;
+          filter: blur(0);
+        }
+
+        .credentials-panel.signin .slide-element:nth-child(1) { transition-delay: 2.1s; }
+        .credentials-panel.signin .slide-element:nth-child(2) { transition-delay: 2.2s; }
+        .credentials-panel.signin .slide-element:nth-child(3) { transition-delay: 2.3s; }
+        .credentials-panel.signin .slide-element:nth-child(4) { transition-delay: 2.4s; }
+        .credentials-panel.signin .slide-element:nth-child(5) { transition-delay: 2.5s; }
+
+        .auth-wrapper.toggled .credentials-panel.signin .slide-element {
+          transform: translateX(-120%);
+          opacity: 0;
+          filter: blur(8px);
+        }
+
+        .auth-wrapper.toggled .credentials-panel.signin .slide-element:nth-child(1) { transition-delay: 0s; }
+        .auth-wrapper.toggled .credentials-panel.signin .slide-element:nth-child(2) { transition-delay: 0.1s; }
+        .auth-wrapper.toggled .credentials-panel.signin .slide-element:nth-child(3) { transition-delay: 0.2s; }
+        .auth-wrapper.toggled .credentials-panel.signin .slide-element:nth-child(4) { transition-delay: 0.3s; }
+        .auth-wrapper.toggled .credentials-panel.signin .slide-element:nth-child(5) { transition-delay: 0.4s; }
+
+        .credentials-panel.signup {
+          right: 0;
+          padding: 0 60px;
+        }
+
+        .credentials-panel.signup .slide-element {
+          transform: translateX(120%);
+          transition: 0.7s ease;
+          opacity: 0;
+          filter: blur(10px);
+        }
+
+        .auth-wrapper.toggled .credentials-panel.signup .slide-element {
+          transform: translateX(0%);
+          opacity: 1;
+          filter: blur(0);
+        }
+
+        .auth-wrapper.toggled .credentials-panel.signup .slide-element:nth-child(1) { transition-delay: 1.7s; }
+        .auth-wrapper.toggled .credentials-panel.signup .slide-element:nth-child(2) { transition-delay: 1.8s; }
+        .auth-wrapper.toggled .credentials-panel.signup .slide-element:nth-child(3) { transition-delay: 1.9s; }
+        .auth-wrapper.toggled .credentials-panel.signup .slide-element:nth-child(4) { transition-delay: 2s; }
+
+        .brand-box {
+          width: 70px;
+          height: 70px;
+          border: 1px solid rgba(0, 212, 255, 0.35);
+          border-radius: 22px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #00d4ff;
+          background: rgba(0, 212, 255, 0.08);
+          box-shadow: 0 0 22px rgba(0, 212, 255, 0.25);
+          margin-bottom: 22px;
+        }
+
+        .credentials-panel h2 {
+          font-size: 42px;
+          line-height: 1;
+          font-weight: 900;
+          letter-spacing: -0.06em;
+          color: #fff;
+        }
+
+        .credentials-panel h2 span {
+          color: #00d4ff;
+        }
+
+        .panel-desc {
+          margin-top: 14px;
+          margin-bottom: 18px;
+          color: rgba(255, 255, 255, 0.65);
+          font-size: 13px;
+          font-weight: 600;
+        }
+
+        .field-wrapper {
+          position: relative;
+          width: 100%;
+          height: 50px;
+          margin-top: 25px;
+        }
+
+        .button-field {
+          height: 54px;
+        }
+
+        .field-wrapper input {
+          width: 100%;
+          height: 100%;
+          background: transparent;
+          border: none;
+          outline: none;
+          font-size: 15px;
+          color: #fff;
+          font-weight: 600;
+          border-bottom: 2px solid rgba(255, 255, 255, 0.78);
+          padding-right: 56px;
+          transition: 0.5s;
+        }
+
+        .field-wrapper input:focus,
+        .field-wrapper input:valid {
+          border-bottom: 2px solid #00d4ff;
+        }
+
+        .auth-wrapper.has-error .field-wrapper input {
+          border-bottom-color: rgba(255, 77, 109, 0.75);
+        }
+
+        .field-wrapper label {
+          position: absolute;
+          top: 50%;
+          left: 0;
+          transform: translateY(-50%);
+          font-size: 15px;
+          color: rgba(255, 255, 255, 0.82);
+          transition: 0.5s;
+          pointer-events: none;
+          font-weight: 600;
+        }
+
+        .field-wrapper input:focus ~ label,
+        .field-wrapper input:valid ~ label {
+          top: -5px;
+          color: #00d4ff;
+          font-size: 13px;
+        }
+
+        .field-wrapper svg {
+          position: absolute;
+          top: 50%;
+          right: 0;
+          transform: translateY(-50%);
+          color: rgba(255, 255, 255, 0.75);
+          transition: 0.5s;
+        }
+
+        .field-wrapper input:focus ~ svg,
+        .field-wrapper input:valid ~ svg {
+          color: #00d4ff;
+        }
+
+        .lock-icon {
+          right: 34px !important;
+        }
+
+        .eye-btn {
+          position: absolute;
+          top: 50%;
+          right: 0;
+          transform: translateY(-50%);
+          width: 24px;
+          height: 24px;
+          border: none;
+          outline: none;
+          background: transparent;
+          cursor: pointer;
+          z-index: 5;
+          color: rgba(255, 255, 255, 0.7);
+        }
+
+        .eye-btn svg {
+          position: static;
+          transform: none;
+        }
+
+        .submit-button {
+          position: relative;
+          width: 100%;
+          height: 52px;
+          border-radius: 999px;
+          cursor: pointer;
+          font-size: 13px;
+          font-weight: 950;
+          border: 1px solid rgba(255, 255, 255, 0.28);
+          overflow: hidden;
+          z-index: 1;
+          color: #fff;
+          background: linear-gradient(135deg, #00d4ff, #05758f 55%, #023242);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          text-transform: uppercase;
+          letter-spacing: 0.17em;
+          box-shadow:
+            0 0 18px rgba(0, 212, 255, 0.55),
+            inset 0 1px 0 rgba(255, 255, 255, 0.42),
+            inset 0 -12px 24px rgba(0, 0, 0, 0.28);
+          transition: 0.35s ease;
+        }
+
+        .button-content {
+          position: relative;
+          z-index: 3;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+        }
+
+        .button-glow {
+          position: absolute;
+          inset: -40%;
+          background: conic-gradient(
+            from 180deg,
+            transparent,
+            rgba(255, 255, 255, 0.85),
+            transparent,
+            rgba(0, 212, 255, 0.9),
+            transparent
+          );
+          animation: rotateGlow 3s linear infinite;
+          opacity: 0.45;
+          z-index: 1;
+        }
+
+        .submit-button::after {
+          content: "";
+          position: absolute;
+          inset: 3px;
+          border-radius: 999px;
+          background: linear-gradient(135deg, #08c8f0, #035a72 60%, #022838);
+          z-index: 2;
+        }
+
+        .submit-button:hover {
+          transform: translateY(-2px);
+          box-shadow:
+            0 0 32px rgba(0, 212, 255, 0.8),
+            0 14px 40px rgba(0, 212, 255, 0.22),
+            inset 0 1px 0 rgba(255, 255, 255, 0.48),
+            inset 0 -12px 24px rgba(0, 0, 0, 0.25);
+        }
+
+        .submit-button:active {
+          transform: translateY(0) scale(0.98);
+        }
+
+        .submit-button:disabled {
+          cursor: wait;
+          opacity: 0.96;
+          animation: buttonPulse 1.2s ease-in-out infinite;
+        }
+
+        .welcome-section {
+          position: absolute;
+          top: 0;
+          height: 100%;
+          width: 50%;
+          display: flex;
+          justify-content: center;
+          flex-direction: column;
+          z-index: 3;
+        }
+
+        .welcome-section.signin {
+          right: 0;
+          align-items: center;
+          text-align: center;
+          padding: 0 54px 0 120px;
+        }
+
+        .welcome-section.signin .slide-element {
+          transform: translateX(0);
+          transition: 0.7s ease;
+          opacity: 1;
+          filter: blur(0);
+        }
+
+        .welcome-section.signin .slide-element:nth-child(1) { transition-delay: 2s; }
+
+        .auth-wrapper.toggled .welcome-section.signin .slide-element {
+          transform: translateX(120%);
+          opacity: 0;
+          filter: blur(10px);
+        }
+
+        .auth-wrapper.toggled .welcome-section.signin .slide-element:nth-child(1) { transition-delay: 0s; }
+
+        .admin-card {
+          width: 100%;
+          max-width: 290px;
+          padding: 30px 26px;
+          border-radius: 28px;
+          border: 1px solid rgba(255, 255, 255, 0.22);
+          background: rgba(4, 18, 30, 0.18);
+          backdrop-filter: blur(18px);
+          box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.2),
+            0 24px 60px rgba(0, 0, 0, 0.15);
+        }
+
+        .admin-icon {
+          width: 62px;
+          height: 62px;
+          border-radius: 20px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0 auto 18px;
+          color: #fff;
+          background: rgba(255, 255, 255, 0.13);
+          border: 1px solid rgba(255, 255, 255, 0.25);
+        }
+
+        .admin-chip {
+          display: inline-flex;
+          margin-bottom: 16px;
+          padding: 7px 14px;
+          border-radius: 999px;
+          background: rgba(255, 255, 255, 0.14);
+          border: 1px solid rgba(255, 255, 255, 0.22);
+          font-size: 10px;
+          font-weight: 900;
+          letter-spacing: 0.18em;
+        }
+
+        .admin-card h2 {
+          font-size: 36px;
+          line-height: 1.05;
+          font-weight: 950;
+          letter-spacing: -0.04em;
+          color: #fff;
+        }
+
+        .admin-card p {
+          margin-top: 18px;
+          font-size: 13px;
+          line-height: 1.65;
+          color: rgba(255, 255, 255, 0.78);
+          font-weight: 650;
+        }
+
+        .welcome-section.signup {
+          left: 0;
+          text-align: left;
+          padding: 0 150px 60px 38px;
+          pointer-events: none;
+        }
+
+        .welcome-section.signup .slide-element {
+          transform: translateX(-120%);
+          transition: 0.7s ease;
+          opacity: 0;
+          filter: blur(10px);
+        }
+
+        .auth-wrapper.toggled .welcome-section.signup .slide-element {
+          transform: translateX(0%);
+          opacity: 1;
+          filter: blur(0);
+        }
+
+        .auth-wrapper.toggled .welcome-section.signup .slide-element:nth-child(1) { transition-delay: 1.7s; }
+        .auth-wrapper.toggled .welcome-section.signup .slide-element:nth-child(2) { transition-delay: 1.8s; }
+
+        .welcome-section.signup h2 {
+          text-transform: uppercase;
+          font-size: 42px;
+          line-height: 1.2;
+          font-weight: 900;
+        }
+
+        .welcome-section.signup p {
+          margin-top: 22px;
+          font-size: 14px;
+          line-height: 1.6;
+          color: rgba(255, 255, 255, 0.72);
+          font-weight: 600;
+        }
+
+        .loading-panel {
+          text-align: center;
+          align-items: center;
+        }
+
+        .loading-orb {
+          width: 100px;
+          height: 100px;
+          border-radius: 32px;
+          border: 1px solid rgba(0, 212, 255, 0.45);
+          background: rgba(0, 212, 255, 0.1);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #00d4ff;
+          box-shadow: 0 0 32px rgba(0, 212, 255, 0.35);
+          margin: 0 auto 24px;
+        }
+
+        .loading-orb svg,
+        .spin-icon {
+          animation: spin 1s linear infinite;
+        }
+
+        .loading-text {
+          margin-top: 18px;
+          color: rgba(255, 255, 255, 0.65);
+          font-size: 14px;
+          line-height: 1.6;
+        }
+
+        .loading-line {
+          width: 100%;
+          height: 8px;
+          border-radius: 999px;
+          margin-top: 28px;
+          background: rgba(255, 255, 255, 0.1);
+          overflow: hidden;
+        }
+
+        .loading-line span {
+          display: block;
+          width: 45%;
+          height: 100%;
+          border-radius: 999px;
+          background: #00d4ff;
+          box-shadow: 0 0 20px rgba(0, 212, 255, 0.9);
+          animation: loadingLine 1s ease-in-out infinite;
+        }
+
+        .error-box {
+          border: 1px solid rgba(255, 77, 109, 0.4);
+          background: rgba(255, 77, 109, 0.12);
+          color: #ffd0d8;
+          border-radius: 14px;
+          padding: 11px 13px;
+          display: flex;
+          align-items: center;
+          gap: 9px;
+          font-size: 12px;
+          font-weight: 700;
+          animation: errorShake 0.45s ease;
+        }
+
+        .auth-footer {
+          position: absolute;
+          bottom: 26px;
+          z-index: 4;
+          color: rgba(255, 255, 255, 0.18);
+          font-size: 10px;
+          font-weight: 900;
+          letter-spacing: 0.35em;
+        }
+
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+
+        @keyframes rotateGlow {
+          to { transform: rotate(360deg); }
+        }
+
+        @keyframes buttonPulse {
+          0%, 100% {
+            box-shadow:
+              0 0 18px rgba(0, 212, 255, 0.45),
+              inset 0 1px 0 rgba(255, 255, 255, 0.35),
+              inset 0 -10px 22px rgba(0, 0, 0, 0.28);
+          }
+          50% {
+            box-shadow:
+              0 0 34px rgba(0, 212, 255, 0.95),
+              0 0 55px rgba(0, 212, 255, 0.28),
+              inset 0 1px 0 rgba(255, 255, 255, 0.45),
+              inset 0 -10px 22px rgba(0, 0, 0, 0.28);
+          }
+        }
+
+        @keyframes loadingLine {
+          0% { transform: translateX(-110%); }
+          100% { transform: translateX(230%); }
+        }
+
+        @keyframes errorShake {
+          0%, 100% { transform: translateX(0); }
+          20% { transform: translateX(-8px); }
+          40% { transform: translateX(8px); }
+          60% { transform: translateX(-5px); }
+          80% { transform: translateX(5px); }
+        }
+
+        @keyframes floatOne {
+          0%, 100% { transform: translate(0, 0); }
+          50% { transform: translate(35px, -25px); }
+        }
+
+        @keyframes floatTwo {
+          0%, 100% { transform: translate(0, 0); }
+          50% { transform: translate(-35px, 35px); }
+        }
+
+        @media (max-width: 768px) {
+          .auth-wrapper {
+            height: auto;
+            min-height: 520px;
+          }
+
+          .credentials-panel,
+          .welcome-section {
+            width: 100%;
+            position: relative;
+          }
+
+          .credentials-panel.signin,
+          .credentials-panel.signup {
+            padding: 40px 30px;
+            left: 0;
+            right: 0;
+          }
+
+          .credentials-panel.signup {
+            display: none;
+          }
+
+          .auth-wrapper.toggled .credentials-panel.signin {
+            display: none;
+          }
+
+          .auth-wrapper.toggled .credentials-panel.signup {
+            display: flex;
+          }
+
+          .welcome-section,
+          .background-shape,
+          .secondary-shape {
+            display: none;
+          }
+
+          .credentials-panel.signin .slide-element,
+          .credentials-panel.signup .slide-element,
+          .auth-wrapper.toggled .credentials-panel.signup .slide-element {
+            transform: translateY(0);
+            opacity: 1;
+            filter: blur(0);
+          }
+
+          .credentials-panel h2 {
+            font-size: 34px;
+          }
+
+          .auth-footer {
+            display: none;
+          }
+        }
+      `}</style>
     </main>
   );
 }

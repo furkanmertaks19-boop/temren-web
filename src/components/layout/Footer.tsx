@@ -2,16 +2,15 @@
 
 import React from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { 
-  Instagram, 
-  Linkedin, 
-  Twitter, 
-  Mail, 
-  Phone, 
-  MapPin, 
+import {
+  Instagram,
+  Linkedin,
+  Twitter,
+  Mail,
+  Phone,
+  MapPin,
+  Globe,
   ArrowUpRight,
-  Globe
 } from "lucide-react";
 
 const footerLinks = {
@@ -36,38 +35,59 @@ const footerLinks = {
     { name: "TİKA", href: "/urunler/tika" },
     { name: "Mini TİKA", href: "/urunler/mini-tika" },
   ],
+
+  medya: [
+    { name: "Foto Galeri", href: "/medya/foto-galeri" },
+    { name: "Video Galeri", href: "/medya/video-galeri" },
+    { name: "Blog", href: "/blog" },
+    { name: "Haberler", href: "/haberler" },
+  ],
 };
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-white border-t border-gray-100 pt-24 pb-12 overflow-hidden">
-      <div className="container mx-auto px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 mb-20">
-          
-          {/* Logo ve Şirket Özeti */}
-          <div className="lg:col-span-4 space-y-8">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-slate-900 flex items-center justify-center">
-                <span className="text-white font-black text-xl">T</span>
+    <footer className="relative overflow-hidden bg-[#101010] pt-20 text-white">
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_0%,rgba(255,77,0,0.18),transparent_28%),radial-gradient(circle_at_90%_20%,rgba(80,120,255,0.12),transparent_30%)]" />
+        <div className="absolute inset-0 opacity-[0.04] bg-[linear-gradient(to_right,#fff_1px,transparent_1px),linear-gradient(to_bottom,#fff_1px,transparent_1px)] bg-[size:80px_80px]" />
+      </div>
+
+      <div className="relative z-10 container mx-auto px-6 md:px-8">
+        <div className="grid grid-cols-1 gap-12 pb-16 md:grid-cols-2 lg:grid-cols-4">
+          <div>
+            <div className="mb-8 flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white text-[#101010]">
+                <span className="text-xl font-black">T</span>
               </div>
-              <span className="text-slate-900 font-black text-2xl tracking-tighter uppercase">
-                Temren <span className="text-gray-400 font-light">Makina</span>
-              </span>
+
+              <div>
+                <div className="text-2xl font-black uppercase tracking-[-0.04em]">
+                  Temren
+                </div>
+                <div className="-mt-1 text-xs font-black uppercase tracking-[0.35em] text-[#FF4D00]">
+                  Makina
+                </div>
+              </div>
             </div>
-            
-            <p className="text-gray-500 text-sm leading-relaxed max-w-sm">
-              Ankara merkezli mühendislik ve üretim gücümüzle, savunma, tarım ve endüstriyel 
-              otomasyon alanlarında yüksek hassasiyetli çözümler geliştiriyoruz.
+
+            <p className="max-w-sm text-sm font-medium leading-7 text-white/55">
+              Ankara merkezli mühendislik ve üretim gücümüzle; savunma, tarım
+              ve endüstriyel otomasyon alanlarında yüksek hassasiyetli çözümler
+              geliştiriyoruz.
             </p>
 
-            <div className="flex items-center gap-4">
-              {[Instagram, Linkedin, Twitter].map((Icon, idx) => (
-                <Link 
-                  key={idx} 
-                  href="#" 
-                  className="w-10 h-10 border border-gray-100 flex items-center justify-center text-slate-400 hover:text-[#FF4D00] hover:border-[#FF4D00] transition-all duration-300 rounded-full"
+            <div className="mt-8 flex gap-3">
+              {[
+                { icon: Instagram, href: "#" },
+                { icon: Linkedin, href: "#" },
+                { icon: Twitter, href: "#" },
+              ].map(({ icon: Icon, href }, index) => (
+                <Link
+                  key={index}
+                  href={href}
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-all duration-300 hover:bg-white hover:text-[#101010]"
                 >
                   <Icon size={18} />
                 </Link>
@@ -75,97 +95,129 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Hızlı Linkler */}
-          <div className="lg:col-span-2 space-y-8">
-            <h4 className="text-slate-900 font-black text-[10px] tracking-[0.4em] uppercase">Kurumsal</h4>
-            <ul className="space-y-4">
-              {footerLinks.kurumsal.map((link) => (
-                <li key={link.name}>
-                  <Link href={link.href} className="text-gray-400 text-xs font-bold hover:text-[#FF4D00] transition-colors uppercase tracking-wider">
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+          <FooterColumn title="Kurumsal" links={footerLinks.kurumsal} />
 
-          <div className="lg:col-span-2 space-y-8">
-            <h4 className="text-slate-900 font-black text-[10px] tracking-[0.4em] uppercase">Ürünler</h4>
-            <ul className="space-y-4">
-              {footerLinks.urunler.map((link) => (
-                <li key={link.name}>
-                  <Link href={link.href} className="text-gray-400 text-xs font-bold hover:text-[#FF4D00] transition-colors uppercase tracking-wider">
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+          <FooterColumn title="Ürünler" links={footerLinks.urunler} />
 
-          {/* İletişim Detayları */}
-          <div className="lg:col-span-4 space-y-8">
-            <h4 className="text-slate-900 font-black text-[10px] tracking-[0.4em] uppercase">Bize Ulaşın</h4>
-            <div className="space-y-6">
-              <div className="flex gap-4 group">
-                <div className="w-10 h-10 border border-gray-100 flex items-center justify-center text-[#FF4D00] shrink-0">
-                  <MapPin size={18} />
-                </div>
-                <div>
-  <div className="text-[10px] font-black text-gray-400 tracking-widest uppercase mb-1">
-    Fabrika
-  </div>
-  <p className="text-xs text-slate-700 font-bold leading-relaxed uppercase tracking-tight">
-    Saray Mah. 100.Yıl Blv. No: 75 <br />
-    Kahramankazan / Ankara
-  </p>
-</div>
-              </div>
+          <div>
+            <FooterTitle title="Bize Ulaşın" />
 
-              <div className="flex gap-4">
-                <div className="w-10 h-10 border border-gray-100 flex items-center justify-center text-[#FF4D00] shrink-0">
-                  <Phone size={18} />
-                </div>
-                <div>
-                  <div className="text-[10px] font-black text-gray-400 tracking-widest uppercase mb-1">Telefon</div>
-                  <p className="text-xs text-slate-700 font-bold uppercase">+90 (312) 815 15 15</p>
-                </div>
-              </div>
+            <div className="space-y-5">
+              <ContactItem
+                icon={<MapPin size={18} />}
+                title="Fabrika"
+                text={
+                  <>
+                    Saray Mah. 100.Yıl Blv. No: 75 <br />
+                    Kahramankazan / Ankara
+                  </>
+                }
+              />
 
-              <div className="flex gap-4">
-                <div className="w-10 h-10 border border-gray-100 flex items-center justify-center text-[#FF4D00] shrink-0">
-                  <Mail size={18} />
-                </div>
-                <div>
-                  <div className="text-[10px] font-black text-gray-400 tracking-widest uppercase mb-1">E-Posta</div>
-                  <p className="text-xs text-slate-700 font-bold uppercase">info@temrenmakina.com</p>
-                </div>
-              </div>
+              <ContactItem
+                icon={<Phone size={18} />}
+                title="Telefon"
+                text="+90 (312) 815 15 15"
+              />
+
+              <ContactItem
+                icon={<Mail size={18} />}
+                title="E-Posta"
+                text="satis@temrenmakina.com"
+              />
             </div>
+
+            <Link
+              href="/iletisim"
+              className="mt-7 inline-flex items-center gap-2 rounded-full bg-[#FF4D00] px-5 py-3 text-[10px] font-black uppercase tracking-[0.22em] text-white transition-all hover:bg-white hover:text-[#101010]"
+            >
+              Teklif Al
+              <ArrowUpRight size={15} />
+            </Link>
           </div>
         </div>
 
-        {/* Alt Kısım */}
-        <div className="pt-12 border-t border-gray-50 flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="text-gray-400 text-[10px] font-bold tracking-[0.2em] uppercase">
-            © {currentYear} TEMREN MAKİNA MÜHENDİSLİK. TÜM HAKLARI SAKLIDIR.
-          </div>
-          
-          <div className="flex items-center gap-8">
-            <Link href="/kvkk" className="text-gray-400 text-[9px] font-bold hover:text-slate-900 uppercase tracking-widest transition-colors">KVKK Aydınlatma Metni</Link>
-            <Link href="/bilgi-toplumu" className="text-gray-400 text-[9px] font-bold hover:text-slate-900 uppercase tracking-widest transition-colors">Bilgi Toplumu Hizmetleri</Link>
-            <div className="flex items-center gap-2 text-[#FF4D00] text-[10px] font-black tracking-widest cursor-pointer">
-              <Globe size={14} /> TR / EN
+        <div className="border-t border-white/10 py-7">
+          <div className="flex flex-col items-center justify-between gap-5 md:flex-row">
+            <p className="text-center text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 md:text-left">
+              © {currentYear} Temren Makina Mühendislik. Tüm hakları saklıdır.
+            </p>
+
+            <div className="flex flex-wrap items-center justify-center gap-6">
+             
+
             </div>
           </div>
         </div>
       </div>
 
-      {/* TUSAŞ Stili Dekoratif Arka Plan Yazısı */}
-      <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 select-none pointer-events-none opacity-[0.02]">
-        <span className="text-[180px] font-black text-slate-900 whitespace-nowrap tracking-tighter uppercase">
-          Precision Engineering
+      <div className="pointer-events-none absolute -bottom-10 left-1/2 -translate-x-1/2 select-none opacity-[0.035]">
+        <span className="whitespace-nowrap text-[120px] font-black uppercase tracking-[-0.08em] text-white md:text-[190px]">
+          Temren Makina
         </span>
       </div>
     </footer>
+  );
+}
+
+function FooterTitle({ title }: { title: string }) {
+  return (
+    <h4 className="relative mb-8 text-lg font-semibold capitalize text-white">
+      {title}
+      <span className="absolute -bottom-3 left-0 h-[2px] w-[50px] rounded-full bg-[#FF4D00]" />
+    </h4>
+  );
+}
+
+function FooterColumn({
+  title,
+  links,
+}: {
+  title: string;
+  links: { name: string; href: string }[];
+}) {
+  return (
+    <div>
+      <FooterTitle title={title} />
+
+      <ul className="space-y-3">
+        {links.map((link) => (
+          <li key={link.name}>
+            <Link
+              href={link.href}
+              className="block text-sm font-light capitalize text-white/65 transition-all duration-300 hover:translate-x-2 hover:text-white"
+            >
+              {link.name}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function ContactItem({
+  icon,
+  title,
+  text,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  text: React.ReactNode;
+}) {
+  return (
+    <div className="flex gap-4">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/10 text-[#FF4D00]">
+        {icon}
+      </div>
+
+      <div>
+        <div className="mb-1 text-[10px] font-black uppercase tracking-[0.22em] text-white/35">
+          {title}
+        </div>
+
+        <p className="text-sm font-medium leading-6 text-white/70">{text}</p>
+      </div>
+    </div>
   );
 }

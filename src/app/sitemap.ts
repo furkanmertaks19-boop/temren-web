@@ -1,245 +1,86 @@
-import { MetadataRoute } from "next";
+import type { MetadataRoute } from "next";
+import { absoluteUrl } from "@/lib/site";
+import { getAllProducts } from "@/lib/products";
+import { getAllBlogPosts } from "@/lib/blog-data";
 
-const baseUrl = "https://temrenmakina.com";
+/**
+ * Dynamic sitemap that combines:
+ *  - Static marketing pages (home, kurumsal, faaliyet, iletisim, medya)
+ *  - All products from the product registry (`src/lib/products.ts`)
+ *  - All published blog posts from MongoDB
+ *
+ * Re-generated at runtime so newly published posts appear within minutes.
+ */
 
-const now = new Date();
+// Re-fetch blog data at most once an hour at runtime.
+export const revalidate = 3600;
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  return [
-    // ANA SAYFALAR
-    {
-      url: `${baseUrl}`,
-      lastModified: now,
-      changeFrequency: "daily",
-      priority: 1,
-    },
-    {
-      url: `${baseUrl}/urunler`,
-      lastModified: now,
-      changeFrequency: "weekly",
-      priority: 0.95,
-    },
-    {
-      url: `${baseUrl}/iletisim`,
-      lastModified: now,
-      changeFrequency: "monthly",
-      priority: 0.95,
-    },
+type ChangeFreq =
+  | "always"
+  | "hourly"
+  | "daily"
+  | "weekly"
+  | "monthly"
+  | "yearly"
+  | "never";
 
-    // KURUMSAL
-    {
-      url: `${baseUrl}/kurumsal/hakkimizda`,
-      lastModified: now,
-      changeFrequency: "monthly",
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/kurumsal/belgelerimiz`,
-      lastModified: now,
-      changeFrequency: "monthly",
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/kurumsal/politikalarimiz`,
-      lastModified: now,
-      changeFrequency: "monthly",
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/kurumsal/referanslarimiz`,
-      lastModified: now,
-      changeFrequency: "monthly",
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/kurumsal/ihracatlarimiz`,
-      lastModified: now,
-      changeFrequency: "monthly",
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/kurumsal/e-katalog`,
-      lastModified: now,
-      changeFrequency: "monthly",
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/kurumsal/insankaynaklari`,
-      lastModified: now,
-      changeFrequency: "monthly",
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/kurumsal/sss`,
-      lastModified: now,
-      changeFrequency: "monthly",
-      priority: 0.75,
-    },
-    {
-      url: `${baseUrl}/kurumsal/musterigorusleri`,
-      lastModified: now,
-      changeFrequency: "monthly",
-      priority: 0.75,
-    },
-    {
-      url: `${baseUrl}/kurumsal/bankabilgileri`,
-      lastModified: now,
-      changeFrequency: "monthly",
-      priority: 0.7,
-    },
+interface StaticEntry {
+  path: string;
+  changeFrequency: ChangeFreq;
+  priority: number;
+}
 
-    // FAALİYET ALANLARI
-    {
-      url: `${baseUrl}/faaliyet/uretim`,
-      lastModified: now,
-      changeFrequency: "monthly",
-      priority: 0.85,
-    },
-    {
-      url: `${baseUrl}/faaliyet/insaat`,
-      lastModified: now,
-      changeFrequency: "monthly",
-      priority: 0.8,
-    },
+const STATIC_PAGES: StaticEntry[] = [
+  { path: "/", changeFrequency: "daily", priority: 1.0 },
+  { path: "/urunler/palet-sistemleri", changeFrequency: "weekly", priority: 0.95 },
+  { path: "/iletisim", changeFrequency: "monthly", priority: 0.85 },
 
-    // MEDYA
-    {
-      url: `${baseUrl}/medya/blog`,
-      lastModified: now,
-      changeFrequency: "weekly",
-      priority: 0.85,
-    },
-    {
-      url: `${baseUrl}/medya/foto`,
-      lastModified: now,
-      changeFrequency: "monthly",
-      priority: 0.75,
-    },
-    {
-      url: `${baseUrl}/medya/video`,
-      lastModified: now,
-      changeFrequency: "monthly",
-      priority: 0.75,
-    },
+  // Kurumsal
+  { path: "/kurumsal/hakkimizda", changeFrequency: "monthly", priority: 0.9 },
+  { path: "/kurumsal/belgelerimiz", changeFrequency: "monthly", priority: 0.8 },
+  { path: "/kurumsal/politikalarimiz", changeFrequency: "monthly", priority: 0.8 },
+  { path: "/kurumsal/referanslarimiz", changeFrequency: "monthly", priority: 0.8 },
+  { path: "/kurumsal/ihracatlarimiz", changeFrequency: "monthly", priority: 0.8 },
+  { path: "/kurumsal/e-katalog", changeFrequency: "monthly", priority: 0.8 },
+  { path: "/kurumsal/insankaynaklari", changeFrequency: "monthly", priority: 0.75 },
+  { path: "/kurumsal/sss", changeFrequency: "monthly", priority: 0.75 },
+  { path: "/kurumsal/musterigorusleri", changeFrequency: "monthly", priority: 0.7 },
+  { path: "/kurumsal/bankabilgileri", changeFrequency: "monthly", priority: 0.6 },
 
-    // ÜRÜNLER - PALET SİSTEMLERİ
-    {
-      url: `${baseUrl}/urunler/palet-sistemleri`,
-      lastModified: now,
-      changeFrequency: "weekly",
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/urunler/palet-sistemleri/plt-18`,
-      lastModified: now,
-      changeFrequency: "weekly",
-      priority: 0.95,
-    },
-    {
-      url: `${baseUrl}/urunler/palet-sistemleri/plt-17`,
-      lastModified: now,
-      changeFrequency: "weekly",
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/urunler/palet-sistemleri/plt-16`,
-      lastModified: now,
-      changeFrequency: "weekly",
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/urunler/palet-sistemleri/plt-15`,
-      lastModified: now,
-      changeFrequency: "weekly",
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/urunler/palet-sistemleri/plt-12`,
-      lastModified: now,
-      changeFrequency: "weekly",
-      priority: 0.85,
-    },
-    {
-      url: `${baseUrl}/urunler/palet-sistemleri/plt-10`,
-      lastModified: now,
-      changeFrequency: "weekly",
-      priority: 0.85,
-    },
-    {
-      url: `${baseUrl}/urunler/palet-sistemleri/plt-8`,
-      lastModified: now,
-      changeFrequency: "weekly",
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/urunler/palet-sistemleri/plt-7`,
-      lastModified: now,
-      changeFrequency: "weekly",
-      priority: 0.8,
-    },
+  // Faaliyet
+  { path: "/faaliyet/uretim", changeFrequency: "monthly", priority: 0.85 },
+  { path: "/faaliyet/insaat", changeFrequency: "monthly", priority: 0.8 },
 
-    // ÜRÜNLER - ÜRETİM EKİPMANLARI
-    {
-      url: `${baseUrl}/urunler/uretim/vakum-tablasi`,
-      lastModified: now,
-      changeFrequency: "weekly",
-      priority: 0.95,
-    },
-    {
-      url: `${baseUrl}/urunler/uretim/takim-sikma`,
-      lastModified: now,
-      changeFrequency: "weekly",
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/urunler/uretim/mini-takim-boy-olcer`,
-      lastModified: now,
-      changeFrequency: "weekly",
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/urunler/uretim/konik-temizleme`,
-      lastModified: now,
-      changeFrequency: "weekly",
-      priority: 0.85,
-    },
-    {
-      url: `${baseUrl}/urunler/uretim/vortex-tupu`,
-      lastModified: now,
-      changeFrequency: "weekly",
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/urunler/uretim/byk1000`,
-      lastModified: now,
-      changeFrequency: "weekly",
-      priority: 0.85,
-    },
-    {
-      url: `${baseUrl}/urunler/uretim/byk500`,
-      lastModified: now,
-      changeFrequency: "weekly",
-      priority: 0.85,
-    },
+  // Medya
+  { path: "/medya/blog", changeFrequency: "daily", priority: 0.9 },
+  { path: "/medya/foto", changeFrequency: "monthly", priority: 0.7 },
+  { path: "/medya/video", changeFrequency: "monthly", priority: 0.7 },
+];
 
-    // ÜRÜNLER - DİĞER SİSTEMLER
-    {
-      url: `${baseUrl}/urunler/tika`,
-      lastModified: now,
-      changeFrequency: "weekly",
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/urunler/mini-tika`,
-      lastModified: now,
-      changeFrequency: "weekly",
-      priority: 0.85,
-    },
-    {
-      url: `${baseUrl}/urunler/kaucuk-sistemleri`,
-      lastModified: now,
-      changeFrequency: "weekly",
-      priority: 0.85,
-    },
-  ];
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const now = new Date();
+
+  const staticEntries: MetadataRoute.Sitemap = STATIC_PAGES.map((page) => ({
+    url: absoluteUrl(page.path),
+    lastModified: now,
+    changeFrequency: page.changeFrequency,
+    priority: page.priority,
+  }));
+
+  const productEntries: MetadataRoute.Sitemap = getAllProducts().map((p) => ({
+    url: absoluteUrl(p.path),
+    lastModified: now,
+    changeFrequency: "weekly",
+    priority: p.category === "Palet Sistemleri" ? 0.9 : 0.85,
+  }));
+
+  const blogPosts = await getAllBlogPosts();
+  const blogEntries: MetadataRoute.Sitemap = blogPosts.map((post) => ({
+    url: absoluteUrl(`/medya/blog/${post.slug}`),
+    lastModified: post.updatedAt ? new Date(post.updatedAt) : now,
+    changeFrequency: "monthly",
+    priority: 0.8,
+  }));
+
+  return [...staticEntries, ...productEntries, ...blogEntries];
 }

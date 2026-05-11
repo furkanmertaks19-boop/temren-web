@@ -80,82 +80,8 @@ export default function PLT12Page() {
 
   return (
     <main className="bg-[#050505] min-h-screen relative text-white overflow-x-hidden selection:bg-amber-500 selection:text-black font-sans">
-{/* ✅ SEO Schema — PLT-12 */}
-<script
-  type="application/ld+json"
-  dangerouslySetInnerHTML={{
-    __html: JSON.stringify([
-      // Breadcrumb
-      {
-        "@context": "https://schema.org",
-        "@type": "BreadcrumbList",
-        "itemListElement": [
-          { "@type": "ListItem", "position": 1, "name": "Anasayfa", "item": "https://temrenmakina.com" },
-          { "@type": "ListItem", "position": 2, "name": "Ürünler", "item": "https://temrenmakina.com/urunler" },
-          { "@type": "ListItem", "position": 3, "name": "Palet Sistemleri", "item": "https://temrenmakina.com/urunler/palet-sistemleri" },
-          { "@type": "ListItem", "position": 4, "name": "PLT-12", "item": "https://temrenmakina.com/urunler/palet-sistemleri/plt-12" }
-        ]
-      },
+      {/* JSON-LD (Breadcrumb + Product + FAQ) is injected from layout.tsx via ProductSchemaInjector. */}
 
-      // Product
-      {
-        "@context": "https://schema.org",
-        "@type": "Product",
-        "name": "PLT-12 Palet Sistemi",
-        "image": [
-          "https://temrenmakina.com/og/plt12-13.webp"
-        ],
-        "description": "PLT-12 palet sistemi, yüksek çekiş gücü ve dayanıklı yapısıyla zorlu saha koşulları için geliştirilmiş endüstriyel palet çözümüdür.",
-        "brand": {
-          "@type": "Brand",
-          "name": "Temren Makina"
-        },
-        "category": "Palet Sistemleri",
-        "url": "https://temrenmakina.com/urunler/palet-sistemleri/plt-12"
-      },
-
-      // FAQ
-      {
-        "@context": "https://schema.org",
-        "@type": "FAQPage",
-        "mainEntity": [
-          {
-            "@type": "Question",
-            "name": "PLT-12 palet sistemi nerede kullanılır?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "Arazi şartlarının zor olduğu endüstriyel uygulamalarda ve paletli sistem ihtiyaçlarında kullanılır."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "PLT-12'nin avantajı nedir?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "Yüksek çekiş, stabilite ve uzun ömürlü endüstriyel kullanım sağlar."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "PLT-12 özelleştirilebilir mi?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "İhtiyaca göre ölçü ve bağlantı seçenekleri uyarlanabilir."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "Nasıl teklif alabilirim?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "Sayfa üzerindeki teklif formu veya iletişim bölümünden teklif talebi oluşturabilirsiniz."
-            }
-          }
-        ]
-      }
-    ]),
-  }}
-/>
       {/* 1. ARKA PLAN */}
       <div className="fixed inset-0 w-full h-screen z-0">
         <motion.div style={{ scale }} className="relative w-full h-full">

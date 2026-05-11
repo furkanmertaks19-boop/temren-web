@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { productMetadata } from "@/lib/seo";
 import ProductSchemaInjector from "@/components/seo/ProductSchemaInjector";
 
-const SLUG = "vortex-tupu";
+const SLUG = "plt-8";
 
 export const metadata: Metadata = productMetadata(SLUG);
 

@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "next dev",
 
-    "build": "NODE_OPTIONS='--max-old-space-size=384' next build",
+   "build": "next build",
 
     "start": "next start -H 0.0.0.0 -p $PORT",
 

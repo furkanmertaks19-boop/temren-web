@@ -22,55 +22,25 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   reactStrictMode: false,
 
-  // Render RAM optimizasyonu
+  // Render optimizasyonu
   output: "standalone",
 
   // Compression
   compress: true,
 
-  // Security
+  // Güvenlik
   poweredByHeader: false,
 
   // Cache
   generateEtags: true,
 
-  // Production source maps kapalı
+  // Source map kapalı
   productionBrowserSourceMaps: false,
 
-  // IMAGE OPTIMIZATION
+  // IMAGE CONFIG
   images: {
-    // Render düşük RAM için önemli
+    // Next image optimizer tamamen kapalı
     unoptimized: true,
-
-    formats: ["image/avif", "image/webp"],
-
-    minimumCacheTTL: 60 * 60 * 24 * 30,
-
-    deviceSizes: [360, 640, 750, 828, 1080, 1200, 1440, 1920],
-
-    imageSizes: [16, 32, 48, 64, 96, 128, 192, 256],
-
-    dangerouslyAllowSVG: false,
-
-    contentDispositionType: "attachment",
-
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "img.youtube.com",
-        pathname: "/vi/**",
-      },
-      {
-        protocol: "https",
-        hostname: "i.ytimg.com",
-        pathname: "/vi/**",
-      },
-      {
-        protocol: "https",
-        hostname: "res.cloudinary.com",
-        pathname: "/**",
-      },
-    ],
   },
 
   // EXPERIMENTAL
@@ -78,9 +48,6 @@ const nextConfig: NextConfig = {
     optimizePackageImports: [
       "lucide-react",
       "framer-motion",
-      "@react-three/drei",
-      "@react-three/fiber",
-      "three",
       "react-icons",
     ],
   },

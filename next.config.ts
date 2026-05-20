@@ -22,25 +22,38 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   reactStrictMode: false,
 
-  // Gzip/brotli at the framework level.
+  // Render RAM optimizasyonu
+  output: "standalone",
+
+  // Compression
   compress: true,
 
-  // Removes the `X-Powered-By: Next.js` header — small security win.
+  // Security
   poweredByHeader: false,
 
-  // Generate ETag headers for browser caching.
+  // Cache
   generateEtags: true,
 
-  // ─── IMAGE OPTIMIZATION ───────────────────────────────────────────
-  // We rely on Next's built-in image optimizer: AVIF/WebP, responsive
-  // srcset, automatic lazy-loading and long-term caching.
+  // Production source maps kapalı
+  productionBrowserSourceMaps: false,
+
+  // IMAGE OPTIMIZATION
   images: {
+    // Render düşük RAM için önemli
+    unoptimized: true,
+
     formats: ["image/avif", "image/webp"],
-    minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days
-    deviceSizes: [360, 640, 750, 828, 1080, 1200, 1440, 1920, 2560],
-    imageSizes: [16, 32, 48, 64, 96, 128, 192, 256, 384],
+
+    minimumCacheTTL: 60 * 60 * 24 * 30,
+
+    deviceSizes: [360, 640, 750, 828, 1080, 1200, 1440, 1920],
+
+    imageSizes: [16, 32, 48, 64, 96, 128, 192, 256],
+
     dangerouslyAllowSVG: false,
+
     contentDispositionType: "attachment",
+
     remotePatterns: [
       {
         protocol: "https",
@@ -60,9 +73,8 @@ const nextConfig: NextConfig = {
     ],
   },
 
-  // ─── EXPERIMENTAL ─────────────────────────────────────────────────
+  // EXPERIMENTAL
   experimental: {
-    // Tree-shake icon packs and other heavy libs.
     optimizePackageImports: [
       "lucide-react",
       "framer-motion",
@@ -73,7 +85,7 @@ const nextConfig: NextConfig = {
     ],
   },
 
-  // ─── HEADERS ──────────────────────────────────────────────────────
+  // SECURITY HEADERS
   async headers() {
     return [
       {
@@ -83,11 +95,10 @@ const nextConfig: NextConfig = {
     ];
   },
 
-  // ─── REDIRECTS ────────────────────────────────────────────────────
+  // REDIRECTS
   async redirects() {
     return [
       {
-        // QR-Code şort redirect (keeps single canonical destination).
         source: "/temrenqr/:path*",
         destination: "/qr-welcome",
         permanent: true,

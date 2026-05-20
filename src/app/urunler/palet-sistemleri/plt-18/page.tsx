@@ -110,9 +110,9 @@ export default function PLT18Page() {
     gallery: [
       "/image/plt018.webp",
       "/image/plt018-t.webp",
-      "/image/plt-18-4.webp",
-      "/image/plt-18-5.webp",
-      "/image/plt18-dik.webp",
+      "/image/plt-18-4.png",
+      "/image/plt-18-5.png",
+      "/image/plt18-dik.png",
     ],
   };
 

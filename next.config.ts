@@ -62,16 +62,21 @@ const nextConfig: NextConfig = {
     ];
   },
 
-  // REDIRECTS
-  async redirects() {
-    return [
-      {
-        source: "/temrenqr/:path*",
-        destination: "/qr-welcome",
-        permanent: true,
-      },
-    ];
-  },
+// REDIRECTS
+async redirects() {
+  return [
+    {
+      source: "/temrenqr/:path*",
+      destination: "/qr-welcome",
+      permanent: true,
+    },
+    {
+      source: "/en/media/photos",
+      destination: "/qr-welcome",
+      permanent: true,
+    },
+  ];
+},
 };
 
 export default nextConfig;

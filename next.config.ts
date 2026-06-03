@@ -75,6 +75,11 @@ async redirects() {
       destination: "/qr-welcome",
       permanent: true,
     },
+    {
+      source: "/en/products/mini-tika",
+      destination: "/qr-welcome",
+      permanent: true,
+    },
   ];
 },
 };

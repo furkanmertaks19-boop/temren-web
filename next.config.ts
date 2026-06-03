@@ -72,7 +72,7 @@ async redirects() {
     },
     {
       source: "/en/media/photos",
-      destination: "/qr-welcome",
+      destination: "/medya/foto/page.tsx",
       permanent: true,
     },
   ];

@@ -23,7 +23,7 @@ const products = [
     tag: "TİKA",
     title: "TİKA — Remote Controlled Modular Platform",
     desc: "Attachments for agriculture, municipal, winter, and emergency response.",
-    href: "/en/products/tika",
+     href: "/urunler/tika",
     img: "/galeri/tika_qr.png",
   },
   {
@@ -31,7 +31,7 @@ const products = [
     tag: "Mini-TİKA",
     title: "Mini-TİKA — Compact UGV",
     desc: "Lightweight and agile, designed for narrow spaces.",
-    href: "/en/products/mini-tika",
+    href: "/urunler/mini-tika",
     img: "/galeri/mini_tika_3.jpg",
   },
   {
@@ -39,7 +39,7 @@ const products = [
     tag: "TRACK",
     title: "Track Systems",
     desc: "Modular structure compatible with challenging terrains.",
-    href: "/en/products/track-systems",
+    href: "/urunler/palet-sistemleri",
     img: "/galeri/plt-18-4.png",
   },
 ];

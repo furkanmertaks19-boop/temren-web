@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Geist } from "next/font/google";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import "./globals.css";
 
@@ -13,6 +13,9 @@ import {
   localBusinessSchema,
   websiteSchema,
 } from "@/lib/schema";
+import { cn } from "@/lib/utils";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 const inter = Inter({
   subsets: ["latin"],
@@ -173,7 +176,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="tr" className="scroll-smooth">
+    <html lang="tr" className={cn("scroll-smooth", "font-sans", geist.variable)}>
       <head>
         {/* Performance: hint the browser to set up connections early. */}
         <link rel="dns-prefetch" href="https://res.cloudinary.com" />

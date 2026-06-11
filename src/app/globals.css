@@ -53,4 +53,11 @@
 
 .admin-panel {
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.admin-panel [data-slot="select-value"] {
+  color: inherit;
+  font-weight: 600;
 }

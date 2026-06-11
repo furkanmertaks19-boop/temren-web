@@ -1,20 +1,29 @@
-import { Badge } from '@/components/ui/badge';
-import { TEKLIF_STATUS_STYLES, type TeklifStatus } from '@/lib/teklifStatus';
+import { TEKLIF_STATUS_THEME, type TeklifStatus } from '@/lib/teklifStatus';
 import { cn } from '@/lib/utils';
 
 export default function TeklifStatusBadge({
     status,
     className,
+    size = 'sm',
 }: {
     status: TeklifStatus;
     className?: string;
+    size?: 'sm' | 'md';
 }) {
+    const theme = TEKLIF_STATUS_THEME[status];
+
     return (
-        <Badge
-            variant="outline"
-            className={cn('text-[10px] font-medium border', TEKLIF_STATUS_STYLES[status], className)}
+        <span
+            className={cn(
+                'inline-flex items-center gap-1.5 rounded-full font-semibold whitespace-nowrap',
+                theme.bg,
+                theme.text,
+                size === 'sm' ? 'px-2.5 py-1 text-xs' : 'px-3 py-1.5 text-sm',
+                className
+            )}
         >
+            <span className={cn('rounded-full shrink-0', theme.dot, size === 'sm' ? 'size-1.5' : 'size-2')} />
             {status}
-        </Badge>
+        </span>
     );
 }

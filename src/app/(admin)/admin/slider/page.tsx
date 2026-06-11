@@ -211,10 +211,13 @@ export default function AdminSliderPage() {
                                 </div>
                             ) : slides.map((slide, index) => (
                                 <Draggable key={slide.dragId} draggableId={slide.dragId} index={index}>
-                                    {(provided, snapshot) => (
+                                    {(provided, snapshot) => {
+                                        const { style, ...draggableProps } = provided.draggableProps;
+                                        return (
                                         <div
                                             ref={provided.innerRef}
-                                            {...provided.draggableProps}
+                                            {...draggableProps}
+                                            style={style as React.CSSProperties}
                                             className={`bg-white border rounded-xl p-4 flex flex-col lg:flex-row gap-4 items-start transition-shadow ${
                                                 snapshot.isDragging ? 'shadow-lg border-[#FF4D00]/30' : 'border-slate-200'
                                             }`}
@@ -305,7 +308,8 @@ export default function AdminSliderPage() {
                                                 </button>
                                             </div>
                                         </div>
-                                    )}
+                                        );
+                                    }}
                                 </Draggable>
                             ))}
                             {provided.placeholder}

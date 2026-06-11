@@ -83,6 +83,8 @@ export default function MiniTikaPage() {
                 body: JSON.stringify({
                     ...form,
                     secim: "MİNİ TİKA PROJE TALEBİ",
+                    sourcePage: "/urunler/mini-tika",
+                    sourceLabel: "MİNİ TİKA PROJE",
                     mesaj: `UYGULAMA: ${form.uygulama} | NOT: ${form.mesaj}`
                 }),
             });

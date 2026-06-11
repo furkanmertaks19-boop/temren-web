@@ -1,34 +1,48 @@
 import { connectDB } from "@/lib/db";
-import Admin from "@/models/Admin"; // Modeli import ediyoruz
+import Admin from "@/models/Admin";
 import { NextResponse } from "next/server";
+import type { AdminRole } from "@/lib/adminPermissions";
 
 export async function POST(request: Request) {
     try {
-        await connectDB(); 
+        await connectDB();
         const { username, password } = await request.json();
 
-        // 1. Kullanıcıyı model üzerinden bulalım (Böylece comparePassword metoduna erişebiliriz)
-        const user = await Admin.findOne({ username });
+        const user = await Admin.findOne({ username: username?.toLowerCase()?.trim() });
 
         if (!user) {
             return NextResponse.json({ error: "Kullanıcı adı veya şifre hatalı!" }, { status: 401 });
         }
 
-        // 2. Şifreyi modeldeki comparePassword metodu ile (bcrypt) kontrol edelim
+        if (user.isActive === false) {
+            return NextResponse.json({ error: "Hesabınız devre dışı bırakılmış. Yöneticinize başvurun." }, { status: 403 });
+        }
+
         const isMatch = await user.comparePassword(password);
 
         if (!isMatch) {
             return NextResponse.json({ error: "Kullanıcı adı veya şifre hatalı!" }, { status: 401 });
         }
 
-        // 3. Giriş başarılı
-        return NextResponse.json({ 
-            success: true, 
-            message: "Giriş başarılı" 
-        });
+        user.lastLogin = new Date();
+        if (!user.displayName) user.displayName = user.username;
+        if (!user.role) user.role = "superadmin" as AdminRole;
+        await user.save();
 
-    } catch (error: any) {
-        console.error("GİRİŞ HATASI:", error.message);
-        return NextResponse.json({ error: "Sistem hatası: " + error.message }, { status: 500 });
+        return NextResponse.json({
+            success: true,
+            message: "Giriş başarılı",
+            user: {
+                id: user._id.toString(),
+                username: user.username,
+                displayName: user.displayName || user.username,
+                email: user.email || "",
+                role: user.role || "superadmin",
+            },
+        });
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : "Bilinmeyen hata";
+        console.error("GİRİŞ HATASI:", message);
+        return NextResponse.json({ error: "Sistem hatası: " + message }, { status: 500 });
     }
 }

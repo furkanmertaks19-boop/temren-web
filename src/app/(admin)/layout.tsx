@@ -14,8 +14,10 @@ import {
   Navigation,
   Package,
   ExternalLink,
-  Bell
+  Bell,
+  Users
 } from 'lucide-react';
+import { getAdminSession, clearAdminSession } from '@/lib/adminPermissions';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -23,6 +25,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [session, setSession] = useState<ReturnType<typeof getAdminSession>>(null);
 
   const isLoginPage = pathname === '/admin/login';
 
@@ -35,6 +38,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     if (!loggedIn) {
       router.replace('/admin/login');
     } else {
+      setSession(getAdminSession());
       setAuthChecked(true);
     }
   }, [isLoginPage, router, pathname]);
@@ -61,7 +65,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     } catch {
       /* ignore */
     }
-    localStorage.removeItem('isLoggedIn');
+    clearAdminSession();
     router.push('/admin/login');
     router.refresh();
   };
@@ -74,6 +78,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { name: 'Teklif Talepleri', path: '/admin/teklifler', icon: Inbox, badge: unreadCount },
     { name: 'Menü Yönetimi', path: '/admin/nav', icon: Navigation },
     { name: 'Ürün Yönetimi', path: '/admin/urunler', icon: Package },
+    { name: 'Kullanıcı Yönetimi', path: '/admin/kullanicilar', icon: Users },
   ], [unreadCount]);
 
   if (isLoginPage) return <>{children}</>;
@@ -194,8 +199,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 </span>
               )}
             </Link>
-            <div className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center text-xs font-semibold">
-              A
+            <div className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center text-xs font-semibold" title={session?.displayName || 'Admin'}>
+              {(session?.displayName || 'A').charAt(0).toUpperCase()}
             </div>
           </div>
         </header>

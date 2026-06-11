@@ -31,8 +31,10 @@ export default function BYK500Page() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     ...form,
-                    productName: "BYK-500 Emülsiyon Cihazı", // Admin panelinde bu isimle düşecek
-                    olcu: "%1 - %5 Yoğunluk"
+                    productName: "BYK-500 Emülsiyon Cihazı",
+                    olcu: "%1 - %5 Yoğunluk",
+                    sourcePage: "/urunler/uretim/byk500",
+                    sourceLabel: "BYK-500 Emülsiyon Cihazı",
                 }),
             });
 

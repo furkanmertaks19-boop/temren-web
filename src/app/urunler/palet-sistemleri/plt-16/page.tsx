@@ -72,6 +72,8 @@ export default function PLT16Page() {
         body: JSON.stringify({
           ...form,
           secim: "PLT-16 ÜRÜN TALEBİ",
+          sourcePage: "/urunler/palet-sistemleri/plt-16",
+          sourceLabel: "PLT-16",
           mesaj: `Traktör: ${form.traktor} | Not: ${form.mesaj}`
         }),
       });

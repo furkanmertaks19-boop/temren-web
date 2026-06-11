@@ -59,7 +59,13 @@ export default function VorteksTupuPage() {
             const response = await fetch("/api/quote-request", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ ...form, productName: "Vorteks Tüpü", olcu: "Standart" }),
+                body: JSON.stringify({
+                    ...form,
+                    productName: "Vorteks Tüpü",
+                    olcu: "Standart",
+                    sourcePage: "/urunler/uretim/vortex-tupu",
+                    sourceLabel: "Vorteks Tüpü",
+                }),
             });
 
             if (response.ok) {

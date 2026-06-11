@@ -31,8 +31,10 @@ export default function MiniTakimBoyOlcerPage() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     ...form,
-                    productName: "Mini Takım Boy Ölçer", // Admin panelinde bu isimle düşecek
-                    olcu: "TTBO300 Mini"
+                    productName: "Mini Takım Boy Ölçer",
+                    olcu: "TTBO300 Mini",
+                    sourcePage: "/urunler/uretim/mini-takim-boy-olcer",
+                    sourceLabel: "Mini Takım Boy Ölçer",
                 }),
             });
 

@@ -29,7 +29,12 @@ export default function Iletisim() {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          secim: formData.konu || "Genel İletişim",
+          sourcePage: "/iletisim",
+          sourceLabel: formData.konu ? `İletişim: ${formData.konu}` : "İletişim Sayfası",
+        }),
       });
 
       const result = await res.json();

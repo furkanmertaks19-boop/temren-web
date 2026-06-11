@@ -132,6 +132,8 @@ export default function PLT18Page() {
         body: JSON.stringify({
           ...form,
           secim: "PLT-18 ÜRÜN TALEBİ",
+          sourcePage: "/urunler/palet-sistemleri/plt-18",
+          sourceLabel: "PLT-18",
         }),
       });
 

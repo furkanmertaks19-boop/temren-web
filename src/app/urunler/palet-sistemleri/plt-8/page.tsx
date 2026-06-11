@@ -60,7 +60,7 @@ export default function PLT08Page() {
       const response = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, secim: "PLT-08 SNOWBLOWER TALEBİ" }),
+        body: JSON.stringify({ ...form, secim: "PLT-08 SNOWBLOWER TALEBİ", sourcePage: "/urunler/palet-sistemleri/plt-8", sourceLabel: "PLT-08 SNOWBLOWER" }),
       });
       if (response.ok) {
         setSuccess(true);

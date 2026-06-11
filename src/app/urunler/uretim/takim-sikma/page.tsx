@@ -36,8 +36,10 @@ export default function TakimSikmaPage() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     ...form,
-                    productName: "Takım Sıkma Mekanizması", // Admin panelinde bu isimle düşecek
-                    olcu: "Standart"
+                    productName: "Takım Sıkma Mekanizması",
+                    olcu: "Standart",
+                    sourcePage: "/urunler/uretim/takim-sikma",
+                    sourceLabel: "Takım Sıkma Mekanizması",
                 }),
             });
 

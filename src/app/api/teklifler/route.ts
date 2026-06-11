@@ -1,40 +1,38 @@
 import { connectDB } from "@/lib/db";
 import mongoose from "mongoose";
 import { NextResponse } from "next/server";
+import { normalizeTeklif, type NormalizedTeklif } from "@/lib/teklifNormalizer";
+
+export const dynamic = "force-dynamic";
 
 export async function GET() {
     try {
         await connectDB();
         const db: any = mongoose.connection.db;
 
-        /**
-         * Veritabanı Bakımı: 
-         * Eğer eski sistemden kalan 'okundu: true' verileri varsa, 
-         * bunları sayaçla uyumlu 'isRead: true' haline getirir.
-         */
         await db.collection("teklifler").updateMany(
-            { okundu: true, isRead: { $exists: false } },
+            { okundu: true, isRead: { $ne: true } },
             { $set: { isRead: true } }
         );
 
-        // Tüm teklifleri en yeni en üstte olacak şekilde çek
-        const teklifler = await db.collection("teklifler")
+        const raw = await db.collection("teklifler")
             .find({})
-            .sort({ _id: -1 })
+            .sort({ createdAt: -1, _id: -1 })
             .toArray();
 
-        // VS Code terminalinden takip için
-        console.log(`[LİSTELEME] Toplam ${teklifler.length} teklif başarıyla çekildi.`);
+        const seen = new Set<string>();
+        const data = raw
+            .map((doc: Record<string, unknown>) => normalizeTeklif({ ...doc, _id: String(doc._id) }))
+            .filter((item: NormalizedTeklif) => {
+                if (seen.has(item._id)) return false;
+                seen.add(item._id);
+                return true;
+            });
 
-        return NextResponse.json({ 
-            success: true, 
-            data: teklifler 
-        });
-    } catch (error: any) {
-        console.error("Teklif listeleme hatası:", error.message);
-        return NextResponse.json({ 
-            success: false,
-            error: "Veri çekme hatası: " + error.message 
-        }, { status: 500 });
+        return NextResponse.json({ success: true, data, total: data.length });
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : "Bilinmeyen hata";
+        console.error("Teklif listeleme hatası:", message);
+        return NextResponse.json({ success: false, error: message }, { status: 500 });
     }
 }

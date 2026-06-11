@@ -2,76 +2,26 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import {
     Mail, Phone, X, Calendar, CheckCircle2,
-    RefreshCcw, MessageSquare, Inbox, Filter
+    RefreshCcw, MessageSquare, Inbox, Filter, Globe, FileText
 } from 'lucide-react';
 import AdminPageHeader from '@/components/admin/AdminPageHeader';
-
-type Teklif = {
-    _id: string;
-    source: 'contact' | 'quote';
-    adSoyad: string;
-    telefon: string;
-    email: string;
-    mesaj: string;
-    displayProduct: string;
-    displayStatus: boolean;
-    createdAt: string;
-    selectedSize?: string;
-};
+import type { NormalizedTeklif } from '@/lib/teklifNormalizer';
 
 export default function TekliflerPage() {
-    const [teklifler, setTeklifler] = useState<Teklif[]>([]);
+    const [teklifler, setTeklifler] = useState<NormalizedTeklif[]>([]);
     const [loading, setLoading] = useState(true);
-    const [selectedTeklif, setSelectedTeklif] = useState<Teklif | null>(null);
+    const [selectedTeklif, setSelectedTeklif] = useState<NormalizedTeklif | null>(null);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [filter, setFilter] = useState<'all' | 'unread' | 'read'>('all');
 
     const verileriGetir = useCallback(async (isAuto = false) => {
         if (!isAuto) setIsRefreshing(true);
         try {
-            const [resContact, resQuote] = await Promise.all([
-                fetch("/api/teklifler").then(r => r.json()),
-                fetch("/api/quote-request").then(r => r.json())
-            ]);
-
-            const contactData = (resContact.success ? resContact.data : []).map((item: Record<string, unknown>) => ({
-                ...item,
-                source: 'contact' as const,
-                adSoyad: item.adSoyad as string,
-                telefon: item.telefon as string,
-                email: item.email as string,
-                mesaj: item.mesaj as string,
-                displayProduct: (item.secim || item.konu || "Genel İletişim") as string,
-                displayStatus: item.okundu === true || item.isRead === true
-            }));
-
-            const quoteData = (Array.isArray(resQuote) ? resQuote : []).map((item: Record<string, unknown>) => ({
-                ...item,
-                source: 'quote' as const,
-                adSoyad: (item.fullName || item.adSoyad) as string,
-                telefon: (item.phone || item.telefon) as string,
-                email: item.email as string,
-                mesaj: (item.message || item.mesaj) as string,
-                displayProduct: (item.productName || "Ürün Teklifi") as string,
-                displayStatus: item.status === "Okundu" || item.isRead === true || item.okundu === true
-            }));
-
-            const combined = [...contactData, ...quoteData] as Teklif[];
-
-            const uniqueData = combined.reduce<Teklif[]>((acc, current) => {
-                const isDuplicate = acc.find(item =>
-                    item.email === current.email &&
-                    (item.mesaj === current.mesaj || item.displayProduct === current.displayProduct)
-                );
-                if (!isDuplicate) return [...acc, current];
-                return acc;
-            }, []);
-
-            uniqueData.sort((a, b) =>
-                new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-            );
-
-            setTeklifler(uniqueData);
+            const res = await fetch("/api/teklifler", { cache: 'no-store' });
+            const json = await res.json();
+            if (json.success) {
+                setTeklifler(json.data || []);
+            }
         } catch (error) {
             console.error("Veri senkronizasyon hatası:", error);
         } finally {
@@ -86,12 +36,12 @@ export default function TekliflerPage() {
         return () => clearInterval(interval);
     }, [verileriGetir]);
 
-    const teklifOku = async (teklif: Teklif) => {
+    const teklifOku = async (teklif: NormalizedTeklif) => {
         setSelectedTeklif(teklif);
         if (teklif.displayStatus) return;
 
         try {
-            const response = teklif.source === 'contact'
+            const response = teklif.formType === 'contact'
                 ? await fetch("/api/teklifler/oku", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -101,7 +51,7 @@ export default function TekliflerPage() {
 
             if (response.ok) {
                 setTeklifler(prev => prev.map(t =>
-                    t._id === teklif._id ? { ...t, displayStatus: true } : t
+                    t._id === teklif._id ? { ...t, displayStatus: true, isRead: true, okundu: true } : t
                 ));
                 setSelectedTeklif(prev => prev ? { ...prev, displayStatus: true } : null);
             }
@@ -139,7 +89,6 @@ export default function TekliflerPage() {
                 }
             />
 
-            {/* Filters */}
             <div className="flex items-center gap-2 mb-6">
                 <Filter size={14} className="text-slate-400" />
                 {(['all', 'unread', 'read'] as const).map((f) => (
@@ -186,15 +135,25 @@ export default function TekliflerPage() {
                                 <div className="flex items-center gap-2 flex-wrap">
                                     <span className="text-sm font-medium text-slate-900">{teklif.adSoyad}</span>
                                     <span className="text-[10px] font-medium px-2 py-0.5 rounded bg-slate-100 text-slate-600">
-                                        {teklif.displayProduct}
+                                        {teklif.sourceLabel}
+                                    </span>
+                                    <span className={`text-[10px] font-medium px-2 py-0.5 rounded ${
+                                        teklif.formType === 'quote'
+                                            ? 'bg-violet-50 text-violet-700'
+                                            : 'bg-blue-50 text-blue-700'
+                                    }`}>
+                                        {teklif.formType === 'quote' ? 'Teklif Formu' : 'İletişim Formu'}
                                     </span>
                                     {!teklif.displayStatus && (
                                         <span className="text-[10px] font-medium px-2 py-0.5 rounded bg-orange-100 text-[#FF4D00]">Yeni</span>
                                     )}
                                 </div>
-                                <div className="flex items-center gap-4 mt-1 text-xs text-slate-500">
+                                <div className="flex items-center gap-4 mt-1 text-xs text-slate-500 flex-wrap">
                                     <span className="flex items-center gap-1"><Mail size={11} /> {teklif.email}</span>
                                     <span className="flex items-center gap-1"><Phone size={11} /> {teklif.telefon}</span>
+                                    <span className="flex items-center gap-1 text-slate-400">
+                                        <Globe size={11} /> {teklif.sourcePage}
+                                    </span>
                                 </div>
                             </div>
                             <span className="text-xs text-slate-400 shrink-0 hidden sm:block">
@@ -205,7 +164,6 @@ export default function TekliflerPage() {
                 </div>
             )}
 
-            {/* Detail modal */}
             {selectedTeklif && (
                 <div
                     className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
@@ -235,14 +193,27 @@ export default function TekliflerPage() {
                                         <div className="flex items-center gap-2"><Calendar size={14} className="text-slate-400" /> {new Date(selectedTeklif.createdAt).toLocaleString('tr-TR')}</div>
                                     </div>
                                 </div>
-                                <div className="bg-slate-50 rounded-lg p-4 border border-slate-100">
-                                    <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-1">Ürün / Konu</p>
-                                    <p className="text-base font-medium text-slate-900">{selectedTeklif.displayProduct}</p>
-                                    {selectedTeklif.selectedSize && (
-                                        <span className="inline-block mt-2 text-xs font-medium px-2 py-1 rounded bg-[#FF4D00] text-white">
-                                            {selectedTeklif.selectedSize}
-                                        </span>
-                                    )}
+                                <div className="space-y-3">
+                                    <div className="bg-slate-50 rounded-lg p-4 border border-slate-100">
+                                        <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-1">Kaynak Sayfa</p>
+                                        <p className="text-sm font-medium text-slate-900 flex items-center gap-2">
+                                            <Globe size={14} className="text-[#FF4D00]" />
+                                            {selectedTeklif.sourcePage}
+                                        </p>
+                                        <p className="text-xs text-slate-500 mt-1">{selectedTeklif.sourceLabel}</p>
+                                    </div>
+                                    <div className="bg-slate-50 rounded-lg p-4 border border-slate-100">
+                                        <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-1">Form Tipi</p>
+                                        <p className="text-sm font-medium text-slate-900 flex items-center gap-2">
+                                            <FileText size={14} className="text-slate-400" />
+                                            {selectedTeklif.formType === 'quote' ? 'Ürün Teklif Formu' : 'İletişim Formu'}
+                                        </p>
+                                        {selectedTeklif.selectedSize && (
+                                            <span className="inline-block mt-2 text-xs font-medium px-2 py-1 rounded bg-[#FF4D00] text-white">
+                                                {selectedTeklif.selectedSize}
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                             <div className="bg-slate-900 rounded-lg p-5 text-white">

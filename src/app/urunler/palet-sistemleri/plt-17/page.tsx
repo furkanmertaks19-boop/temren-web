@@ -60,6 +60,8 @@ export default function PLT17Page() {
         body: JSON.stringify({
           ...form,
           secim: "PLT-17 GENİŞ MODEL TALEBİ",
+          sourcePage: "/urunler/palet-sistemleri/plt-17",
+          sourceLabel: "PLT-17 GENİŞ MODEL",
           mesaj: `Traktör: ${form.traktorModel} | Not: ${form.mesaj}`
         }),
       });

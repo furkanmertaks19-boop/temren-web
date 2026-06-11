@@ -31,8 +31,10 @@ export default function BYK1000Page() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     ...form,
-                    productName: "BYK-1000 Emülsiyon Cihazı", // Admin panelinde bu isimle düşecek
-                    olcu: "Standart"
+                    productName: "BYK-1000 Emülsiyon Cihazı",
+                    olcu: "Standart",
+                    sourcePage: "/urunler/uretim/byk1000",
+                    sourceLabel: "BYK-1000 Emülsiyon Cihazı",
                 }),
             });
 

@@ -90,6 +90,8 @@ export default function VakumluTablaPage() {
         body: JSON.stringify({
           ...form,
           productName: "CNC Vakum Tablası / Vakumlu Tabla",
+          sourcePage: "/urunler/uretim/vakum-tablasi",
+          sourceLabel: "CNC Vakum Tablası",
         }),
       });
 

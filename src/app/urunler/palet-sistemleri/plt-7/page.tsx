@@ -38,7 +38,9 @@ export default function PLT07Page() {
           adSoyad: form.adSoyad,
           email: form.email,
           telefon: form.telefon,
-          secim: "PLT-07 GERRIDAE", // Admin panelinde görünecek etiket
+          secim: "PLT-07 GERRIDAE",
+          sourcePage: "/urunler/palet-sistemleri/plt-7",
+          sourceLabel: "PLT-07 GERRIDAE",
           mesaj: `JANT/ARAÇ: ${form.jant} | TERCİH: ${form.tercih} | NOTLAR: ${form.notlar}`
         }),
       });

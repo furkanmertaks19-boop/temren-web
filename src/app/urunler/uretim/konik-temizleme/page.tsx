@@ -31,8 +31,10 @@ export default function KonikTemizlemePage() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     ...form,
-                    productName: "Konik Temizleme Cihazı", // Admin panelinde bu isimle düşecek
-                    olcu: "Standart"
+                    productName: "Konik Temizleme Cihazı",
+                    olcu: "Standart",
+                    sourcePage: "/urunler/uretim/konik-temizleme",
+                    sourceLabel: "Konik Temizleme Cihazı",
                 }),
             });
 

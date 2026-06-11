@@ -58,7 +58,7 @@ export default function PLT15Page() {
       const response = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, secim: "PLT-15 TALEBİ" }),
+        body: JSON.stringify({ ...form, secim: "PLT-15 TALEBİ", sourcePage: "/urunler/palet-sistemleri/plt-15", sourceLabel: "PLT-15" }),
       });
       if (response.ok) {
         setSuccess(true);

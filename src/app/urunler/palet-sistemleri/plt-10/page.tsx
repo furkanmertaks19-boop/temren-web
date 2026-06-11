@@ -65,7 +65,7 @@ export default function PLT10Page() {
       const response = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, secim: "PLT-10 ÜRÜN TALEBİ" }),
+        body: JSON.stringify({ ...form, secim: "PLT-10 ÜRÜN TALEBİ", sourcePage: "/urunler/palet-sistemleri/plt-10", sourceLabel: "PLT-10" }),
       });
       if (response.ok) {
         setSuccess(true);

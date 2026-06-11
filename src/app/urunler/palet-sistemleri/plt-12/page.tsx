@@ -64,7 +64,7 @@ export default function PLT12Page() {
       const response = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, secim: "PLT-12 ASPAR TALEBİ" }),
+        body: JSON.stringify({ ...form, secim: "PLT-12 ASPAR TALEBİ", sourcePage: "/urunler/palet-sistemleri/plt-12", sourceLabel: "PLT-12 ASPAR" }),
       });
       if (response.ok) {
         setSuccess(true);

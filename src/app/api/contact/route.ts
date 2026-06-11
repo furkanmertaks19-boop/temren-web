@@ -7,26 +7,31 @@ export async function POST(request: Request) {
         await connectDB();
         const body = await request.json();
 
-        // Formdan gelen verileri parçalıyoruz
-        const { adSoyad, email, telefon, mesaj, secim, dosyaAdi } = body;
+        const { adSoyad, email, telefon, mesaj, secim, dosyaAdi, konu, sourcePage, sourceLabel } = body;
 
         const db: any = mongoose.connection.db;
+        const label = sourceLabel || secim || konu || "Genel İletişim";
 
-        // Veriyi 'teklifler' koleksiyonuna kaydediyoruz
         const result = await db.collection("teklifler").insertOne({
             adSoyad,
             email,
-            telefon,
+            telefon: telefon || "—",
             mesaj,
-            secim: secim || "Genel İletişim", // Palet, Vakum Tablası vb.
+            konu: konu || null,
+            secim: secim || label,
             dosya: dosyaAdi || null,
-            okundu: false, // Yeni gelen her mesaj okunmadı olarak başlar
+            formType: "contact",
+            sourcePage: sourcePage || "/iletisim",
+            sourceLabel: label,
+            isRead: false,
+            okundu: false,
             createdAt: new Date(),
         });
 
         return NextResponse.json({ success: true, id: result.insertedId });
-    } catch (error: any) {
-        console.error("Form Gönderim Hatası:", error);
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : "Bilinmeyen hata";
+        console.error("Form Gönderim Hatası:", message);
         return NextResponse.json({ error: "Mesaj iletilemedi." }, { status: 500 });
     }
 }

@@ -39,7 +39,12 @@ export default function AdminLoginPage() {
       const data = await res.json();
 
       if (res.ok) {
-        localStorage.setItem("isLoggedIn", "true");
+        const { setAdminSession } = await import("@/lib/adminPermissions");
+        if (data.user) {
+          setAdminSession(data.user);
+        } else {
+          localStorage.setItem("isLoggedIn", "true");
+        }
         router.push("/admin/dashboard");
       } else {
         setIsToggled(false);

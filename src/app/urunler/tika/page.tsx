@@ -87,7 +87,7 @@ export default function TikaPage() {
             const response = await fetch("/api/contact", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ ...form, secim: "TİKA PROJE TALEBİ" }),
+                body: JSON.stringify({ ...form, secim: "TİKA PROJE TALEBİ", sourcePage: "/urunler/tika", sourceLabel: "TİKA PROJE" }),
             });
             if (response.ok) {
                 setSuccess(true);

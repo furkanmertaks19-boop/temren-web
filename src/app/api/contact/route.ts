@@ -25,6 +25,7 @@ export async function POST(request: Request) {
             sourceLabel: label,
             isRead: false,
             okundu: false,
+            status: "Yeni",
             createdAt: new Date(),
         });
 

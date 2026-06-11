@@ -1,4 +1,5 @@
 import { connectDB } from "@/lib/db";
+import { getUnreadTeklifMongoFilter } from "@/lib/teklifStatus";
 import mongoose from "mongoose";
 import { NextResponse } from "next/server";
 
@@ -7,13 +8,9 @@ export async function GET() {
         await connectDB();
         const db: any = mongoose.connection.db;
 
-        const unreadCount = await db.collection("teklifler").countDocuments({
-            $and: [
-                { isRead: { $ne: true } },
-                { okundu: { $ne: true } },
-                { status: { $ne: "Okundu" } }
-            ]
-        });
+        const unreadCount = await db.collection("teklifler").countDocuments(
+            getUnreadTeklifMongoFilter()
+        );
 
         const latestOffers = await db.collection("teklifler")
             .find({})

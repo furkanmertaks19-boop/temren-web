@@ -12,7 +12,7 @@ const QuoteRequestSchema = new mongoose.Schema({
     sourceLabel: { type: String },
     isRead: { type: Boolean, default: false },
     okundu: { type: Boolean, default: false },
-    status: { type: String, default: "Beklemede" },
+    status: { type: String, default: "Yeni" },
     readAt: { type: Date },
 }, {
     timestamps: true,

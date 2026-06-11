@@ -1,71 +1,75 @@
 "use client";
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import {
     Mail, Phone, X, Calendar, CheckCircle2,
     RefreshCcw, MessageSquare, Inbox, Filter, Globe, FileText
 } from 'lucide-react';
 import AdminPageHeader from '@/components/admin/AdminPageHeader';
+import TeklifStatusBadge from '@/components/admin/TeklifStatusBadge';
+import TeklifStatusSelect from '@/components/admin/TeklifStatusSelect';
+import {
+    useMarkTeklifViewed,
+    useTeklifler,
+    useUpdateTeklifStatus,
+} from '@/hooks/admin/useAdminData';
 import type { NormalizedTeklif } from '@/lib/teklifNormalizer';
+import type { TeklifStatus } from '@/lib/teklifStatus';
+import { isTeklifUnread } from '@/lib/teklifStatus';
 
 export default function TekliflerPage() {
-    const [teklifler, setTeklifler] = useState<NormalizedTeklif[]>([]);
-    const [loading, setLoading] = useState(true);
+    const { data: teklifler = [], isLoading, isFetching, refetch } = useTeklifler();
+    const updateStatus = useUpdateTeklifStatus();
+    const markViewed = useMarkTeklifViewed();
+
     const [selectedTeklif, setSelectedTeklif] = useState<NormalizedTeklif | null>(null);
-    const [isRefreshing, setIsRefreshing] = useState(false);
     const [filter, setFilter] = useState<'all' | 'unread' | 'read'>('all');
 
-    const verileriGetir = useCallback(async (isAuto = false) => {
-        if (!isAuto) setIsRefreshing(true);
-        try {
-            const res = await fetch("/api/teklifler", { cache: 'no-store' });
-            const json = await res.json();
-            if (json.success) {
-                setTeklifler(json.data || []);
-            }
-        } catch (error) {
-            console.error("Veri senkronizasyon hatası:", error);
-        } finally {
-            setLoading(false);
-            setIsRefreshing(false);
-        }
-    }, []);
+    const unreadCount = teklifler.filter((t) =>
+        isTeklifUnread(t.status, t.isRead, t.okundu)
+    ).length;
 
-    useEffect(() => {
-        verileriGetir();
-        const interval = setInterval(() => verileriGetir(true), 45000);
-        return () => clearInterval(interval);
-    }, [verileriGetir]);
+    const filtered = teklifler.filter((t) => {
+        const unread = isTeklifUnread(t.status, t.isRead, t.okundu);
+        if (filter === 'unread') return unread;
+        if (filter === 'read') return !unread;
+        return true;
+    });
 
-    const teklifOku = async (teklif: NormalizedTeklif) => {
+    const handleOpenTeklif = (teklif: NormalizedTeklif) => {
         setSelectedTeklif(teklif);
-        if (teklif.displayStatus) return;
-
-        try {
-            const response = teklif.formType === 'contact'
-                ? await fetch("/api/teklifler/oku", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ id: teklif._id }),
-                })
-                : await fetch(`/api/quote-request/${teklif._id}`, { method: "PATCH" });
-
-            if (response.ok) {
-                setTeklifler(prev => prev.map(t =>
-                    t._id === teklif._id ? { ...t, displayStatus: true, isRead: true, okundu: true } : t
-                ));
-                setSelectedTeklif(prev => prev ? { ...prev, displayStatus: true } : null);
-            }
-        } catch (err) {
-            console.error("Okundu işaretleme hatası:", err);
+        if (isTeklifUnread(teklif.status, teklif.isRead, teklif.okundu)) {
+            markViewed.mutate(teklif, {
+                onSuccess: () => {
+                    setSelectedTeklif((prev) =>
+                        prev && prev._id === teklif._id
+                            ? { ...prev, status: 'Görüşüldü', displayStatus: true, isRead: true, okundu: true }
+                            : prev
+                    );
+                },
+            });
         }
     };
 
-    const unreadCount = teklifler.filter(t => !t.displayStatus).length;
-    const filtered = teklifler.filter(t => {
-        if (filter === 'unread') return !t.displayStatus;
-        if (filter === 'read') return t.displayStatus;
-        return true;
-    });
+    const handleStatusChange = (id: string, status: TeklifStatus) => {
+        updateStatus.mutate(
+            { id, status },
+            {
+                onSuccess: () => {
+                    setSelectedTeklif((prev) =>
+                        prev && prev._id === id
+                            ? {
+                                ...prev,
+                                status,
+                                displayStatus: status !== 'Yeni',
+                                isRead: status !== 'Yeni',
+                                okundu: status !== 'Yeni',
+                            }
+                            : prev
+                    );
+                },
+            }
+        );
+    };
 
     return (
         <div>
@@ -73,17 +77,17 @@ export default function TekliflerPage() {
                 title="Teklif Talepleri"
                 description={`${unreadCount} okunmamış · ${teklifler.length} toplam talep`}
                 badge={unreadCount > 0 ? (
-                    <span className="px-2 py-0.5 rounded-full bg-red-50 text-red-600 text-xs font-medium">
+                    <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 text-xs font-medium">
                         {unreadCount} yeni
                     </span>
                 ) : undefined}
                 actions={
                     <button
-                        onClick={() => verileriGetir()}
-                        disabled={isRefreshing}
+                        onClick={() => refetch()}
+                        disabled={isFetching}
                         className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-50"
                     >
-                        <RefreshCcw size={14} className={isRefreshing ? "animate-spin" : ""} />
+                        <RefreshCcw size={14} className={isFetching ? 'animate-spin' : ''} />
                         Yenile
                     </button>
                 }
@@ -106,9 +110,9 @@ export default function TekliflerPage() {
                 ))}
             </div>
 
-            {loading ? (
+            {isLoading ? (
                 <div className="flex flex-col items-center justify-center py-24 gap-3">
-                    <div className="w-8 h-8 border-2 border-slate-200 border-t-[#FF4D00] rounded-full animate-spin" />
+                    <div className="w-8 h-8 border-2 border-slate-200 border-t-[#FF6B00] rounded-full animate-spin" />
                     <p className="text-sm text-slate-400">Yükleniyor...</p>
                 </div>
             ) : filtered.length === 0 ? (
@@ -118,49 +122,62 @@ export default function TekliflerPage() {
                 </div>
             ) : (
                 <div className="bg-white border border-slate-200 rounded-xl overflow-hidden divide-y divide-slate-100">
-                    {filtered.map((teklif) => (
-                        <button
-                            key={teklif._id}
-                            onClick={() => teklifOku(teklif)}
-                            className={`w-full flex items-center gap-4 px-5 py-4 text-left hover:bg-slate-50 transition-colors ${
-                                !teklif.displayStatus ? 'bg-orange-50/30' : ''
-                            }`}
-                        >
-                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${
-                                teklif.displayStatus ? 'bg-slate-100 text-slate-400' : 'bg-[#FF4D00] text-white'
-                            }`}>
-                                {teklif.displayStatus ? <CheckCircle2 size={18} /> : <MessageSquare size={18} />}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 flex-wrap">
-                                    <span className="text-sm font-medium text-slate-900">{teklif.adSoyad}</span>
-                                    <span className="text-[10px] font-medium px-2 py-0.5 rounded bg-slate-100 text-slate-600">
-                                        {teklif.sourceLabel}
-                                    </span>
-                                    <span className={`text-[10px] font-medium px-2 py-0.5 rounded ${
-                                        teklif.formType === 'quote'
-                                            ? 'bg-violet-50 text-violet-700'
-                                            : 'bg-blue-50 text-blue-700'
+                    {filtered.map((teklif) => {
+                        const unread = isTeklifUnread(teklif.status, teklif.isRead, teklif.okundu);
+                        return (
+                            <div
+                                key={teklif._id}
+                                className={`flex items-center gap-4 px-5 py-4 hover:bg-slate-50 transition-colors ${
+                                    unread ? 'bg-blue-50/30' : ''
+                                }`}
+                            >
+                                <button
+                                    type="button"
+                                    onClick={() => handleOpenTeklif(teklif)}
+                                    className="flex items-center gap-4 flex-1 min-w-0 text-left"
+                                >
+                                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${
+                                        unread ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-400'
                                     }`}>
-                                        {teklif.formType === 'quote' ? 'Teklif Formu' : 'İletişim Formu'}
-                                    </span>
-                                    {!teklif.displayStatus && (
-                                        <span className="text-[10px] font-medium px-2 py-0.5 rounded bg-orange-100 text-[#FF4D00]">Yeni</span>
-                                    )}
-                                </div>
-                                <div className="flex items-center gap-4 mt-1 text-xs text-slate-500 flex-wrap">
-                                    <span className="flex items-center gap-1"><Mail size={11} /> {teklif.email}</span>
-                                    <span className="flex items-center gap-1"><Phone size={11} /> {teklif.telefon}</span>
-                                    <span className="flex items-center gap-1 text-slate-400">
-                                        <Globe size={11} /> {teklif.sourcePage}
+                                        {unread ? <MessageSquare size={18} /> : <CheckCircle2 size={18} />}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                            <span className="text-sm font-medium text-slate-900">{teklif.adSoyad}</span>
+                                            <span className="text-[10px] font-medium px-2 py-0.5 rounded bg-slate-100 text-slate-600">
+                                                {teklif.sourceLabel}
+                                            </span>
+                                            <span className={`text-[10px] font-medium px-2 py-0.5 rounded ${
+                                                teklif.formType === 'quote'
+                                                    ? 'bg-violet-50 text-violet-700'
+                                                    : 'bg-blue-50 text-blue-700'
+                                            }`}>
+                                                {teklif.formType === 'quote' ? 'Teklif Formu' : 'İletişim Formu'}
+                                            </span>
+                                            <TeklifStatusBadge status={teklif.status} className="hidden sm:inline-flex" />
+                                        </div>
+                                        <div className="flex items-center gap-4 mt-1 text-xs text-slate-500 flex-wrap">
+                                            <span className="flex items-center gap-1"><Mail size={11} /> {teklif.email}</span>
+                                            <span className="flex items-center gap-1"><Phone size={11} /> {teklif.telefon}</span>
+                                            <span className="flex items-center gap-1 text-slate-400">
+                                                <Globe size={11} /> {teklif.sourcePage}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </button>
+                                <div className="flex items-center gap-3 shrink-0">
+                                    <TeklifStatusSelect
+                                        value={teklif.status}
+                                        onChange={(status) => handleStatusChange(teklif._id, status)}
+                                        disabled={updateStatus.isPending}
+                                    />
+                                    <span className="text-xs text-slate-400 hidden sm:block w-20 text-right">
+                                        {new Date(teklif.createdAt).toLocaleDateString('tr-TR')}
                                     </span>
                                 </div>
                             </div>
-                            <span className="text-xs text-slate-400 shrink-0 hidden sm:block">
-                                {new Date(teklif.createdAt).toLocaleDateString('tr-TR')}
-                            </span>
-                        </button>
-                    ))}
+                        );
+                    })}
                 </div>
             )}
 
@@ -174,7 +191,10 @@ export default function TekliflerPage() {
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-                            <h2 className="text-base font-semibold text-slate-900">Talep Detayı</h2>
+                            <div className="flex items-center gap-3 flex-wrap">
+                                <h2 className="text-base font-semibold text-slate-900">Talep Detayı</h2>
+                                <TeklifStatusBadge status={selectedTeklif.status} />
+                            </div>
                             <button
                                 onClick={() => setSelectedTeklif(null)}
                                 className="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
@@ -183,6 +203,20 @@ export default function TekliflerPage() {
                             </button>
                         </div>
                         <div className="p-6 overflow-y-auto space-y-6">
+                            <div className="flex flex-col sm:flex-row sm:items-end gap-3">
+                                <div className="flex-1">
+                                    <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-1.5">
+                                        Durum
+                                    </p>
+                                    <TeklifStatusSelect
+                                        value={selectedTeklif.status}
+                                        onChange={(status) => handleStatusChange(selectedTeklif._id, status)}
+                                        disabled={updateStatus.isPending}
+                                        size="default"
+                                        className="w-full sm:w-[220px]"
+                                    />
+                                </div>
+                            </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-1">Müşteri</p>
@@ -197,7 +231,7 @@ export default function TekliflerPage() {
                                     <div className="bg-slate-50 rounded-lg p-4 border border-slate-100">
                                         <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-1">Kaynak Sayfa</p>
                                         <p className="text-sm font-medium text-slate-900 flex items-center gap-2">
-                                            <Globe size={14} className="text-[#FF4D00]" />
+                                            <Globe size={14} className="text-[#FF6B00]" />
                                             {selectedTeklif.sourcePage}
                                         </p>
                                         <p className="text-xs text-slate-500 mt-1">{selectedTeklif.sourceLabel}</p>
@@ -209,7 +243,7 @@ export default function TekliflerPage() {
                                             {selectedTeklif.formType === 'quote' ? 'Ürün Teklif Formu' : 'İletişim Formu'}
                                         </p>
                                         {selectedTeklif.selectedSize && (
-                                            <span className="inline-block mt-2 text-xs font-medium px-2 py-1 rounded bg-[#FF4D00] text-white">
+                                            <span className="inline-block mt-2 text-xs font-medium px-2 py-1 rounded bg-[#FF6B00] text-white">
                                                 {selectedTeklif.selectedSize}
                                             </span>
                                         )}
@@ -219,7 +253,7 @@ export default function TekliflerPage() {
                             <div className="bg-slate-900 rounded-lg p-5 text-white">
                                 <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-2">Mesaj</p>
                                 <p className="text-sm leading-relaxed text-slate-200">
-                                    {selectedTeklif.mesaj || "Mesaj içeriği bulunmuyor."}
+                                    {selectedTeklif.mesaj || 'Mesaj içeriği bulunmuyor.'}
                                 </p>
                             </div>
                         </div>

@@ -1,3 +1,5 @@
+import { isTeklifUnread, normalizeTeklifStatus, type TeklifStatus } from '@/lib/teklifStatus';
+
 export type NormalizedTeklif = {
     _id: string;
     adSoyad: string;
@@ -6,6 +8,7 @@ export type NormalizedTeklif = {
     mesaj: string;
     displayProduct: string;
     displayStatus: boolean;
+    status: TeklifStatus;
     formType: 'contact' | 'quote';
     sourcePage: string;
     sourceLabel: string;
@@ -31,8 +34,8 @@ export function normalizeTeklif(raw: Record<string, unknown>): NormalizedTeklif 
     const formType: 'contact' | 'quote' = isQuote ? 'quote' : 'contact';
     const isRead = raw.isRead === true;
     const okundu = raw.okundu === true;
-    const statusOkundu = raw.status === 'Okundu';
-    const displayStatus = isRead || okundu || statusOkundu;
+    const status = normalizeTeklifStatus(raw.status, isRead, okundu);
+    const displayStatus = !isTeklifUnread(status, isRead, okundu);
 
     return {
         _id: String(raw._id),
@@ -42,6 +45,7 @@ export function normalizeTeklif(raw: Record<string, unknown>): NormalizedTeklif 
         mesaj,
         displayProduct,
         displayStatus,
+        status,
         formType,
         sourcePage,
         sourceLabel,

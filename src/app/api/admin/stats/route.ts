@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import connectDB from "@/lib/db";
+import { getUnreadTeklifMongoFilter } from "@/lib/teklifStatus";
 import mongoose from "mongoose";
 
 export const dynamic = "force-dynamic";
@@ -21,11 +22,7 @@ export async function GET() {
 
         const [totalProducts, unreadQuotes, sliderCount, commentCount, pendingComments, recentQuotes] = await Promise.all([
             Product.countDocuments(),
-            QuoteRequest.countDocuments({
-                isRead: { $ne: true },
-                okundu: { $ne: true },
-                status: { $ne: "Okundu" }
-            }),
+            QuoteRequest.countDocuments(getUnreadTeklifMongoFilter()),
             Slider.countDocuments({ isActive: true }),
             Comment.countDocuments(),
             Comment.countDocuments({ isActive: false }),

@@ -32,7 +32,10 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
+import AdminQueryProvider from '@/components/admin/AdminQueryProvider';
+import { useAdminNotifications } from '@/hooks/admin/useAdminData';
 import { cn } from '@/lib/utils';
+import { Toaster } from 'react-hot-toast';
 
 const ACCENT = '#FF6B00';
 const SIDEBAR_BG = '#0B1736';
@@ -52,13 +55,10 @@ type NavSection = {
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
   const [session, setSession] = useState<ReturnType<typeof getAdminSession>>(null);
 
   const isLoginPage = pathname === '/admin/login';
-  const isDashboard = pathname === '/admin/dashboard';
 
   useEffect(() => {
     if (isLoginPage) {
@@ -72,23 +72,41 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       setSession(getAdminSession());
       setAuthChecked(true);
     }
-  }, [isLoginPage, router, pathname]);
+  }, [isLoginPage, router]);
 
-  useEffect(() => {
-    if (isLoginPage || !authChecked) return;
-    const fetchNotifications = async () => {
-      try {
-        const res = await fetch('/api/admin/notifications', { cache: 'no-store' });
-        const data = await res.json();
-        setUnreadCount(data.unreadCount || 0);
-      } catch {
-        /* ignore */
-      }
-    };
-    fetchNotifications();
-    const interval = setInterval(fetchNotifications, 30000);
-    return () => clearInterval(interval);
-  }, [isLoginPage, authChecked]);
+  if (isLoginPage) return <>{children}</>;
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center admin-panel">
+        <div
+          className="w-8 h-8 border-2 border-slate-200 rounded-full animate-spin"
+          style={{ borderTopColor: ACCENT }}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <AdminQueryProvider>
+      <AdminLayoutShell session={session}>{children}</AdminLayoutShell>
+    </AdminQueryProvider>
+  );
+}
+
+function AdminLayoutShell({
+  children,
+  session,
+}: {
+  children: React.ReactNode;
+  session: ReturnType<typeof getAdminSession>;
+}) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { data: notifications } = useAdminNotifications();
+  const unreadCount = notifications?.unreadCount ?? 0;
+
+  const isDashboard = pathname === '/admin/dashboard';
 
   const handleLogout = async () => {
     try {
@@ -133,18 +151,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       ],
     },
   ], [unreadCount]);
-
-  if (isLoginPage) return <>{children}</>;
-  if (!authChecked) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center admin-panel">
-        <div
-          className="w-8 h-8 border-2 border-slate-200 rounded-full animate-spin"
-          style={{ borderTopColor: ACCENT }}
-        />
-      </div>
-    );
-  }
 
   const userInitial = (session?.displayName || 'A').charAt(0).toUpperCase();
 
@@ -322,6 +328,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="admin-panel flex min-h-screen bg-white text-slate-900">
+      <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
       {/* Desktop sidebar */}
       <aside
         className="hidden lg:flex w-64 flex-col fixed inset-y-0 left-0 z-40"

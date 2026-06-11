@@ -22,12 +22,13 @@ export async function POST(request: Request) {
          */
         const result = await db.collection("teklifler").updateOne(
             { _id: new ObjectId(id) },
-            { 
-                $set: { 
-                    isRead: true,   // Sayaçtan düşmesi için
-                    okundu: true,   // Listede tik işareti çıkması için
-                    readAt: new Date() // Okunma zamanı (opsiyonel takip için)
-                } 
+            {
+                $set: {
+                    isRead: true,
+                    okundu: true,
+                    status: "Görüşüldü",
+                    readAt: new Date(),
+                },
             }
         );
 

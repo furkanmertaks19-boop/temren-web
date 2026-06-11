@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
@@ -20,6 +20,9 @@ import {
   Circle,
 } from 'lucide-react';
 import { getAdminSession, ROLE_LABELS } from '@/lib/adminPermissions';
+import { normalizeTeklif } from '@/lib/teklifNormalizer';
+import { useAdminNotifications, useAdminStats } from '@/hooks/admin/useAdminData';
+import TeklifStatusBadge from '@/components/admin/TeklifStatusBadge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -34,49 +37,6 @@ import { cn } from '@/lib/utils';
 
 const ACCENT = '#FF6B00';
 
-type OfferStatus = 'yeni' | 'inceleniyor' | 'tamamlandi';
-
-function getOfferStatus(offer: Record<string, unknown>): OfferStatus {
-  const isUnread =
-    offer.isRead !== true &&
-    offer.okundu !== true &&
-    offer.status !== 'Okundu';
-
-  if (isUnread) return 'yeni';
-
-  const status = String(offer.status || '');
-  if (
-    status === 'Tamamlandı' ||
-    status === 'Tamamlandi' ||
-    status === 'Okundu'
-  ) {
-    return 'tamamlandi';
-  }
-
-  return 'inceleniyor';
-}
-
-const statusConfig: Record<
-  OfferStatus,
-  { label: string; variant: 'default' | 'secondary' | 'outline'; className?: string }
-> = {
-  yeni: {
-    label: 'Yeni',
-    variant: 'default',
-    className: 'bg-orange-50 text-[#FF6B00] border-orange-200 hover:bg-orange-50',
-  },
-  inceleniyor: {
-    label: 'İnceleniyor',
-    variant: 'secondary',
-    className: 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-50',
-  },
-  tamamlandi: {
-    label: 'Tamamlandı',
-    variant: 'outline',
-    className: 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-50',
-  },
-};
-
 const fadeIn = {
   initial: { opacity: 0, y: 8 },
   animate: { opacity: 1, y: 0 },
@@ -84,46 +44,32 @@ const fadeIn = {
 };
 
 export default function DashboardPage() {
-  const [stats, setStats] = useState({
+  const [session, setSession] = useState<ReturnType<typeof getAdminSession>>(null);
+  const { data: statsData, isLoading: statsLoading, dataUpdatedAt: statsUpdatedAt } = useAdminStats();
+  const { data: notifications, isLoading: notificationsLoading } = useAdminNotifications();
+
+  useEffect(() => {
+    setSession(getAdminSession());
+  }, []);
+
+  const stats = statsData?.stats ?? {
     totalProducts: 0,
     unreadQuotes: 0,
     activeSlides: 0,
     pendingComments: 0,
     totalComments: 0,
     newsletterSubscribers: 0,
-  });
-  const [latestOffers, setLatestOffers] = useState<Record<string, unknown>[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  const [session, setSession] = useState<ReturnType<typeof getAdminSession>>(null);
-
-  const fetchDashboardData = async () => {
-    try {
-      const [statsRes, notifRes] = await Promise.all([
-        fetch('/api/admin/stats', { cache: 'no-store' }),
-        fetch('/api/admin/notifications', { cache: 'no-store' }),
-      ]);
-      const statsData = await statsRes.json();
-      const notifData = await notifRes.json();
-
-      if (statsData.success) {
-        setStats(statsData.stats);
-      }
-      setLatestOffers(notifData.latestOffers || statsData.recentQuotes || []);
-      setLastUpdated(new Date());
-    } catch (error) {
-      console.error('Veri çekilemedi:', error);
-    } finally {
-      setLoading(false);
-    }
   };
+  const loading = statsLoading || notificationsLoading;
+  const lastUpdated = statsUpdatedAt ? new Date(statsUpdatedAt) : null;
 
-  useEffect(() => {
-    setSession(getAdminSession());
-    fetchDashboardData();
-    const interval = setInterval(fetchDashboardData, 30000);
-    return () => clearInterval(interval);
-  }, []);
+  const latestOffers = useMemo(
+    () =>
+      (notifications?.latestOffers ?? []).map((offer) =>
+        normalizeTeklif(offer as Record<string, unknown>)
+      ),
+    [notifications?.latestOffers]
+  );
 
   const statCards = [
     {
@@ -360,62 +306,39 @@ export default function DashboardPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {latestOffers.map((offer, i) => {
-                      const status = getOfferStatus(offer);
-                      const config = statusConfig[status];
-                      return (
-                        <TableRow key={String(offer._id || i)} className="cursor-pointer">
+                    {latestOffers.map((offer) => (
+                        <TableRow key={offer._id} className="cursor-pointer">
                           <TableCell className="pl-6">
                             <Link href="/admin/teklifler" className="block">
                               <p className="text-sm font-medium text-slate-900 truncate max-w-[140px] sm:max-w-none">
-                                {String(
-                                  offer.fullName || offer.adSoyad || offer.name || 'İsimsiz'
-                                )}
+                                {offer.adSoyad}
                               </p>
                               <p className="text-xs text-slate-500 truncate sm:hidden mt-0.5">
-                                {String(
-                                  offer.productName ||
-                                    offer.secim ||
-                                    offer.konu ||
-                                    'Genel talep'
-                                )}
+                                {offer.displayProduct}
                               </p>
                             </Link>
                           </TableCell>
                           <TableCell className="hidden sm:table-cell">
                             <Link href="/admin/teklifler" className="text-sm text-slate-600 truncate block max-w-[200px]">
-                              {String(
-                                offer.productName ||
-                                  offer.secim ||
-                                  offer.konu ||
-                                  'Genel talep'
-                              )}
+                              {offer.displayProduct}
                             </Link>
                           </TableCell>
                           <TableCell className="hidden md:table-cell text-sm text-slate-500">
                             <Link href="/admin/teklifler">
-                              {offer.createdAt
-                                ? new Date(String(offer.createdAt)).toLocaleDateString('tr-TR', {
-                                    day: 'numeric',
-                                    month: 'short',
-                                    year: 'numeric',
-                                  })
-                                : '—'}
+                              {new Date(offer.createdAt).toLocaleDateString('tr-TR', {
+                                day: 'numeric',
+                                month: 'short',
+                                year: 'numeric',
+                              })}
                             </Link>
                           </TableCell>
                           <TableCell className="pr-6 text-right">
                             <Link href="/admin/teklifler">
-                              <Badge
-                                variant={config.variant}
-                                className={cn('text-[10px] font-medium', config.className)}
-                              >
-                                {config.label}
-                              </Badge>
+                              <TeklifStatusBadge status={offer.status} />
                             </Link>
                           </TableCell>
                         </TableRow>
-                      );
-                    })}
+                    ))}
                   </TableBody>
                 </Table>
               ) : (

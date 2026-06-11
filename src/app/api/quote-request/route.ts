@@ -33,6 +33,7 @@ export async function POST(req: Request) {
             sourceLabel: label,
             isRead: false,
             okundu: false,
+            status: "Yeni",
         });
 
         return NextResponse.json({ success: true, data: newRequest }, { status: 201 });

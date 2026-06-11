@@ -5,26 +5,26 @@ import {
     Image as ImageIcon, Link as LinkIcon, Eye, EyeOff, Info, Upload, ChevronDown, GripVertical
 } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
+import AdminPageHeader from '@/components/admin/AdminPageHeader';
 
-// Statik sayfalar
 const STATIC_PAGES = [
-    { name: "ANA SAYFA", path: "/" },
-    { name: "KURUMSAL / HAKKIMIZDA", path: "/kurumsal/hakkimizda" },
-    { name: "KURUMSAL / MÜŞTERİ GÖRÜŞLERİ", path: "/kurumsal/musteri-gorusleri" },
-    { name: "MEDYA / BLOG", path: "/medya/blog" },
-    { name: "MEDYA / FOTO GALERİ", path: "/medya/foto" },
-    { name: "MEDYA / VİDEO GALERİ", path: "/medya/video" },
-    { name: "İLETİŞİM", path: "/iletisim" },
-    { name: "ÜRÜN: PLT-7", path: "/urunler/palet-sistemleri/plt-7" },
-    { name: "ÜRÜN: PLT-8", path: "/urunler/palet-sistemleri/plt-8" },
-    { name: "ÜRÜN: PLT-10", path: "/urunler/palet-sistemleri/plt-10" },
-    { name: "ÜRÜN: PLT-12", path: "/urunler/palet-sistemleri/plt-12" },
-    { name: "ÜRÜN: PLT-15", path: "/urunler/palet-sistemleri/plt-15" },
-    { name: "ÜRÜN: PLT-16", path: "/urunler/palet-sistemleri/plt-16" },
-    { name: "ÜRÜN: PLT-17", path: "/urunler/palet-sistemleri/plt-17" },
-    { name: "ÜRÜN: PLT-18", path: "/urunler/palet-sistemleri/plt-18" },
-    { name: "ÜRÜN: TİKA", path: "/urunler/tika" },
-    { name: "ÜRÜN: MİNİ TİKA", path: "/urunler/mini-tika" },
+    { name: "Ana Sayfa", path: "/" },
+    { name: "Kurumsal / Hakkımızda", path: "/kurumsal/hakkimizda" },
+    { name: "Kurumsal / Müşteri Görüşleri", path: "/kurumsal/musteri-gorusleri" },
+    { name: "Medya / Blog", path: "/medya/blog" },
+    { name: "Medya / Foto Galeri", path: "/medya/foto" },
+    { name: "Medya / Video Galeri", path: "/medya/video" },
+    { name: "İletişim", path: "/iletisim" },
+    { name: "Ürün: PLT-7", path: "/urunler/palet-sistemleri/plt-7" },
+    { name: "Ürün: PLT-8", path: "/urunler/palet-sistemleri/plt-8" },
+    { name: "Ürün: PLT-10", path: "/urunler/palet-sistemleri/plt-10" },
+    { name: "Ürün: PLT-12", path: "/urunler/palet-sistemleri/plt-12" },
+    { name: "Ürün: PLT-15", path: "/urunler/palet-sistemleri/plt-15" },
+    { name: "Ürün: PLT-16", path: "/urunler/palet-sistemleri/plt-16" },
+    { name: "Ürün: PLT-17", path: "/urunler/palet-sistemleri/plt-17" },
+    { name: "Ürün: PLT-18", path: "/urunler/palet-sistemleri/plt-18" },
+    { name: "Ürün: Tika", path: "/urunler/tika" },
+    { name: "Ürün: Mini Tika", path: "/urunler/mini-tika" },
 ];
 
 export default function AdminSliderPage() {
@@ -33,6 +33,7 @@ export default function AdminSliderPage() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
+    const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [activeUploadIndex, setActiveUploadIndex] = useState<number | null>(null);
@@ -40,23 +41,20 @@ export default function AdminSliderPage() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // Slider verilerini çek
                 const sliderRes = await fetch('/api/slider');
                 const sliderData = await sliderRes.json();
-                const formattedSlides = sliderData.map((item: any, idx: number) => ({
+                const formattedSlides = (Array.isArray(sliderData) ? sliderData : []).map((item: any, idx: number) => ({
                     ...item,
-                    dragId: item.id?.toString() || `slide-${idx}`
+                    dragId: item._id?.toString() || item.id?.toString() || `slide-${idx}`
                 }));
                 setSlides(formattedSlides);
 
-                // Blogları çek ve listeye ekle
                 const blogRes = await fetch('/api/blog');
                 const blogs = await blogRes.json();
-                const blogPages = blogs.map((blog: any) => ({
-                    name: `HABER: ${blog.title.toUpperCase()}`,
+                const blogPages = (Array.isArray(blogs) ? blogs : []).map((blog: any) => ({
+                    name: `Haber: ${blog.title}`,
                     path: `/medya/blog/${blog.slug}`
                 }));
-
                 setAvailablePages([...STATIC_PAGES, ...blogPages]);
             } catch (error) {
                 console.error("Veri yükleme hatası:", error);
@@ -69,15 +67,14 @@ export default function AdminSliderPage() {
 
     const isVideo = (url: string) => {
         if (!url) return false;
-        const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov'];
-        return videoExtensions.some(ext => url.toLowerCase().endsWith(ext));
+        return ['.mp4', '.webm', '.ogg', '.mov'].some(ext => url.toLowerCase().includes(ext));
     };
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (activeUploadIndex === null || !e.target.files?.[0]) return;
         const file = e.target.files[0];
         if (file.size > 30 * 1024 * 1024) {
-            alert("Dosya boyutu 30MB'dan büyük olamaz!");
+            setSaveMessage({ type: 'error', text: 'Dosya boyutu 30MB\'dan büyük olamaz.' });
             return;
         }
         setUploadingIndex(activeUploadIndex);
@@ -90,20 +87,23 @@ export default function AdminSliderPage() {
                 const newSlides = [...slides];
                 newSlides[activeUploadIndex].image = data.url;
                 setSlides(newSlides);
+            } else {
+                setSaveMessage({ type: 'error', text: 'Yükleme başarısız oldu.' });
             }
-        } catch (error) {
-            alert("Yükleme başarısız!");
+        } catch {
+            setSaveMessage({ type: 'error', text: 'Yükleme sırasında hata oluştu.' });
         } finally {
             setUploadingIndex(null);
+            if (fileInputRef.current) fileInputRef.current.value = '';
         }
     };
 
     const addNewSlide = () => {
         setSlides([...slides, {
             dragId: `new-${Date.now()}`,
-            title: "YENİ BAŞLIK",
-            subtitle: "ALT BAŞLIK",
-            description: "Açıklama...",
+            title: "Yeni Başlık",
+            subtitle: "Alt Başlık",
+            description: "",
             image: "",
             buttonLink: "/",
             isActive: true,
@@ -116,145 +116,192 @@ export default function AdminSliderPage() {
         const newSlides = Array.from(slides);
         const [reorderedItem] = newSlides.splice(result.source.index, 1);
         newSlides.splice(result.destination.index, 0, reorderedItem);
-        const updatedSlides = newSlides.map((slide, idx) => ({ ...slide, order: idx }));
-        setSlides(updatedSlides);
+        setSlides(newSlides.map((slide, idx) => ({ ...slide, order: idx })));
     };
 
     const handleSave = async () => {
+        const invalid = slides.filter(s => !s.image?.trim() || !s.title?.trim());
+        if (invalid.length > 0) {
+            setSaveMessage({ type: 'error', text: 'Tüm slaytların görsel ve başlık alanları dolu olmalıdır.' });
+            return;
+        }
+
         setSaving(true);
+        setSaveMessage(null);
         try {
             const res = await fetch('/api/slider', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(slides)
             });
-            if (res.ok) alert("Slider Yayına Alındı!");
-        } catch (error) {
-            alert("Kaydedilirken bir hata oluştu!");
-        } finally { setSaving(false); }
+            const data = await res.json();
+            if (res.ok) {
+                const updated = (Array.isArray(data) ? data : []).map((item: any, idx: number) => ({
+                    ...item,
+                    dragId: item._id?.toString() || `slide-${idx}`
+                }));
+                setSlides(updated);
+                setSaveMessage({ type: 'success', text: 'Slider başarıyla yayınlandı.' });
+            } else {
+                setSaveMessage({ type: 'error', text: data.error || 'Kaydetme başarısız oldu.' });
+            }
+        } catch {
+            setSaveMessage({ type: 'error', text: 'Kaydedilirken bir hata oluştu.' });
+        } finally {
+            setSaving(false);
+        }
     };
 
-    if (loading) return <div className="flex items-center justify-center min-h-screen bg-[#F8F9FA]"><Loader2 className="animate-spin text-slate-400" size={40} /></div>;
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center py-24">
+                <Loader2 className="animate-spin text-slate-400" size={32} />
+            </div>
+        );
+    }
 
     return (
-        <div className="p-8 bg-[#F8F9FA] min-h-screen font-sans text-slate-900">
-            <div className="flex justify-between items-center mb-10">
-                <div>
-                    <h1 className="text-3xl font-black uppercase italic tracking-tighter text-slate-800">
-                        SLIDER <span className="text-amber-500 font-light text-slate-400">YÖNETİMİ</span>
-                    </h1>
-                    <p className="text-slate-400 text-sm font-bold uppercase mt-1 italic tracking-widest text-slate-400 text-xs">Görsel ve Videoları Düzenle</p>
+        <div>
+            <AdminPageHeader
+                title="Slider Ayarları"
+                description={`${slides.length} slayt · ${slides.filter(s => s.isActive).length} aktif`}
+                actions={
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={addNewSlide}
+                            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+                        >
+                            <Plus size={16} /> Yeni Slayt
+                        </button>
+                        <button
+                            onClick={handleSave}
+                            disabled={saving}
+                            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-900 rounded-lg hover:bg-slate-800 transition-colors disabled:opacity-50"
+                        >
+                            {saving ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
+                            Yayınla
+                        </button>
+                    </div>
+                }
+            />
+
+            {saveMessage && (
+                <div className={`mb-6 px-4 py-3 rounded-lg text-sm font-medium ${
+                    saveMessage.type === 'success'
+                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                        : 'bg-red-50 text-red-700 border border-red-200'
+                }`}>
+                    {saveMessage.text}
                 </div>
-                <div className="flex gap-4">
-                    <button onClick={addNewSlide} className="bg-slate-200 hover:bg-slate-300 text-slate-700 px-6 py-3 rounded-2xl font-black text-xs uppercase flex items-center gap-2 transition-all">
-                        <Plus size={18} /> Yeni Slayt
-                    </button>
-                    <button onClick={handleSave} disabled={saving} className="bg-slate-900 hover:bg-black text-white px-8 py-3 rounded-2xl font-black text-xs uppercase flex items-center gap-2 shadow-xl transition-all">
-                        {saving ? <Loader2 className="animate-spin" size={18} /> : <><Save size={18} /> Değişiklikleri Yayınla</>}
-                    </button>
-                </div>
-            </div>
+            )}
 
             <DragDropContext onDragEnd={onDragEnd}>
                 <Droppable droppableId="slides">
                     {(provided) => (
-                        <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-6 max-w-6xl mb-12">
-                            {slides.map((slide, index) => (
+                        <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-4 mb-8">
+                            {slides.length === 0 ? (
+                                <div className="bg-white border border-dashed border-slate-300 rounded-xl p-12 text-center">
+                                    <p className="text-sm text-slate-500 mb-4">Henüz slayt eklenmemiş.</p>
+                                    <button
+                                        onClick={addNewSlide}
+                                        className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[#FF4D00] rounded-lg"
+                                    >
+                                        <Plus size={16} /> İlk Slaytı Ekle
+                                    </button>
+                                </div>
+                            ) : slides.map((slide, index) => (
                                 <Draggable key={slide.dragId} draggableId={slide.dragId} index={index}>
                                     {(provided, snapshot) => (
                                         <div
                                             ref={provided.innerRef}
                                             {...provided.draggableProps}
-                                            className={`bg-white border border-slate-100 p-6 rounded-[2.5rem] flex flex-col lg:flex-row gap-6 items-center shadow-sm transition-all ${snapshot.isDragging ? 'shadow-2xl border-amber-200 scale-[1.01] z-50' : 'hover:shadow-md'}`}
+                                            className={`bg-white border rounded-xl p-4 flex flex-col lg:flex-row gap-4 items-start transition-shadow ${
+                                                snapshot.isDragging ? 'shadow-lg border-[#FF4D00]/30' : 'border-slate-200'
+                                            }`}
                                         >
-                                            <div {...provided.dragHandleProps} className="text-slate-300 hover:text-amber-500 cursor-grab active:cursor-grabbing p-2">
-                                                <GripVertical size={24} />
+                                            <div {...provided.dragHandleProps} className="text-slate-300 hover:text-slate-600 cursor-grab active:cursor-grabbing p-1">
+                                                <GripVertical size={20} />
                                             </div>
 
                                             <div
                                                 onClick={() => { setActiveUploadIndex(index); fileInputRef.current?.click(); }}
-                                                className="w-full lg:w-48 aspect-video bg-slate-50 rounded-3xl overflow-hidden relative border-2 border-dashed border-slate-200 hover:border-amber-500 transition-all cursor-pointer group shrink-0"
+                                                className="w-full lg:w-40 aspect-video bg-slate-100 rounded-lg overflow-hidden relative border-2 border-dashed border-slate-200 hover:border-[#FF4D00] transition-colors cursor-pointer group shrink-0"
                                             >
                                                 {uploadingIndex === index ? (
-                                                    <div className="flex flex-col items-center justify-center h-full bg-slate-100 animate-pulse">
-                                                        <Loader2 className="animate-spin text-amber-500 mb-2" />
-                                                        <span className="text-[10px] font-black uppercase italic text-slate-400">Yükleniyor...</span>
+                                                    <div className="flex items-center justify-center h-full">
+                                                        <Loader2 className="animate-spin text-[#FF4D00]" size={24} />
                                                     </div>
                                                 ) : slide.image ? (
                                                     isVideo(slide.image) ? (
-                                                        <video src={slide.image} className="w-full h-full object-cover group-hover:opacity-40 transition-opacity" muted />
+                                                        <video src={slide.image} className="w-full h-full object-cover" muted />
                                                     ) : (
-                                                        <img src={slide.image} className="w-full h-full object-cover group-hover:opacity-40 transition-opacity" alt="Preview" />
+                                                        <img src={slide.image} className="w-full h-full object-cover" alt="" />
                                                     )
                                                 ) : (
-                                                    <div className="flex flex-col items-center justify-center h-full text-slate-300">
-                                                        <Upload size={24} />
-                                                        <span className="text-[8px] font-black mt-2 uppercase italic text-center leading-tight">Medya Seç</span>
+                                                    <div className="flex flex-col items-center justify-center h-full text-slate-400">
+                                                        <Upload size={20} />
+                                                        <span className="text-[10px] mt-1">Medya Yükle</span>
                                                     </div>
                                                 )}
                                             </div>
 
-                                            <div className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                <div className="space-y-3">
-                                                    {/* ✅ YENİ: ALT BAŞLIK INPUTU */}
+                                            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-3 w-full">
+                                                <div className="space-y-2">
                                                     <input
-                                                        className="w-full bg-slate-50 border border-slate-100 rounded-xl p-2 outline-none focus:border-amber-500 font-bold uppercase text-[9px] text-blue-600 italic tracking-widest"
-                                                        placeholder="MAVİ ÜST METİN (ALT BAŞLIK)"
+                                                        className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs outline-none focus:border-[#FF4D00] focus:ring-1 focus:ring-[#FF4D00]/20"
+                                                        placeholder="Alt başlık"
                                                         value={slide.subtitle || ""}
                                                         onChange={e => { const n = [...slides]; n[index].subtitle = e.target.value; setSlides(n); }}
                                                     />
-                                                    
                                                     <input
-                                                        className="w-full bg-slate-50 border border-slate-100 rounded-xl p-3 outline-none focus:border-amber-500 font-black uppercase text-sm"
-                                                        placeholder="Slider Başlığı"
+                                                        className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium outline-none focus:border-[#FF4D00] focus:ring-1 focus:ring-[#FF4D00]/20"
+                                                        placeholder="Başlık *"
                                                         value={slide.title}
                                                         onChange={e => { const n = [...slides]; n[index].title = e.target.value; setSlides(n); }}
                                                     />
                                                     <textarea
-                                                        className="w-full bg-slate-50 border border-slate-100 rounded-xl p-3 outline-none focus:border-amber-500 text-xs font-bold resize-none"
-                                                        placeholder="Slogan Açıklaması"
+                                                        className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#FF4D00] focus:ring-1 focus:ring-[#FF4D00]/20 resize-none"
+                                                        placeholder="Açıklama"
                                                         rows={2}
-                                                        value={slide.description}
+                                                        value={slide.description || ""}
                                                         onChange={e => { const n = [...slides]; n[index].description = e.target.value; setSlides(n); }}
                                                     />
                                                 </div>
-                                                <div className="space-y-3">
-                                                    <div className="relative group">
-                                                        <LinkIcon className="absolute left-3 top-3.5 text-slate-300 group-focus-within:text-amber-500 transition-colors" size={16} />
+                                                <div className="space-y-2">
+                                                    <div className="relative">
+                                                        <LinkIcon className="absolute left-3 top-2.5 text-slate-400" size={14} />
                                                         <select
-                                                            className="w-full bg-slate-50 border border-slate-100 rounded-xl p-3 pl-10 outline-none focus:border-amber-500 text-[10px] font-black uppercase appearance-none cursor-pointer"
-                                                            value={slide.buttonLink}
+                                                            className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-9 pr-8 py-2 text-xs outline-none focus:border-[#FF4D00] appearance-none cursor-pointer"
+                                                            value={slide.buttonLink || "/"}
                                                             onChange={e => { const n = [...slides]; n[index].buttonLink = e.target.value; setSlides(n); }}
                                                         >
-                                                            <option value="">BUTONUN GİDECEĞİ SAYFAYI SEÇİN</option>
+                                                            <option value="">Sayfa seçin</option>
                                                             {availablePages.map((page) => (
                                                                 <option key={page.path} value={page.path}>{page.name}</option>
                                                             ))}
                                                         </select>
-                                                        <div className="absolute right-3 top-3.5 pointer-events-none text-slate-400">
-                                                            <ChevronDown size={16} />
-                                                        </div>
+                                                        <ChevronDown size={14} className="absolute right-3 top-2.5 text-slate-400 pointer-events-none" />
                                                     </div>
-
-                                                    <div className="flex items-center gap-2 p-3 bg-slate-50 border border-slate-100 rounded-xl">
-                                                        {isVideo(slide.image) ? <Video className="text-slate-300" size={16} /> : <ImageIcon className="text-slate-300" size={16} />}
-                                                        <span className="text-[9px] font-mono text-slate-400 truncate tracking-tighter">{slide.image || "Medya yüklenmedi..."}</span>
+                                                    <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg">
+                                                        {isVideo(slide.image) ? <Video size={14} className="text-slate-400 shrink-0" /> : <ImageIcon size={14} className="text-slate-400 shrink-0" />}
+                                                        <span className="text-[10px] text-slate-400 truncate">{slide.image || "Görsel yüklenmedi"}</span>
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            <div className="flex lg:flex-col gap-2 border-l border-slate-100 pl-4">
+                                            <div className="flex lg:flex-col gap-1 shrink-0">
                                                 <button
                                                     onClick={() => { const n = [...slides]; n[index].isActive = !n[index].isActive; setSlides(n); }}
-                                                    className={`p-3 rounded-xl transition-all ${slide.isActive ? 'bg-emerald-50 text-emerald-500' : 'bg-slate-100 text-slate-400'}`}
+                                                    title={slide.isActive ? "Aktif" : "Pasif"}
+                                                    className={`p-2 rounded-lg transition-colors ${slide.isActive ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-400'}`}
                                                 >
-                                                    {slide.isActive ? <Eye size={20} /> : <EyeOff size={20} />}
+                                                    {slide.isActive ? <Eye size={18} /> : <EyeOff size={18} />}
                                                 </button>
                                                 <button
-                                                    onClick={() => { if(confirm("Silmek istediğinize emin misiniz?")) setSlides(slides.filter((_, i) => i !== index)) }}
-                                                    className="p-3 bg-red-50 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all"
+                                                    onClick={() => { if (confirm("Bu slaytı silmek istediğinize emin misiniz?")) setSlides(slides.filter((_, i) => i !== index)); }}
+                                                    className="p-2 bg-red-50 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-colors"
                                                 >
-                                                    <Trash2 size={20} />
+                                                    <Trash2 size={18} />
                                                 </button>
                                             </div>
                                         </div>
@@ -267,26 +314,15 @@ export default function AdminSliderPage() {
                 </Droppable>
             </DragDropContext>
 
-            <input 
-                type="file" 
-                ref={fileInputRef} 
-                className="hidden" 
-                accept="image/*,video/*" 
-                onChange={handleFileUpload} 
-            />
+            <input type="file" ref={fileInputRef} className="hidden" accept="image/*,video/*" onChange={handleFileUpload} />
 
-            <div className="bg-amber-50 border border-amber-100 p-8 rounded-[3rem] max-w-6xl flex items-start gap-5 shadow-sm">
-                <div className="bg-amber-500 p-4 rounded-2xl text-white shadow-lg shadow-amber-200">
-                    <Info size={28} />
-                </div>
-                <div>
-                    <h3 className="font-black italic text-amber-900 uppercase tracking-tighter text-xl mb-2">Slider İçerik Standartları</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-2 text-amber-800/80 text-[11px] font-bold uppercase italic leading-relaxed">
-                        <p>• İdeal Boyut: <span className="text-amber-600 font-black">1920x1080 PX</span></p>
-                        <p>• Formatlar: <span className="text-amber-600 font-black">.WEBP, .MP4, .MOV</span></p>
-                        <p>• Video Sınırı: <span className="text-amber-600 font-black">Maksimum 30 MB</span></p>
-                        <p>• Öneri: Videoların <span className="text-amber-600 font-black">sessiz ve loop</span> olması tercih edilir.</p>
-                    </div>
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 flex items-start gap-4">
+                <Info size={20} className="text-amber-600 shrink-0 mt-0.5" />
+                <div className="text-sm text-amber-800">
+                    <p className="font-medium mb-1">İçerik Önerileri</p>
+                    <p className="text-amber-700/80 text-xs leading-relaxed">
+                        İdeal boyut 1920×1080 px · Formatlar: WebP, MP4, MOV · Maksimum 30 MB · Videolar sessiz ve döngülü olmalıdır.
+                    </p>
                 </div>
             </div>
         </div>

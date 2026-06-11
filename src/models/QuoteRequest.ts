@@ -8,8 +8,10 @@ const QuoteRequestSchema = new mongoose.Schema({
     selectedSize: { type: String }, 
     message: { type: String },
     productName: { type: String, default: "Vakumlu Tabla" },
-    isRead: { type: Boolean, default: false }, 
+    isRead: { type: Boolean, default: false },
     okundu: { type: Boolean, default: false },
+    status: { type: String, default: "Beklemede" },
+    readAt: { type: Date },
 }, { 
     timestamps: true,
     collection: 'teklifler'

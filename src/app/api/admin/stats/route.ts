@@ -1,52 +1,52 @@
 import { NextResponse } from "next/server";
-// Hem default hem named desteklediği için artık hata vermez
 import connectDB from "@/lib/db";
 import mongoose from "mongoose";
-export const dynamic = "force-static";
-// Modelleri dinamik olarak başlat (OverwriteModelError önleyici)
+
+export const dynamic = "force-dynamic";
+
 const getModels = () => {
-    const QuoteRequest = mongoose.models.QuoteRequest || mongoose.model("QuoteRequest", new mongoose.Schema({}, { strict: false, timestamps: true }));
+    const QuoteRequest = mongoose.models.QuoteRequest || mongoose.model("QuoteRequest", new mongoose.Schema({}, { strict: false, timestamps: true }), "teklifler");
     const Newsletter = mongoose.models.Newsletter || mongoose.model("Newsletter", new mongoose.Schema({}, { strict: false, timestamps: true }));
     const Product = mongoose.models.Product || mongoose.model("Product", new mongoose.Schema({}, { strict: false, timestamps: true }));
+    const Slider = mongoose.models.Slider || mongoose.model("Slider", new mongoose.Schema({}, { strict: false, timestamps: true }));
+    const Comment = mongoose.models.Comment || mongoose.model("Comment", new mongoose.Schema({}, { strict: false, timestamps: true }));
 
-    return { QuoteRequest, Newsletter, Product };
+    return { QuoteRequest, Newsletter, Product, Slider, Comment };
 };
 
 export async function GET() {
     try {
         await connectDB();
-        const { QuoteRequest, Newsletter, Product } = getModels();
+        const { QuoteRequest, Newsletter, Product, Slider, Comment } = getModels();
 
-        // Verileri paralel çekerek performansı artırıyoruz
-        const [totalProducts, unreadQuotes, unreadNews, recentQuotes, recentNews] = await Promise.all([
+        const [totalProducts, unreadQuotes, sliderCount, commentCount, pendingComments, recentQuotes] = await Promise.all([
             Product.countDocuments(),
-            QuoteRequest.countDocuments({ status: { $ne: "Okundu" } }),
-            Newsletter.countDocuments({ okundu: false }),
-            QuoteRequest.find().sort({ createdAt: -1 }).limit(5).lean(),
-            Newsletter.find().sort({ createdAt: -1 }).limit(5).lean()
+            QuoteRequest.countDocuments({
+                isRead: { $ne: true },
+                okundu: { $ne: true },
+                status: { $ne: "Okundu" }
+            }),
+            Slider.countDocuments({ isActive: true }),
+            Comment.countDocuments(),
+            Comment.countDocuments({ isActive: false }),
+            QuoteRequest.find().sort({ createdAt: -1 }).limit(5).lean()
         ]);
-
-        // Verileri birleştirip en yeniden eskiye sıralıyoruz
-        const combinedRecent = [...recentQuotes, ...recentNews]
-            .sort((a: any, b: any) => {
-                const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-                const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-                return dateB - dateA;
-            })
-            .slice(0, 6);
 
         return NextResponse.json({
             success: true,
             stats: {
                 totalProducts,
-                newMessages: unreadQuotes + unreadNews,
-                galleryFiles: 48, // İsteğe bağlı Galeri modelinden de çekilebilir
-                monthlyVisits: "1.2k"
+                unreadQuotes,
+                activeSlides: sliderCount,
+                totalComments: commentCount,
+                pendingComments,
+                newsletterSubscribers: await Newsletter.countDocuments()
             },
-            recentRequests: combinedRecent
+            recentQuotes
         });
-    } catch (error: any) {
-        console.error("Dashboard API Hatası:", error);
-        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : "Bilinmeyen hata";
+        console.error("Dashboard API Hatası:", message);
+        return NextResponse.json({ success: false, error: message }, { status: 500 });
     }
 }

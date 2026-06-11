@@ -1,16 +1,30 @@
 "use client";
 import React, { useEffect, useState, useCallback } from 'react';
 import {
-    Mail, Phone, ChevronRight, X, Calendar, CheckCircle2, 
-    Zap, RefreshCcw, Box, MessageSquare, Package
+    Mail, Phone, X, Calendar, CheckCircle2,
+    RefreshCcw, MessageSquare, Inbox, Filter
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import AdminPageHeader from '@/components/admin/AdminPageHeader';
+
+type Teklif = {
+    _id: string;
+    source: 'contact' | 'quote';
+    adSoyad: string;
+    telefon: string;
+    email: string;
+    mesaj: string;
+    displayProduct: string;
+    displayStatus: boolean;
+    createdAt: string;
+    selectedSize?: string;
+};
 
 export default function TekliflerPage() {
-    const [teklifler, setTeklifler] = useState<any[]>([]);
+    const [teklifler, setTeklifler] = useState<Teklif[]>([]);
     const [loading, setLoading] = useState(true);
-    const [selectedTeklif, setSelectedTeklif] = useState<any>(null);
+    const [selectedTeklif, setSelectedTeklif] = useState<Teklif | null>(null);
     const [isRefreshing, setIsRefreshing] = useState(false);
+    const [filter, setFilter] = useState<'all' | 'unread' | 'read'>('all');
 
     const verileriGetir = useCallback(async (isAuto = false) => {
         if (!isAuto) setIsRefreshing(true);
@@ -20,46 +34,40 @@ export default function TekliflerPage() {
                 fetch("/api/quote-request").then(r => r.json())
             ]);
 
-            const contactData = (resContact.success ? resContact.data : []).map((item: any) => ({
+            const contactData = (resContact.success ? resContact.data : []).map((item: Record<string, unknown>) => ({
                 ...item,
-                source: 'contact',
-                adSoyad: item.adSoyad,
-                telefon: item.telefon,
-                email: item.email,
-                mesaj: item.mesaj,
-                displayProduct: item.secim || item.konu || "Genel İletişim",
+                source: 'contact' as const,
+                adSoyad: item.adSoyad as string,
+                telefon: item.telefon as string,
+                email: item.email as string,
+                mesaj: item.mesaj as string,
+                displayProduct: (item.secim || item.konu || "Genel İletişim") as string,
                 displayStatus: item.okundu === true || item.isRead === true
             }));
 
-            const quoteData = (Array.isArray(resQuote) ? resQuote : []).map((item: any) => ({
+            const quoteData = (Array.isArray(resQuote) ? resQuote : []).map((item: Record<string, unknown>) => ({
                 ...item,
-                source: 'quote',
-                adSoyad: item.fullName || item.adSoyad,
-                telefon: item.phone || item.telefon,
-                email: item.email,
-                mesaj: item.message || item.mesaj,
-                displayProduct: item.productName || "Ürün Teklifi",
+                source: 'quote' as const,
+                adSoyad: (item.fullName || item.adSoyad) as string,
+                telefon: (item.phone || item.telefon) as string,
+                email: item.email as string,
+                mesaj: (item.message || item.mesaj) as string,
+                displayProduct: (item.productName || "Ürün Teklifi") as string,
                 displayStatus: item.status === "Okundu" || item.isRead === true || item.okundu === true
             }));
 
-            // --- MÜKERRER KAYITLARI TEMİZLEME (UNIQUE FILTER) ---
-            const combined = [...contactData, ...quoteData];
-            
-            const uniqueData = combined.reduce((acc: any[], current: any) => {
-                // Aynı e-posta ve aynı mesaj içeriğine sahip kayıt var mı kontrol et
-                const isDuplicate = acc.find(item => 
-                    item.email === current.email && 
+            const combined = [...contactData, ...quoteData] as Teklif[];
+
+            const uniqueData = combined.reduce<Teklif[]>((acc, current) => {
+                const isDuplicate = acc.find(item =>
+                    item.email === current.email &&
                     (item.mesaj === current.mesaj || item.displayProduct === current.displayProduct)
                 );
-                
-                if (!isDuplicate) {
-                    return acc.concat([current]);
-                }
+                if (!isDuplicate) return [...acc, current];
                 return acc;
             }, []);
 
-            // Tarihe göre sırala (En yeni en üstte)
-            uniqueData.sort((a, b) => 
+            uniqueData.sort((a, b) =>
                 new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
             );
 
@@ -78,132 +86,175 @@ export default function TekliflerPage() {
         return () => clearInterval(interval);
     }, [verileriGetir]);
 
-    const teklifOku = async (teklif: any) => {
+    const teklifOku = async (teklif: Teklif) => {
         setSelectedTeklif(teklif);
         if (teklif.displayStatus) return;
 
         try {
-            const apiPath = teklif.source === 'contact' ? "/api/teklifler/oku" : "/api/admin/teklifler/oku";
-            
-            const response = await fetch(apiPath, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ id: teklif._id }),
-            });
+            const response = teklif.source === 'contact'
+                ? await fetch("/api/teklifler/oku", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ id: teklif._id }),
+                })
+                : await fetch(`/api/quote-request/${teklif._id}`, { method: "PATCH" });
 
             if (response.ok) {
                 setTeklifler(prev => prev.map(t =>
-                    t._id === teklif._id ? { ...t, displayStatus: true, isRead: true, okundu: true } : t
+                    t._id === teklif._id ? { ...t, displayStatus: true } : t
                 ));
+                setSelectedTeklif(prev => prev ? { ...prev, displayStatus: true } : null);
             }
         } catch (err) {
             console.error("Okundu işaretleme hatası:", err);
         }
     };
 
+    const unreadCount = teklifler.filter(t => !t.displayStatus).length;
+    const filtered = teklifler.filter(t => {
+        if (filter === 'unread') return !t.displayStatus;
+        if (filter === 'read') return t.displayStatus;
+        return true;
+    });
+
     return (
-        <div className="p-6 md:p-10 bg-[#F8F9FA] min-h-screen font-sans text-slate-900">
-            <header className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
-                <div>
-                    <h1 className="text-5xl font-black italic uppercase tracking-tighter text-slate-900 leading-none">
-                        MÜŞTERİ <span className="text-amber-500">TALEPLERİ</span>
-                    </h1>
-                    <p className="text-slate-400 text-[11px] font-bold uppercase tracking-[0.2em] mt-4 flex items-center gap-2">
-                        <span className={`w-2.5 h-2.5 rounded-full ${isRefreshing ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'}`} />
-                        {teklifler.filter(t => !t.displayStatus).length} Yeni Mesaj • Sistem Canlı
-                    </p>
-                </div>
-                <button onClick={() => verileriGetir()} className="flex items-center gap-2 bg-white border border-slate-200 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all shadow-sm">
-                    <RefreshCcw size={14} className={isRefreshing ? "animate-spin" : ""} /> Listeyi Tazele
-                </button>
-            </header>
+        <div>
+            <AdminPageHeader
+                title="Teklif Talepleri"
+                description={`${unreadCount} okunmamış · ${teklifler.length} toplam talep`}
+                badge={unreadCount > 0 ? (
+                    <span className="px-2 py-0.5 rounded-full bg-red-50 text-red-600 text-xs font-medium">
+                        {unreadCount} yeni
+                    </span>
+                ) : undefined}
+                actions={
+                    <button
+                        onClick={() => verileriGetir()}
+                        disabled={isRefreshing}
+                        className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-50"
+                    >
+                        <RefreshCcw size={14} className={isRefreshing ? "animate-spin" : ""} />
+                        Yenile
+                    </button>
+                }
+            />
+
+            {/* Filters */}
+            <div className="flex items-center gap-2 mb-6">
+                <Filter size={14} className="text-slate-400" />
+                {(['all', 'unread', 'read'] as const).map((f) => (
+                    <button
+                        key={f}
+                        onClick={() => setFilter(f)}
+                        className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
+                            filter === f
+                                ? 'bg-slate-900 text-white'
+                                : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
+                        }`}
+                    >
+                        {f === 'all' ? 'Tümü' : f === 'unread' ? 'Okunmamış' : 'Okunmuş'}
+                    </button>
+                ))}
+            </div>
 
             {loading ? (
-                <div className="flex flex-col items-center justify-center py-40 gap-4">
-                    <div className="w-12 h-12 border-4 border-amber-500/20 border-t-amber-500 rounded-full animate-spin" />
-                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Veriler Senkronize Ediliyor...</p>
+                <div className="flex flex-col items-center justify-center py-24 gap-3">
+                    <div className="w-8 h-8 border-2 border-slate-200 border-t-[#FF4D00] rounded-full animate-spin" />
+                    <p className="text-sm text-slate-400">Yükleniyor...</p>
+                </div>
+            ) : filtered.length === 0 ? (
+                <div className="bg-white border border-slate-200 rounded-xl p-12 text-center">
+                    <Inbox size={40} className="mx-auto text-slate-300 mb-3" />
+                    <p className="text-sm text-slate-500">Bu filtrede talep bulunamadı.</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 gap-4">
-                    {teklifler.map((teklif) => (
-                        <motion.div
-                            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+                <div className="bg-white border border-slate-200 rounded-xl overflow-hidden divide-y divide-slate-100">
+                    {filtered.map((teklif) => (
+                        <button
                             key={teklif._id}
                             onClick={() => teklifOku(teklif)}
-                            className={`group bg-white border ${teklif.displayStatus ? 'border-slate-100 opacity-60' : 'border-amber-200 shadow-xl shadow-amber-500/5'} p-6 rounded-[2.5rem] hover:shadow-2xl transition-all flex flex-col md:flex-row md:items-center justify-between cursor-pointer relative overflow-hidden`}
+                            className={`w-full flex items-center gap-4 px-5 py-4 text-left hover:bg-slate-50 transition-colors ${
+                                !teklif.displayStatus ? 'bg-orange-50/30' : ''
+                            }`}
                         >
-                            {!teklif.displayStatus && (
-                                <div className="absolute top-0 left-0 w-1.5 h-full bg-amber-500" />
-                            )}
-                            <div className="flex items-center gap-6">
-                                <div className={`w-16 h-16 rounded-[1.8rem] flex items-center justify-center transition-all ${teklif.displayStatus ? 'bg-slate-100 text-slate-400' : 'bg-amber-500 text-white'}`}>
-                                    {teklif.displayStatus ? <CheckCircle2 size={28} /> : <Zap size={28} />}
+                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${
+                                teklif.displayStatus ? 'bg-slate-100 text-slate-400' : 'bg-[#FF4D00] text-white'
+                            }`}>
+                                {teklif.displayStatus ? <CheckCircle2 size={18} /> : <MessageSquare size={18} />}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    <span className="text-sm font-medium text-slate-900">{teklif.adSoyad}</span>
+                                    <span className="text-[10px] font-medium px-2 py-0.5 rounded bg-slate-100 text-slate-600">
+                                        {teklif.displayProduct}
+                                    </span>
+                                    {!teklif.displayStatus && (
+                                        <span className="text-[10px] font-medium px-2 py-0.5 rounded bg-orange-100 text-[#FF4D00]">Yeni</span>
+                                    )}
                                 </div>
-                                <div>
-                                    <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                                        <h3 className={`text-base font-black uppercase ${teklif.displayStatus ? 'text-slate-500' : 'text-slate-900'}`}>{teklif.adSoyad}</h3>
-                                        <span className="bg-slate-900 text-amber-500 text-[9px] font-black px-2 py-0.5 rounded-md uppercase italic tracking-widest">
-                                            {teklif.displayProduct}
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center gap-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                                        <span className="flex items-center gap-1.5"><Mail size={12} className="text-amber-500" /> {teklif.email}</span>
-                                        <span className="flex items-center gap-1.5"><Phone size={12} className="text-amber-500" /> {teklif.telefon}</span>
-                                    </div>
+                                <div className="flex items-center gap-4 mt-1 text-xs text-slate-500">
+                                    <span className="flex items-center gap-1"><Mail size={11} /> {teklif.email}</span>
+                                    <span className="flex items-center gap-1"><Phone size={11} /> {teklif.telefon}</span>
                                 </div>
                             </div>
-                            <div className="mt-4 md:mt-0 flex items-center gap-6">
-                                <div className="text-right hidden sm:block text-[11px] font-bold text-slate-600">
-                                    {new Date(teklif.createdAt).toLocaleDateString('tr-TR')}
-                                </div>
-                                <ChevronRight size={20} className="text-slate-200 group-hover:text-amber-500 transition-all" />
-                            </div>
-                        </motion.div>
+                            <span className="text-xs text-slate-400 shrink-0 hidden sm:block">
+                                {new Date(teklif.createdAt).toLocaleDateString('tr-TR')}
+                            </span>
+                        </button>
                     ))}
                 </div>
             )}
 
-            <AnimatePresence>
-                {selectedTeklif && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md">
-                        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
-                            className="bg-white w-full max-w-4xl rounded-[3rem] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
-                        >
-                            <div className="p-8 md:p-12 overflow-y-auto no-scrollbar">
-                                <div className="flex justify-between items-start mb-8">
-                                    <div className="p-4 bg-slate-900 text-amber-500 rounded-2xl"><Box size={32} /></div>
-                                    <button onClick={() => setSelectedTeklif(null)} className="p-3 bg-slate-50 hover:bg-red-50 rounded-2xl transition-all"><X size={24} /></button>
+            {/* Detail modal */}
+            {selectedTeklif && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+                    onClick={() => setSelectedTeklif(null)}
+                >
+                    <div
+                        className="bg-white w-full max-w-2xl rounded-xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+                            <h2 className="text-base font-semibold text-slate-900">Talep Detayı</h2>
+                            <button
+                                onClick={() => setSelectedTeklif(null)}
+                                className="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+                            >
+                                <X size={18} />
+                            </button>
+                        </div>
+                        <div className="p-6 overflow-y-auto space-y-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-1">Müşteri</p>
+                                    <p className="text-lg font-semibold text-slate-900">{selectedTeklif.adSoyad}</p>
+                                    <div className="mt-3 space-y-1.5 text-sm text-slate-600">
+                                        <div className="flex items-center gap-2"><Mail size={14} className="text-slate-400" /> {selectedTeklif.email}</div>
+                                        <div className="flex items-center gap-2"><Phone size={14} className="text-slate-400" /> {selectedTeklif.telefon}</div>
+                                        <div className="flex items-center gap-2"><Calendar size={14} className="text-slate-400" /> {new Date(selectedTeklif.createdAt).toLocaleString('tr-TR')}</div>
+                                    </div>
                                 </div>
-                                <div className="space-y-8">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                        <div>
-                                            <p className="text-amber-600 font-black uppercase tracking-widest text-[10px] mb-2">Müşteri Dosyası</p>
-                                            <h2 className="text-4xl font-black uppercase text-slate-900">{selectedTeklif.adSoyad}</h2>
-                                            <div className="mt-4 space-y-2 text-[12px] font-bold text-slate-500 uppercase tracking-wider">
-                                                <div className="flex items-center gap-2"><Mail size={14} className="text-amber-500" /> {selectedTeklif.email}</div>
-                                                <div className="flex items-center gap-2"><Phone size={14} className="text-amber-500" /> {selectedTeklif.telefon}</div>
-                                                <div className="flex items-center gap-2"><Calendar size={14} className="text-amber-500" /> {new Date(selectedTeklif.createdAt).toLocaleString('tr-TR')}</div>
-                                            </div>
-                                        </div>
-                                        <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
-                                            <p className="text-[10px] font-black text-slate-400 uppercase mb-2 italic">İlgilenilen Ürün</p>
-                                            <p className="text-xl font-black text-slate-900 uppercase italic">{selectedTeklif.displayProduct}</p>
-                                            {selectedTeklif.selectedSize && <span className="inline-block mt-3 bg-amber-500 text-black px-3 py-1 rounded-lg font-black text-xs italic uppercase leading-none">{selectedTeklif.selectedSize}</span>}
-                                        </div>
-                                    </div>
-                                    <div className="bg-slate-900 rounded-[2.5rem] p-8 md:p-12 text-white relative shadow-xl">
-                                        <MessageSquare size={80} className="absolute bottom-6 right-8 text-white/5" />
-                                        <p className="text-amber-500 font-black uppercase tracking-widest text-[10px] mb-4 italic">Müşteri Mesajı</p>
-                                        <p className="text-xl md:text-2xl font-medium text-slate-200 leading-relaxed italic italic leading-none lowercase first-letter:uppercase tracking-tight">
-                                            "{selectedTeklif.mesaj || "Mesaj içeriği bulunmuyor."}"
-                                        </p>
-                                    </div>
+                                <div className="bg-slate-50 rounded-lg p-4 border border-slate-100">
+                                    <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-1">Ürün / Konu</p>
+                                    <p className="text-base font-medium text-slate-900">{selectedTeklif.displayProduct}</p>
+                                    {selectedTeklif.selectedSize && (
+                                        <span className="inline-block mt-2 text-xs font-medium px-2 py-1 rounded bg-[#FF4D00] text-white">
+                                            {selectedTeklif.selectedSize}
+                                        </span>
+                                    )}
                                 </div>
                             </div>
-                        </motion.div>
+                            <div className="bg-slate-900 rounded-lg p-5 text-white">
+                                <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-2">Mesaj</p>
+                                <p className="text-sm leading-relaxed text-slate-200">
+                                    {selectedTeklif.mesaj || "Mesaj içeriği bulunmuyor."}
+                                </p>
+                            </div>
+                        </div>
                     </div>
-                )}
-            </AnimatePresence>
+                </div>
+            )}
         </div>
     );
 }

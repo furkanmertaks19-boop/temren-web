@@ -1,180 +1,209 @@
 "use client";
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard,
-  Package,
   MessageSquare,
-  Image as ImageIcon,
-  Settings,
   LogOut,
-  ChevronRight,
   SlidersHorizontal,
-  Menu as MenuIcon,
-  ChevronDown,
-  MonitorDot,
-  Newspaper
+  Newspaper,
+  Inbox,
+  Menu,
+  X,
+  Navigation,
+  Package,
+  ExternalLink,
+  Bell
 } from 'lucide-react';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const [isPagesOpen, setIsPagesOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
 
-  // Sayfa yüklendiğinde aktif grubu otomatik açar
+  const isLoginPage = pathname === '/admin/login';
+
   useEffect(() => {
-    if (
-      pathname?.includes('/admin/slider') || 
-      pathname?.includes('/admin/blog') || 
-      pathname?.includes('/admin/nav') || 
-      pathname?.includes('/admin/gorusler')
-    ) {
-      setIsPagesOpen(true);
+    if (isLoginPage) {
+      setAuthChecked(true);
+      return;
     }
-  }, [pathname]);
+    const loggedIn = localStorage.getItem('isLoggedIn') === 'true';
+    if (!loggedIn) {
+      router.replace('/admin/login');
+    } else {
+      setAuthChecked(true);
+    }
+  }, [isLoginPage, router, pathname]);
 
-  // Çıkış İşlemi Fonksiyonu
+  useEffect(() => {
+    if (isLoginPage || !authChecked) return;
+    const fetchNotifications = async () => {
+      try {
+        const res = await fetch('/api/admin/notifications', { cache: 'no-store' });
+        const data = await res.json();
+        setUnreadCount(data.unreadCount || 0);
+      } catch {
+        /* ignore */
+      }
+    };
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 30000);
+    return () => clearInterval(interval);
+  }, [isLoginPage, authChecked]);
+
   const handleLogout = async () => {
     try {
-      const res = await fetch("/api/auth/logout", { method: "POST" });
-      if (res.ok) {
-        router.push("/admin/login");
-        router.refresh();
-      }
-    } catch (error) {
-      console.error("Çıkış yapılırken hata oluştu:", error);
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch {
+      /* ignore */
     }
+    localStorage.removeItem('isLoggedIn');
+    router.push('/admin/login');
+    router.refresh();
   };
 
-  const menuItems = useMemo(() => [
-    { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard, isGroup: false },
-    {
-      name: 'Sayfa Ayarları',
-      isGroup: true,
-      icon: MonitorDot,
-      isOpen: isPagesOpen,
-      toggle: () => setIsPagesOpen(!isPagesOpen),
-      subItems: [
-        { name: 'Slider Ayarları', path: '/admin/slider', icon: SlidersHorizontal },
-        { name: 'Blog Yönetimi', path: '/admin/blog', icon: Newspaper },
-        { name: 'Müşteri Görüşleri', path: '/admin/gorusler', icon: MessageSquare }
-      ]
-    },
-    { name: 'Teklif Talepleri', path: '/admin/teklifler', icon: MessageSquare, isGroup: false },
-  ], [isPagesOpen]);
+  const navGroups = useMemo(() => [
+    { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
+    { name: 'Slider Ayarları', path: '/admin/slider', icon: SlidersHorizontal },
+    { name: 'Blog Yönetimi', path: '/admin/blog', icon: Newspaper },
+    { name: 'Müşteri Görüşleri', path: '/admin/gorusler', icon: MessageSquare },
+    { name: 'Teklif Talepleri', path: '/admin/teklifler', icon: Inbox, badge: unreadCount },
+    { name: 'Menü Yönetimi', path: '/admin/nav', icon: Navigation },
+    { name: 'Ürün Yönetimi', path: '/admin/urunler', icon: Package },
+  ], [unreadCount]);
 
-  if (pathname === '/admin/login') return <>{children}</>;
+  if (isLoginPage) return <>{children}</>;
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center admin-panel">
+        <div className="w-8 h-8 border-2 border-slate-200 border-t-[#FF4D00] rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  const NavContent = () => (
+    <>
+      <div className="px-5 py-6 border-b border-white/10">
+        <Link href="/admin/dashboard" className="flex items-center gap-3" onClick={() => setSidebarOpen(false)}>
+          <div className="w-9 h-9 bg-[#FF4D00] rounded-lg flex items-center justify-center text-white font-bold text-sm">T</div>
+          <div>
+            <p className="text-white font-semibold text-sm leading-tight">TEMREN</p>
+            <p className="text-slate-400 text-[11px]">Yönetim Paneli</p>
+          </div>
+        </Link>
+      </div>
+
+      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto no-scrollbar">
+        <p className="px-3 py-2 text-[10px] font-medium uppercase tracking-wider text-slate-500">Menü</p>
+        {navGroups.map((item) => {
+          const isActive = pathname === item.path;
+          return (
+            <Link
+              key={item.path}
+              href={item.path}
+              onClick={() => setSidebarOpen(false)}
+              className={`flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                isActive
+                  ? 'bg-white/10 text-white'
+                  : 'text-slate-400 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              <span className="flex items-center gap-3">
+                <item.icon size={18} className={isActive ? 'text-[#FF4D00]' : ''} />
+                {item.name}
+              </span>
+              {item.badge ? (
+                <span className="min-w-[20px] h-5 px-1.5 flex items-center justify-center rounded-full bg-[#FF4D00] text-white text-[10px] font-semibold">
+                  {item.badge > 99 ? '99+' : item.badge}
+                </span>
+              ) : null}
+            </Link>
+          );
+        })}
+      </nav>
+
+      <div className="px-3 py-4 border-t border-white/10 space-y-1">
+        <a
+          href="/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
+        >
+          <ExternalLink size={18} />
+          Siteyi Görüntüle
+        </a>
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+        >
+          <LogOut size={18} />
+          Çıkış Yap
+        </button>
+      </div>
+    </>
+  );
 
   return (
-    <div className="flex min-h-screen bg-[#F8F9FA] font-sans text-slate-900 selection:bg-amber-500 selection:text-white">
-      {/* SIDEBAR */}
-      <aside className="w-72 bg-white border-r border-slate-100 flex flex-col sticky top-0 h-screen z-50">
-        <div className="p-8 h-full flex flex-col overflow-hidden">
-
-          {/* Logo Alanı */}
-          <Link href="/admin/dashboard" className="flex items-center gap-3 mb-10 group">
-            <div className="w-10 h-10 bg-slate-900 rounded-xl flex items-center justify-center text-amber-500 font-black italic text-xl shadow-lg shadow-slate-200 group-hover:scale-105 transition-transform">T</div>
-            <h2 className="font-black italic text-xl tracking-tighter uppercase text-slate-900 leading-none">
-              TEMREN<span className="text-amber-500">.OS</span>
-            </h2>
-          </Link>
-
-          {/* Menü Navigasyonu */}
-          <nav className="space-y-1.5 flex-grow overflow-y-auto no-scrollbar pr-1">
-            {menuItems.map((item, idx) => {
-              if (item.isGroup) {
-                const isAnySubActive = item.subItems?.some(sub => pathname === sub.path);
-
-                return (
-                  <div key={`group-${idx}`} className="mb-2">
-                    <button
-                      onClick={item.toggle}
-                      className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all group ${isAnySubActive ? 'bg-slate-50 text-slate-900' : 'text-slate-400 hover:bg-slate-50 hover:text-slate-900'}`}
-                    >
-                      <div className="flex items-center gap-4">
-                        <item.icon size={20} className={isAnySubActive ? 'text-amber-500' : 'group-hover:text-amber-500 transition-colors'} />
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em]">{item.name}</span>
-                      </div>
-                      <motion.div animate={{ rotate: item.isOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
-                        <ChevronDown size={14} />
-                      </motion.div>
-                    </button>
-
-                    <AnimatePresence initial={false}>
-                      {item.isOpen && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: 'auto', opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          className="overflow-hidden pl-4 mt-1 space-y-1"
-                        >
-                          {item.subItems?.map((sub) => {
-                            const isSubActive = pathname === sub.path;
-                            return (
-                              <Link
-                                key={sub.path}
-                                href={sub.path || "#"}
-                                className={`flex items-center gap-4 p-3.5 rounded-xl transition-all ${
-                                  isSubActive ? 'bg-slate-900 text-white shadow-lg shadow-slate-200' : 'text-slate-400 hover:text-slate-900 hover:bg-slate-50'
-                                }`}
-                              >
-                                <sub.icon size={16} className={isSubActive ? 'text-amber-500' : ''} />
-                                <span className="text-[9px] font-bold uppercase tracking-widest">{sub.name}</span>
-                              </Link>
-                            );
-                          })}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                );
-              }
-
-              const isActive = pathname === item.path;
-              return (
-                <Link
-                  key={item.path}
-                  href={item.path || "#"}
-                  className={`flex items-center justify-between p-4 rounded-2xl transition-all group ${isActive
-                    ? 'bg-slate-900 text-white shadow-xl shadow-slate-200'
-                    : 'text-slate-400 hover:bg-slate-50 hover:text-slate-900'
-                    }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <item.icon size={20} className={isActive ? 'text-amber-500' : 'group-hover:text-amber-500 transition-colors'} />
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em]">{item.name}</span>
-                  </div>
-                  {isActive && (
-                    <motion.div layoutId="activeArrow">
-                      <ChevronRight size={14} className="text-amber-500" />
-                    </motion.div>
-                  )}
-                </Link>
-              );
-            })}
-          </nav>
-
-          {/* Çıkış Butonu */}
-          <div className="pt-6 border-t border-slate-100 mt-4">
-            <button 
-              onClick={handleLogout}
-              className="w-full flex items-center gap-4 text-slate-400 hover:text-red-500 transition-all font-black uppercase tracking-widest text-[10px] group px-4 py-2"
-            >
-              <LogOut size={18} className="group-hover:-translate-x-1 transition-transform" />
-              Güvenli Çıkış
-            </button>
-          </div>
-        </div>
+    <div className="admin-panel flex min-h-screen bg-slate-50 text-slate-900">
+      {/* Desktop sidebar */}
+      <aside className="hidden lg:flex w-64 bg-slate-900 flex-col fixed inset-y-0 left-0 z-40">
+        <NavContent />
       </aside>
 
-      {/* İÇERİK ALANI */}
-      <main className="flex-1 overflow-y-auto relative bg-[#F8F9FA]">
-        <div className="p-8 md:p-12 min-h-screen max-w-[1600px] mx-auto">
-          {children}
+      {/* Mobile sidebar overlay */}
+      {sidebarOpen && (
+        <div className="lg:hidden fixed inset-0 z-50 flex">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setSidebarOpen(false)} />
+          <aside className="relative w-64 bg-slate-900 flex flex-col h-full">
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-white"
+            >
+              <X size={20} />
+            </button>
+            <NavContent />
+          </aside>
         </div>
-      </main>
+      )}
+
+      <div className="flex-1 lg:ml-64 flex flex-col min-h-screen">
+        {/* Top bar */}
+        <header className="sticky top-0 z-30 bg-white border-b border-slate-200 px-4 sm:px-6 h-14 flex items-center justify-between">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="lg:hidden p-2 -ml-2 text-slate-600 hover:text-slate-900"
+          >
+            <Menu size={20} />
+          </button>
+          <div className="hidden lg:block text-xs text-slate-400">
+            TEMREN Makina · Industrial OS v2.0
+          </div>
+          <div className="flex items-center gap-3 ml-auto">
+            <Link
+              href="/admin/teklifler"
+              className="relative p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+            >
+              <Bell size={18} />
+              {unreadCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 flex items-center justify-center rounded-full bg-[#FF4D00] text-white text-[9px] font-bold">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </Link>
+            <div className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center text-xs font-semibold">
+              A
+            </div>
+          </div>
+        </header>
+
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }

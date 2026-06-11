@@ -8,7 +8,11 @@ export async function GET() {
         const db: any = mongoose.connection.db;
 
         const unreadCount = await db.collection("teklifler").countDocuments({
-            isRead: { $ne: true }
+            $and: [
+                { isRead: { $ne: true } },
+                { okundu: { $ne: true } },
+                { status: { $ne: "Okundu" } }
+            ]
         });
 
         const latestOffers = await db.collection("teklifler")

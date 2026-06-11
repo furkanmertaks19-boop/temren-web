@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Check, Trash2, Clock, Youtube, FileText, Save, ExternalLink } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import AdminPageHeader from '@/components/admin/AdminPageHeader';
 
 export default function AdminComments() {
   const [comments, setComments] = useState<any[]>([]);
@@ -39,21 +40,19 @@ export default function AdminComments() {
     }
   };
 
+  const pendingCount = comments.filter(c => !c.isActive).length;
+
   return (
-    <div className="p-8 max-w-6xl mx-auto">
-      {/* Üst Başlık */}
-      <div className="flex items-center justify-between mb-12">
-        <div>
-          <h1 className="text-4xl font-black uppercase italic tracking-tighter">
-            Müşteri <span className="text-[#FF4D00]">Görüşleri</span>
-          </h1>
-          <p className="text-slate-400 font-bold text-xs uppercase mt-2 tracking-widest">Gelen yorumları yönet ve videoya dönüştür</p>
-        </div>
-        <div className="bg-white border border-slate-100 px-6 py-3 rounded-2xl shadow-sm">
-          <span className="text-slate-400 text-[10px] font-black uppercase block leading-none mb-1">Toplam İçerik</span>
-          <span className="text-2xl font-black text-slate-900 leading-none">{comments.length}</span>
-        </div>
-      </div>
+    <div>
+      <AdminPageHeader
+        title="Müşteri Görüşleri"
+        description={`${comments.length} toplam · ${pendingCount} onay bekliyor`}
+        badge={pendingCount > 0 ? (
+          <span className="px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 text-xs font-medium">
+            {pendingCount} bekliyor
+          </span>
+        ) : undefined}
+      />
 
       <div className="grid gap-6">
         <AnimatePresence>
@@ -63,8 +62,8 @@ export default function AdminComments() {
               key={c._id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className={`group relative p-8 bg-white rounded-4xl border-2 transition-all ${
-                c.isActive ? 'border-slate-50 shadow-sm' : 'border-amber-100 bg-amber-50/20 shadow-lg shadow-amber-500/5'
+              className={`group relative p-6 bg-white rounded-xl border transition-all ${
+                c.isActive ? 'border-slate-200' : 'border-amber-200 bg-amber-50/30'
               }`}
             >
               <div className="flex flex-col lg:flex-row gap-8 items-start">

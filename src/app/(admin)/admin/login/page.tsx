@@ -40,23 +40,16 @@ export default function AdminLoginPage() {
 
       if (res.ok) {
         localStorage.setItem("isLoggedIn", "true");
-
-        setTimeout(() => {
-          router.push("/admin/dashboard");
-        }, 2300);
+        router.push("/admin/dashboard");
       } else {
-        setTimeout(() => {
-          setIsToggled(false);
-          setIsLoading(false);
-          setError(data.error || "Kullanıcı adı veya şifre hatalı.");
-        }, 1900);
-      }
-    } catch {
-      setTimeout(() => {
         setIsToggled(false);
         setIsLoading(false);
-        setError("Sunucuya bağlanılamadı. Veritabanını kontrol et.");
-      }, 1900);
+        setError(data.error || "Kullanıcı adı veya şifre hatalı.");
+      }
+    } catch {
+      setIsToggled(false);
+      setIsLoading(false);
+      setError("Sunucuya bağlanılamadı. Veritabanını kontrol et.");
     }
   };
 

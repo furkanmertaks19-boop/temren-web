@@ -41,8 +41,8 @@ export const ROLE_PERMISSIONS: Record<AdminRole, string[]> = {
     ],
 };
 
-export function hasPermission(role: AdminRole, permission: string): boolean {
-    return ROLE_PERMISSIONS[role]?.includes(permission) ?? false;
+export function hasPermission(role: AdminRole | unknown, permission: string): boolean {
+    return ROLE_PERMISSIONS[normalizeRole(role)]?.includes(permission) ?? false;
 }
 
 export function canManageUsers(role: AdminRole): boolean {
@@ -57,14 +57,47 @@ export type AdminSession = {
     role: AdminRole;
 };
 
+export function normalizeRole(role: unknown): AdminRole {
+    const valid: AdminRole[] = ['superadmin', 'admin', 'editor', 'viewer'];
+    return valid.includes(role as AdminRole) ? (role as AdminRole) : 'superadmin';
+}
+
 export function getAdminSession(): AdminSession | null {
     if (typeof window === 'undefined') return null;
     try {
         const raw = localStorage.getItem('adminUser');
-        return raw ? JSON.parse(raw) : null;
+        if (!raw) {
+            if (localStorage.getItem('isLoggedIn') === 'true') {
+                return {
+                    id: '',
+                    username: 'admin',
+                    displayName: 'Yönetici',
+                    role: 'superadmin',
+                };
+            }
+            return null;
+        }
+        const parsed = JSON.parse(raw) as Partial<AdminSession>;
+        return {
+            id: String(parsed.id ?? ''),
+            username: parsed.username || 'admin',
+            displayName: parsed.displayName || parsed.username || 'Yönetici',
+            email: parsed.email,
+            role: normalizeRole(parsed.role),
+        };
     } catch {
         return null;
     }
+}
+
+export function getRoleLabel(role: unknown): string {
+    const normalized = normalizeRole(role);
+    return ROLE_LABELS[normalized];
+}
+
+export function getInitial(name?: string | null): string {
+    const value = (name || 'K').trim();
+    return value.charAt(0).toUpperCase();
 }
 
 export function setAdminSession(user: AdminSession) {

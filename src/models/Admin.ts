@@ -29,8 +29,10 @@ const AdminSchema = new Schema<IAdmin>({
     },
     displayName: {
         type: String,
-        required: [true, 'Görünen ad zorunludur'],
         trim: true,
+        default: function (this: IAdmin) {
+            return this.username || 'Yönetici';
+        },
     },
     email: {
         type: String,

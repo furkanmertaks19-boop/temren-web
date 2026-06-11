@@ -7,22 +7,42 @@ export const dynamic = "force-dynamic";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const sanitize = (user: any) => ({
-    _id: user._id,
-    username: user.username,
-    displayName: user.displayName,
+    _id: String(user._id ?? ""),
+    username: user.username || "",
+    displayName: user.displayName || user.username || "Kullanıcı",
     email: user.email || "",
     role: user.role || "admin",
     isActive: user.isActive !== false,
-    lastLogin: user.lastLogin,
-    createdAt: user.createdAt,
-    updatedAt: user.updatedAt,
+    lastLogin: user.lastLogin ?? null,
+    createdAt: user.createdAt ?? null,
+    updatedAt: user.updatedAt ?? null,
 });
 
 export async function GET() {
     try {
         await connectDB();
         const users = await Admin.find().select("-password").sort({ createdAt: -1 }).lean();
-        return NextResponse.json({ success: true, data: users.map(sanitize) });
+
+        // Eski kayıtlarda eksik alanları tamamla
+        await Promise.all(
+            users
+                .filter((u) => !u.displayName || !u.role)
+                .map((u) =>
+                    Admin.updateOne(
+                        { _id: u._id },
+                        {
+                            $set: {
+                                displayName: u.displayName || u.username,
+                                role: u.role || "superadmin",
+                                isActive: u.isActive !== false,
+                            },
+                        }
+                    )
+                )
+        );
+
+        const refreshed = await Admin.find().select("-password").sort({ createdAt: -1 }).lean();
+        return NextResponse.json({ success: true, data: refreshed.map(sanitize) });
     } catch (error: unknown) {
         const message = error instanceof Error ? error.message : "Bilinmeyen hata";
         return NextResponse.json({ success: false, error: message }, { status: 500 });

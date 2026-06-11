@@ -5,7 +5,8 @@ import {
 } from 'lucide-react';
 import AdminPageHeader from '@/components/admin/AdminPageHeader';
 import {
-    ROLE_LABELS, type AdminRole, getAdminSession, setAdminSession, canManageUsers
+    ROLE_LABELS, type AdminRole, getAdminSession, setAdminSession, canManageUsers,
+    getRoleLabel, getInitial, normalizeRole
 } from '@/lib/adminPermissions';
 
 type AdminUser = {
@@ -46,7 +47,15 @@ export default function KullanicilarPage() {
         try {
             const res = await fetch('/api/admin/users');
             const data = await res.json();
-            if (data.success) setUsers(data.data);
+            if (data.success && Array.isArray(data.data)) {
+                setUsers(data.data.map((u: AdminUser) => ({
+                    ...u,
+                    _id: String(u._id),
+                    displayName: u.displayName || u.username || 'Kullanıcı',
+                    role: normalizeRole(u.role),
+                    isActive: u.isActive !== false,
+                })));
+            }
         } catch {
             setMessage({ type: 'error', text: 'Kullanıcılar yüklenemedi.' });
         } finally {
@@ -55,6 +64,10 @@ export default function KullanicilarPage() {
     }, []);
 
     useEffect(() => { fetchUsers(); }, [fetchUsers]);
+
+    useEffect(() => {
+        setCurrentSession(getAdminSession());
+    }, []);
 
     const openCreate = () => {
         setForm(emptyForm);
@@ -136,13 +149,13 @@ export default function KullanicilarPage() {
             });
             const data = await res.json();
             if (res.ok) {
-                if (currentSession?.id === selected._id) {
+                if (currentSession && String(currentSession.id) === String(selected._id)) {
                     setAdminSession({
-                        ...currentSession,
+                        id: String(currentSession.id),
                         username: data.data.username,
-                        displayName: data.data.displayName,
+                        displayName: data.data.displayName || data.data.username,
                         email: data.data.email,
-                        role: data.data.role,
+                        role: normalizeRole(data.data.role),
                     });
                     setCurrentSession(getAdminSession());
                 }
@@ -186,7 +199,7 @@ export default function KullanicilarPage() {
     };
 
     const handleToggleActive = async (user: AdminUser) => {
-        if (currentSession?.id === user._id && user.isActive) {
+        if (String(currentSession?.id) === String(user._id) && user.isActive) {
             setMessage({ type: 'error', text: 'Kendi hesabınızı devre dışı bırakamazsınız.' });
             return;
         }
@@ -206,7 +219,7 @@ export default function KullanicilarPage() {
     };
 
     const handleDelete = async (user: AdminUser) => {
-        if (currentSession?.id === user._id) {
+        if (String(currentSession?.id) === String(user._id)) {
             setMessage({ type: 'error', text: 'Kendi hesabınızı silemezsiniz.' });
             return;
         }
@@ -225,7 +238,8 @@ export default function KullanicilarPage() {
         }
     };
 
-    const sessionCanManage = currentSession ? canManageUsers(currentSession.role) : true;
+    const sessionRole = normalizeRole(currentSession?.role);
+    const sessionCanManage = currentSession ? canManageUsers(sessionRole) : true;
 
     return (
         <div>
@@ -259,16 +273,16 @@ export default function KullanicilarPage() {
                 <div className="bg-slate-900 text-white rounded-xl p-5 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
                         <div className="w-12 h-12 rounded-full bg-[#FF4D00] flex items-center justify-center text-lg font-semibold">
-                            {currentSession.displayName.charAt(0).toUpperCase()}
+                            {getInitial(currentSession.displayName)}
                         </div>
                         <div>
-                            <p className="font-semibold">{currentSession.displayName}</p>
-                            <p className="text-sm text-slate-400">@{currentSession.username} · {ROLE_LABELS[currentSession.role]}</p>
+                            <p className="font-semibold">{currentSession.displayName || currentSession.username}</p>
+                            <p className="text-sm text-slate-400">@{currentSession.username} · {getRoleLabel(sessionRole)}</p>
                         </div>
                     </div>
                     <button
                         onClick={() => {
-                            const me = users.find(u => u._id === currentSession.id);
+                            const me = users.find(u => String(u._id) === String(currentSession.id));
                             if (me) openPassword(me);
                         }}
                         className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium bg-white/10 hover:bg-white/20 rounded-lg transition-colors"
@@ -329,7 +343,7 @@ export default function KullanicilarPage() {
                                     <td className="px-5 py-4">
                                         <div className="flex items-center gap-3">
                                             <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-semibold text-slate-600">
-                                                {user.displayName.charAt(0).toUpperCase()}
+                                                {getInitial(user.displayName)}
                                             </div>
                                             <div>
                                                 <p className="font-medium text-slate-900">{user.displayName}</p>
@@ -341,7 +355,7 @@ export default function KullanicilarPage() {
                                     <td className="px-5 py-4">
                                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
                                             <Shield size={10} />
-                                            {ROLE_LABELS[user.role] || user.role}
+                                            {getRoleLabel(user.role)}
                                         </span>
                                     </td>
                                     <td className="px-5 py-4">

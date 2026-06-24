@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Lock,
   User,
@@ -11,7 +12,84 @@ import {
   ArrowRight,
   Loader2,
   AlertTriangle,
+  Sparkles,
 } from "lucide-react";
+
+const CYAN = "#00d4ff";
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 24 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay: 0.08 * i, duration: 0.55, ease: "easeOut" as const },
+  }),
+};
+
+function AnimatedGrid() {
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      <div
+        className="absolute inset-[-50%] opacity-[0.35]"
+        style={{
+          backgroundImage: `
+            linear-gradient(rgba(0,212,255,0.07) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(0,212,255,0.07) 1px, transparent 1px)
+          `,
+          backgroundSize: "48px 48px",
+          animation: "authGridDrift 20s linear infinite",
+        }}
+      />
+      <div
+        className="absolute inset-0"
+        style={{
+          background: "radial-gradient(ellipse 80% 60% at 50% 50%, transparent 30%, #0a0e1a 100%)",
+        }}
+      />
+    </div>
+  );
+}
+
+function FloatingOrbs() {
+  return (
+    <>
+      <motion.div
+        className="absolute w-[420px] h-[420px] rounded-full pointer-events-none"
+        style={{
+          top: "-12%",
+          left: "-8%",
+          background: "radial-gradient(circle, rgba(0,212,255,0.22) 0%, transparent 70%)",
+          filter: "blur(60px)",
+        }}
+        animate={{ x: [0, 40, 0], y: [0, -30, 0] }}
+        transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
+      />
+      <motion.div
+        className="absolute w-[500px] h-[500px] rounded-full pointer-events-none"
+        style={{
+          bottom: "-15%",
+          right: "-10%",
+          background: "radial-gradient(circle, rgba(0,100,255,0.2) 0%, transparent 70%)",
+          filter: "blur(70px)",
+        }}
+        animate={{ x: [0, -35, 0], y: [0, 25, 0] }}
+        transition={{ duration: 11, repeat: Infinity, ease: "easeInOut" }}
+      />
+      <motion.div
+        className="absolute w-2 h-2 rounded-full pointer-events-none"
+        style={{ top: "20%", right: "22%", background: CYAN, boxShadow: `0 0 20px ${CYAN}` }}
+        animate={{ opacity: [0.3, 1, 0.3], scale: [0.8, 1.2, 0.8] }}
+        transition={{ duration: 3, repeat: Infinity }}
+      />
+      <motion.div
+        className="absolute w-1.5 h-1.5 rounded-full pointer-events-none"
+        style={{ bottom: "30%", left: "18%", background: CYAN, boxShadow: `0 0 16px ${CYAN}` }}
+        animate={{ opacity: [0.2, 0.9, 0.2], scale: [0.7, 1.1, 0.7] }}
+        transition={{ duration: 4, repeat: Infinity, delay: 1 }}
+      />
+    </>
+  );
+}
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -19,15 +97,15 @@ export default function AdminLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({ username: "", password: "" });
   const [isLoading, setIsLoading] = useState(false);
-  const [isToggled, setIsToggled] = useState(false);
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [error, setError] = useState("");
+  const [focusedField, setFocusedField] = useState<string | null>(null);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-
     setError("");
     setIsLoading(true);
-    setIsToggled(true);
+    setIsAuthenticating(true);
 
     try {
       const res = await fetch("/api/auth/login", {
@@ -45,820 +123,332 @@ export default function AdminLoginPage() {
         } else {
           localStorage.setItem("isLoggedIn", "true");
         }
+        await new Promise((r) => setTimeout(r, 900));
         router.push("/admin/dashboard");
       } else {
-        setIsToggled(false);
+        setIsAuthenticating(false);
         setIsLoading(false);
         setError(data.error || "Kullanıcı adı veya şifre hatalı.");
       }
     } catch {
-      setIsToggled(false);
+      setIsAuthenticating(false);
       setIsLoading(false);
       setError("Sunucuya bağlanılamadı. Veritabanını kontrol et.");
     }
   };
 
   return (
-    <main className="admin-auth-page">
-      <div className="auth-bg-grid" />
-      <div className="auth-glow auth-glow-one" />
-      <div className="auth-glow auth-glow-two" />
+    <main className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-[#0a0e1a] px-4 py-10 font-sans text-white">
+      <AnimatedGrid />
+      <FloatingOrbs />
 
-      <div className={`auth-wrapper ${isToggled ? "toggled" : ""} ${error ? "has-error" : ""}`}>
-        <div className="background-shape" />
-        <div className="secondary-shape" />
-
-        <div className="credentials-panel signin">
-          <div className="brand-box slide-element">
-            <ShieldCheck size={40} />
-          </div>
-
-          <h2 className="slide-element">
-            TEMREN<span>.OS</span>
-          </h2>
-
-          <p className="panel-desc slide-element">
-            Yönetim paneline güvenli erişim sağlayın.
-          </p>
-
-          {error && (
-            <div className="error-box slide-element">
-              <AlertTriangle size={16} />
-              {error}
-            </div>
-          )}
-
-          <form onSubmit={handleLogin}>
-            <div className="field-wrapper slide-element">
-              <input
-                type="text"
-                required
-                value={formData.username}
-                disabled={isLoading}
-                onChange={(e) =>
-                  setFormData({ ...formData, username: e.target.value })
-                }
-              />
-              <label>Kullanıcı Adı</label>
-              <User size={18} />
-            </div>
-
-            <div className="field-wrapper slide-element">
-              <input
-                type={showPassword ? "text" : "password"}
-                required
-                value={formData.password}
-                disabled={isLoading}
-                onChange={(e) =>
-                  setFormData({ ...formData, password: e.target.value })
-                }
-              />
-              <label>Şifre</label>
-
-              <button
-                type="button"
-                className="eye-btn"
-                disabled={isLoading}
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
-              </button>
-
-              <Lock className="lock-icon" size={18} />
-            </div>
-
-            <div className="field-wrapper slide-element">
-              <button className="submit-button" type="submit" disabled={isLoading}>
-                {isLoading ? (
-                  <>
-                    Kontrol Ediliyor
-                    <Loader2 size={18} className="spin-icon" />
-                  </>
-                ) : (
-                  <>
-                    Sisteme Bağlan
-                    <ArrowRight size={18} />
-                  </>
-                )}
-              </button>
-            </div>
-          </form>
-        </div>
-
-        <div className="welcome-section signin">
-          <h2 className="slide-element">
-            WELCOME
-            <br />
-            BACK!
-          </h2>
-          <p className="slide-element">
-            Temren Makina içerik, slider, blog ve ürün yönetim sistemine giriş yapın.
-          </p>
-        </div>
-
-        <div className="credentials-panel signup loading-panel">
-          <div className="loading-orb slide-element">
-            <Loader2 size={54} />
-          </div>
-
-          <h2 className="slide-element">Doğrulanıyor</h2>
-
-          <p className="loading-text slide-element">
-            Bilgiler kontrol ediliyor, lütfen bekleyin.
-          </p>
-
-          <div className="loading-line slide-element">
-            <span />
-          </div>
-        </div>
-
-        <div className="welcome-section signup">
-          <h2 className="slide-element">
-            PANEL
-            <br />
-            AÇILIYOR
-          </h2>
-          <p className="slide-element">
-            Yetki doğrulaması tamamlandığında yönetim ekranına aktarılacaksınız.
-          </p>
-        </div>
+      {/* Dönen gradient border efekti */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <motion.div
+          className="w-[min(920px,95vw)] h-[min(540px,90vh)] rounded-[28px] opacity-40"
+          style={{
+            background: `conic-gradient(from 0deg, transparent, ${CYAN}, transparent, rgba(0,100,255,0.8), transparent)`,
+          }}
+          animate={{ rotate: 360 }}
+          transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+        />
       </div>
 
-      <p className="auth-footer">TEMREN MAKINA INDUSTRIAL OS • 2026</p>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.94, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+        className="relative z-10 w-full max-w-[860px]"
+      >
+        <motion.div
+          animate={error ? { x: [0, -8, 8, -5, 5, 0] } : { x: 0 }}
+          transition={{ duration: 0.45 }}
+          className={`relative overflow-hidden rounded-[24px] shadow-[0_0_60px_rgba(0,212,255,0.15)] ring-1 ${
+            error ? "ring-red-400/60 shadow-[0_0_50px_rgba(255,77,109,0.25)]" : "ring-cyan-400/25"
+          }`}
+        >
+          <div className="flex flex-col lg:flex-row min-h-[520px] bg-[#0d1224]/95 backdrop-blur-xl">
+            {/* Sol — Form */}
+            <div className="relative flex-1 flex flex-col justify-center px-8 sm:px-11 py-10 lg:w-[52%] z-10">
+              <AnimatePresence mode="wait">
+                {!isAuthenticating ? (
+                  <motion.div
+                    key="form"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -40, filter: "blur(6px)" }}
+                    transition={{ duration: 0.45 }}
+                  >
+                    <motion.div
+                      custom={0}
+                      variants={fadeUp}
+                      initial="hidden"
+                      animate="visible"
+                      className="flex items-center gap-4 mb-7"
+                    >
+                      <motion.div
+                        className="w-[60px] h-[60px] rounded-2xl flex items-center justify-center border border-cyan-400/30 bg-cyan-400/10"
+                        style={{ boxShadow: "0 0 30px rgba(0,212,255,0.2)" }}
+                        whileHover={{ scale: 1.05, boxShadow: "0 0 40px rgba(0,212,255,0.35)" }}
+                      >
+                        <ShieldCheck size={30} style={{ color: CYAN }} />
+                      </motion.div>
+                      <div>
+                        <h1 className="text-[2rem] sm:text-[2.35rem] font-black tracking-tight leading-none">
+                          TEMREN<span style={{ color: CYAN }}>.OS</span>
+                        </h1>
+                        <p className="text-xs text-white/45 font-medium mt-1.5 tracking-wide">
+                          Yönetim paneline güvenli erişim
+                        </p>
+                      </div>
+                    </motion.div>
+
+                    <AnimatePresence>
+                      {error && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+                          animate={{ opacity: 1, height: "auto", marginBottom: 16 }}
+                          exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                          className="flex items-center gap-2.5 px-4 py-3 rounded-xl border border-red-400/30 bg-red-500/10 text-red-200 text-xs font-semibold overflow-hidden"
+                        >
+                          <AlertTriangle size={15} className="shrink-0" />
+                          {error}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
+                    <form onSubmit={handleLogin} className="space-y-5">
+                      <motion.div custom={1} variants={fadeUp} initial="hidden" animate="visible">
+                        <label className="block text-[11px] font-bold uppercase tracking-widest text-white/40 mb-2">
+                          Kullanıcı Adı
+                        </label>
+                        <div
+                          className={`relative flex items-center rounded-2xl border transition-all duration-300 ${
+                            focusedField === "username"
+                              ? "border-cyan-400/60 bg-cyan-400/5 shadow-[0_0_20px_rgba(0,212,255,0.12)]"
+                              : "border-white/10 bg-white/[0.03]"
+                          }`}
+                        >
+                          <input
+                            type="text"
+                            required
+                            value={formData.username}
+                            disabled={isLoading}
+                            onFocus={() => setFocusedField("username")}
+                            onBlur={() => setFocusedField(null)}
+                            onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                            className="w-full bg-transparent px-4 py-3.5 text-sm font-semibold text-white outline-none placeholder:text-white/25"
+                            placeholder="admin"
+                            autoComplete="username"
+                          />
+                          <User size={17} className="mr-4 text-white/35 shrink-0" />
+                        </div>
+                      </motion.div>
+
+                      <motion.div custom={2} variants={fadeUp} initial="hidden" animate="visible">
+                        <label className="block text-[11px] font-bold uppercase tracking-widest text-white/40 mb-2">
+                          Şifre
+                        </label>
+                        <div
+                          className={`relative flex items-center rounded-2xl border transition-all duration-300 ${
+                            focusedField === "password"
+                              ? "border-cyan-400/60 bg-cyan-400/5 shadow-[0_0_20px_rgba(0,212,255,0.12)]"
+                              : "border-white/10 bg-white/[0.03]"
+                          }`}
+                        >
+                          <input
+                            type={showPassword ? "text" : "password"}
+                            required
+                            value={formData.password}
+                            disabled={isLoading}
+                            onFocus={() => setFocusedField("password")}
+                            onBlur={() => setFocusedField(null)}
+                            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                            className="w-full bg-transparent px-4 py-3.5 text-sm font-semibold text-white outline-none placeholder:text-white/25"
+                            placeholder="••••••••"
+                            autoComplete="current-password"
+                          />
+                          <button
+                            type="button"
+                            disabled={isLoading}
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="mr-2 p-1.5 text-white/35 hover:text-cyan-400 transition-colors"
+                          >
+                            {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                          </button>
+                          <Lock size={17} className="mr-3 text-white/35 shrink-0" />
+                        </div>
+                      </motion.div>
+
+                      <motion.div custom={3} variants={fadeUp} initial="hidden" animate="visible" className="pt-2">
+                        <motion.button
+                          type="submit"
+                          disabled={isLoading}
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          className="relative w-full overflow-hidden rounded-2xl py-3.5 text-sm font-black uppercase tracking-[0.15em] text-white disabled:opacity-70 disabled:cursor-wait"
+                          style={{
+                            background: `linear-gradient(135deg, #00b4d8 0%, ${CYAN} 50%, #0096c7 100%)`,
+                            boxShadow: "0 4px 30px rgba(0,212,255,0.35)",
+                          }}
+                        >
+                          <motion.span
+                            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent"
+                            animate={{ x: ["-100%", "200%"] }}
+                            transition={{ duration: 2.5, repeat: Infinity, ease: "linear", repeatDelay: 1 }}
+                          />
+                          <span className="relative flex items-center justify-center gap-2.5">
+                            Sisteme Bağlan
+                            <ArrowRight size={17} strokeWidth={2.5} />
+                          </span>
+                        </motion.button>
+                      </motion.div>
+                    </form>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="loading"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="flex flex-col items-center justify-center text-center py-8"
+                  >
+                    <motion.div
+                      className="w-24 h-24 rounded-3xl flex items-center justify-center border border-cyan-400/40 bg-cyan-400/10 mb-6"
+                      style={{ boxShadow: "0 0 40px rgba(0,212,255,0.3)" }}
+                      animate={{
+                        boxShadow: [
+                          "0 0 30px rgba(0,212,255,0.2)",
+                          "0 0 50px rgba(0,212,255,0.45)",
+                          "0 0 30px rgba(0,212,255,0.2)",
+                        ],
+                      }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    >
+                      <Loader2 size={44} style={{ color: CYAN }} className="animate-spin" />
+                    </motion.div>
+                    <h2 className="text-2xl font-black tracking-tight">Doğrulanıyor</h2>
+                    <p className="text-sm text-white/50 mt-2 font-medium">Bilgiler kontrol ediliyor...</p>
+                    <div className="w-full max-w-[220px] h-1.5 rounded-full bg-white/10 mt-8 overflow-hidden">
+                      <motion.div
+                        className="h-full rounded-full"
+                        style={{ background: CYAN, boxShadow: `0 0 12px ${CYAN}` }}
+                        animate={{ x: ["-100%", "280%"] }}
+                        transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
+                      />
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Sağ — Welcome (diagonal clip) */}
+            <div className="hidden lg:block relative lg:w-[48%] overflow-hidden">
+              <div
+                className="absolute inset-0"
+                style={{
+                  background: "linear-gradient(145deg, #00b4d8 0%, #00d4ff 40%, #0077b6 100%)",
+                  clipPath: "polygon(12% 0, 100% 0, 100% 100%, 0 100%)",
+                }}
+              />
+              <div
+                className="absolute inset-0 opacity-30"
+                style={{
+                  backgroundImage: `radial-gradient(circle at 30% 40%, rgba(255,255,255,0.4) 0%, transparent 50%)`,
+                }}
+              />
+
+              <div className="relative h-full flex flex-col justify-center pl-[18%] pr-10 pb-16 z-10">
+                <AnimatePresence mode="wait">
+                  {!isAuthenticating ? (
+                    <motion.div
+                      key="welcome"
+                      initial={{ opacity: 0, x: 30 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 40, filter: "blur(4px)" }}
+                      transition={{ duration: 0.5, delay: 0.2 }}
+                    >
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.35 }}
+                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 text-white/90 text-[10px] font-bold uppercase tracking-widest mb-5"
+                      >
+                        <Sparkles size={11} />
+                        Admin Panel
+                      </motion.div>
+                      <h2 className="text-[2.6rem] font-black uppercase leading-[1.05] tracking-tight text-white">
+                        Welcome
+                        <br />
+                        Back!
+                      </h2>
+                      <p className="mt-5 text-[15px] leading-relaxed text-white/80 font-medium max-w-[280px]">
+                        Temren Makina içerik, slider, blog, kampanya ve ürün yönetim sistemine giriş yapın.
+                      </p>
+                      <div className="mt-10 flex gap-3">
+                        {["Blog", "Slider", "Kampanya", "Ürün"].map((tag, i) => (
+                          <motion.span
+                            key={tag}
+                            initial={{ opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.5 + i * 0.08 }}
+                            className="px-3 py-1 rounded-lg bg-white/15 text-[11px] font-bold text-white/90 backdrop-blur-sm"
+                          >
+                            {tag}
+                          </motion.span>
+                        ))}
+                      </div>
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="welcome-loading"
+                      initial={{ opacity: 0, x: 30 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      className="text-left"
+                    >
+                      <h2 className="text-[2.4rem] font-black uppercase leading-[1.05] tracking-tight text-white">
+                        Panel
+                        <br />
+                        Açılıyor
+                      </h2>
+                      <p className="mt-5 text-[15px] leading-relaxed text-white/80 font-medium max-w-[280px]">
+                        Yetki doğrulaması tamamlandığında yönetim ekranına aktarılacaksınız.
+                      </p>
+                      <motion.div
+                        className="mt-8 flex gap-1"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                      >
+                        {[0, 1, 2].map((i) => (
+                          <motion.div
+                            key={i}
+                            className="w-2 h-2 rounded-full bg-white"
+                            animate={{ opacity: [0.3, 1, 0.3], y: [0, -4, 0] }}
+                            transition={{ duration: 0.8, repeat: Infinity, delay: i * 0.15 }}
+                          />
+                        ))}
+                      </motion.div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </motion.div>
+
+      <motion.p
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.8 }}
+        className="absolute bottom-6 text-[10px] font-bold tracking-[0.35em] text-white/15 uppercase z-10"
+      >
+        Temren Makina Industrial OS • 2026
+      </motion.p>
 
       <style jsx global>{`
-        .admin-auth-page {
-          min-height: 100vh;
-          width: 100%;
-          background: #1a1a2e;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 20px;
-          position: relative;
-          overflow: hidden;
-          font-family: "Poppins", sans-serif;
-          color: #fff;
-        }
-
-        .auth-bg-grid {
-          position: absolute;
-          inset: 0;
-          background-image:
-            linear-gradient(rgba(0, 212, 255, 0.045) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(0, 212, 255, 0.045) 1px, transparent 1px);
-          background-size: 54px 54px;
-          opacity: 0.8;
-        }
-
-        .auth-glow {
-          position: absolute;
-          border-radius: 999px;
-          filter: blur(120px);
-          pointer-events: none;
-        }
-
-        .auth-glow-one {
-          width: 430px;
-          height: 430px;
-          top: -140px;
-          left: -120px;
-          background: rgba(0, 212, 255, 0.18);
-          animation: floatOne 9s ease-in-out infinite;
-        }
-
-        .auth-glow-two {
-          width: 520px;
-          height: 520px;
-          right: -130px;
-          bottom: -160px;
-          background: rgba(0, 100, 255, 0.18);
-          animation: floatTwo 11s ease-in-out infinite;
-        }
-
-        .auth-wrapper {
-          position: relative;
-          width: 100%;
-          max-width: 860px;
-          height: 520px;
-          border: 2px solid #00d4ff;
-          box-shadow: 0 0 30px #00d4ff;
-          overflow: hidden;
-          background: rgba(26, 26, 46, 0.96);
-          z-index: 5;
-          transition: 0.45s ease;
-        }
-
-        .auth-wrapper.has-error {
-          border-color: #ff4d6d;
-          box-shadow: 0 0 35px rgba(255, 77, 109, 0.8);
-          animation: errorShake 0.45s ease;
-        }
-
-        .auth-wrapper.has-error .background-shape {
-          background: linear-gradient(45deg, #1a1a2e, #ff4d6d);
-        }
-
-        .auth-wrapper.has-error .secondary-shape {
-          border-top-color: #ff4d6d;
-        }
-
-        .credentials-panel {
-          position: absolute;
-          top: 0;
-          width: 50%;
-          height: 100%;
-          display: flex;
-          justify-content: center;
-          flex-direction: column;
-          z-index: 3;
-        }
-
-        .credentials-panel.signin {
-          left: 0;
-          padding: 0 42px;
-        }
-
-        .credentials-panel.signin .slide-element {
-          transform: translateX(0%);
-          transition: 0.7s ease;
-          opacity: 1;
-          filter: blur(0);
-        }
-
-        .credentials-panel.signin .slide-element:nth-child(1) {
-          transition-delay: 2.1s;
-        }
-
-        .credentials-panel.signin .slide-element:nth-child(2) {
-          transition-delay: 2.2s;
-        }
-
-        .credentials-panel.signin .slide-element:nth-child(3) {
-          transition-delay: 2.3s;
-        }
-
-        .credentials-panel.signin .slide-element:nth-child(4) {
-          transition-delay: 2.4s;
-        }
-
-        .credentials-panel.signin .slide-element:nth-child(5) {
-          transition-delay: 2.5s;
-        }
-
-        .auth-wrapper.toggled .credentials-panel.signin .slide-element {
-          transform: translateX(-120%);
-          opacity: 0;
-          filter: blur(8px);
-        }
-
-        .auth-wrapper.toggled .credentials-panel.signin .slide-element:nth-child(1) {
-          transition-delay: 0s;
-        }
-
-        .auth-wrapper.toggled .credentials-panel.signin .slide-element:nth-child(2) {
-          transition-delay: 0.1s;
-        }
-
-        .auth-wrapper.toggled .credentials-panel.signin .slide-element:nth-child(3) {
-          transition-delay: 0.2s;
-        }
-
-        .auth-wrapper.toggled .credentials-panel.signin .slide-element:nth-child(4) {
-          transition-delay: 0.3s;
-        }
-
-        .auth-wrapper.toggled .credentials-panel.signin .slide-element:nth-child(5) {
-          transition-delay: 0.4s;
-        }
-
-        .credentials-panel.signup {
-          right: 0;
-          padding: 0 60px;
-        }
-
-        .credentials-panel.signup .slide-element {
-          transform: translateX(120%);
-          transition: 0.7s ease;
-          opacity: 0;
-          filter: blur(10px);
-        }
-
-        .credentials-panel.signup .slide-element:nth-child(1) {
-          transition-delay: 0s;
-        }
-
-        .credentials-panel.signup .slide-element:nth-child(2) {
-          transition-delay: 0.1s;
-        }
-
-        .credentials-panel.signup .slide-element:nth-child(3) {
-          transition-delay: 0.2s;
-        }
-
-        .credentials-panel.signup .slide-element:nth-child(4) {
-          transition-delay: 0.3s;
-        }
-
-        .auth-wrapper.toggled .credentials-panel.signup .slide-element {
-          transform: translateX(0%);
-          opacity: 1;
-          filter: blur(0);
-        }
-
-        .auth-wrapper.toggled .credentials-panel.signup .slide-element:nth-child(1) {
-          transition-delay: 1.7s;
-        }
-
-        .auth-wrapper.toggled .credentials-panel.signup .slide-element:nth-child(2) {
-          transition-delay: 1.8s;
-        }
-
-        .auth-wrapper.toggled .credentials-panel.signup .slide-element:nth-child(3) {
-          transition-delay: 1.9s;
-        }
-
-        .auth-wrapper.toggled .credentials-panel.signup .slide-element:nth-child(4) {
-          transition-delay: 2s;
-        }
-
-        .brand-box {
-          width: 70px;
-          height: 70px;
-          border: 1px solid rgba(0, 212, 255, 0.35);
-          border-radius: 22px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: #00d4ff;
-          background: rgba(0, 212, 255, 0.08);
-          box-shadow: 0 0 22px rgba(0, 212, 255, 0.25);
-          margin-bottom: 22px;
-        }
-
-        .credentials-panel h2 {
-          font-size: 42px;
-          line-height: 1;
-          font-weight: 900;
-          letter-spacing: -0.06em;
-          color: #fff;
-        }
-
-        .credentials-panel h2 span {
-          color: #00d4ff;
-        }
-
-        .panel-desc {
-          margin-top: 14px;
-          margin-bottom: 18px;
-          color: rgba(255, 255, 255, 0.55);
-          font-size: 13px;
-          font-weight: 600;
-        }
-
-        .field-wrapper {
-          position: relative;
-          width: 100%;
-          height: 50px;
-          margin-top: 25px;
-        }
-
-        .field-wrapper input {
-          width: 100%;
-          height: 100%;
-          background: transparent;
-          border: none;
-          outline: none;
-          font-size: 15px;
-          color: #fff;
-          font-weight: 600;
-          border-bottom: 2px solid rgba(255, 255, 255, 0.78);
-          padding-right: 56px;
-          transition: 0.5s;
-        }
-
-        .field-wrapper input:focus,
-        .field-wrapper input:valid {
-          border-bottom: 2px solid #00d4ff;
-        }
-
-        .auth-wrapper.has-error .field-wrapper input {
-          border-bottom-color: rgba(255, 77, 109, 0.75);
-        }
-
-        .field-wrapper label {
-          position: absolute;
-          top: 50%;
-          left: 0;
-          transform: translateY(-50%);
-          font-size: 15px;
-          color: rgba(255, 255, 255, 0.82);
-          transition: 0.5s;
-          pointer-events: none;
-          font-weight: 600;
-        }
-
-        .field-wrapper input:focus ~ label,
-        .field-wrapper input:valid ~ label {
-          top: -5px;
-          color: #00d4ff;
-          font-size: 13px;
-        }
-
-        .field-wrapper svg {
-          position: absolute;
-          top: 50%;
-          right: 0;
-          transform: translateY(-50%);
-          color: rgba(255, 255, 255, 0.75);
-          transition: 0.5s;
-        }
-
-        .field-wrapper input:focus ~ svg,
-        .field-wrapper input:valid ~ svg {
-          color: #00d4ff;
-        }
-
-        .lock-icon {
-          right: 34px !important;
-        }
-
-        .eye-btn {
-          position: absolute;
-          top: 50%;
-          right: 0;
-          transform: translateY(-50%);
-          width: 24px;
-          height: 24px;
-          border: none;
-          outline: none;
-          background: transparent;
-          cursor: pointer;
-          z-index: 5;
-          color: rgba(255, 255, 255, 0.7);
-        }
-
-        .eye-btn svg {
-          position: static;
-          transform: none;
-        }
-
-        .submit-button {
-          position: relative;
-          width: 100%;
-          height: 46px;
-          background: transparent;
-          border-radius: 40px;
-          cursor: pointer;
-          font-size: 14px;
-          font-weight: 900;
-          border: 2px solid #00d4ff;
-          overflow: hidden;
-          z-index: 1;
-          color: #fff;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 10px;
-          text-transform: uppercase;
-          letter-spacing: 0.12em;
-        }
-
-        .submit-button::before {
-          content: "";
-          position: absolute;
-          height: 300%;
-          width: 100%;
-          background: linear-gradient(#1a1a2e, #00d4ff, #1a1a2e, #00d4ff);
-          top: -100%;
-          left: 0;
-          z-index: -1;
-          transition: 0.5s;
-        }
-
-        .submit-button:hover::before,
-        .submit-button:disabled::before {
-          top: 0;
-        }
-
-        .submit-button:disabled {
-          cursor: wait;
-          opacity: 0.9;
-        }
-
-        .welcome-section {
-          position: absolute;
-          top: 0;
-          height: 100%;
-          width: 50%;
-          display: flex;
-          justify-content: center;
-          flex-direction: column;
-          z-index: 3;
-        }
-
-        .welcome-section.signin {
-          right: 0;
-          text-align: right;
-          padding: 0 40px 60px 150px;
-        }
-
-        .welcome-section.signin .slide-element {
-          transform: translateX(0);
-          transition: 0.7s ease;
-          opacity: 1;
-          filter: blur(0);
-        }
-
-        .welcome-section.signin .slide-element:nth-child(1) {
-          transition-delay: 2s;
-        }
-
-        .welcome-section.signin .slide-element:nth-child(2) {
-          transition-delay: 2.1s;
-        }
-
-        .auth-wrapper.toggled .welcome-section.signin .slide-element {
-          transform: translateX(120%);
-          opacity: 0;
-          filter: blur(10px);
-        }
-
-        .auth-wrapper.toggled .welcome-section.signin .slide-element:nth-child(1) {
-          transition-delay: 0s;
-        }
-
-        .auth-wrapper.toggled .welcome-section.signin .slide-element:nth-child(2) {
-          transition-delay: 0.1s;
-        }
-
-        .welcome-section.signup {
-          left: 0;
-          text-align: left;
-          padding: 0 150px 60px 38px;
-          pointer-events: none;
-        }
-
-        .welcome-section.signup .slide-element {
-          transform: translateX(-120%);
-          transition: 0.7s ease;
-          opacity: 0;
-          filter: blur(10px);
-        }
-
-        .welcome-section.signup .slide-element:nth-child(1) {
-          transition-delay: 0s;
-        }
-
-        .welcome-section.signup .slide-element:nth-child(2) {
-          transition-delay: 0.1s;
-        }
-
-        .auth-wrapper.toggled .welcome-section.signup .slide-element {
-          transform: translateX(0%);
-          opacity: 1;
-          filter: blur(0);
-        }
-
-        .auth-wrapper.toggled .welcome-section.signup .slide-element:nth-child(1) {
-          transition-delay: 1.7s;
-        }
-
-        .auth-wrapper.toggled .welcome-section.signup .slide-element:nth-child(2) {
-          transition-delay: 1.8s;
-        }
-
-        .welcome-section h2 {
-          text-transform: uppercase;
-          font-size: 42px;
-          line-height: 1.2;
-          font-weight: 900;
-        }
-
-        .welcome-section p {
-          margin-top: 22px;
-          font-size: 14px;
-          line-height: 1.6;
-          color: rgba(255, 255, 255, 0.72);
-          font-weight: 600;
-        }
-
-        .background-shape {
-          position: absolute;
-          right: 0;
-          top: -5px;
-          height: 620px;
-          width: 900px;
-          background: linear-gradient(45deg, #1a1a2e, #00d4ff);
-          transform: rotate(10deg) skewY(40deg);
-          transform-origin: bottom right;
-          transition: 1.5s ease;
-          transition-delay: 1.6s;
-          z-index: 1;
-        }
-
-        .auth-wrapper.toggled .background-shape {
-          transform: rotate(0deg) skewY(0deg);
-          transition-delay: 0.5s;
-        }
-
-        .secondary-shape {
-          position: absolute;
-          left: 270px;
-          top: 100%;
-          height: 730px;
-          width: 900px;
-          background: #1a1a2e;
-          border-top: 3px solid #00d4ff;
-          transform: rotate(0deg) skewY(0deg);
-          transform-origin: bottom left;
-          transition: 1.5s ease;
-          transition-delay: 0.5s;
-          z-index: 2;
-        }
-
-        .auth-wrapper.toggled .secondary-shape {
-          transform: rotate(-11deg) skewY(-41deg);
-          transition-delay: 1.2s;
-        }
-
-        .loading-panel {
-          text-align: center;
-          align-items: center;
-        }
-
-        .loading-orb {
-          width: 100px;
-          height: 100px;
-          border-radius: 32px;
-          border: 1px solid rgba(0, 212, 255, 0.45);
-          background: rgba(0, 212, 255, 0.1);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: #00d4ff;
-          box-shadow: 0 0 32px rgba(0, 212, 255, 0.35);
-          margin: 0 auto 24px;
-        }
-
-        .loading-orb svg,
-        .spin-icon {
-          animation: spin 1s linear infinite;
-        }
-
-        .loading-text {
-          margin-top: 18px;
-          color: rgba(255, 255, 255, 0.65);
-          font-size: 14px;
-          line-height: 1.6;
-        }
-
-        .loading-line {
-          width: 100%;
-          height: 8px;
-          border-radius: 999px;
-          margin-top: 28px;
-          background: rgba(255, 255, 255, 0.1);
-          overflow: hidden;
-        }
-
-        .loading-line span {
-          display: block;
-          width: 45%;
-          height: 100%;
-          border-radius: 999px;
-          background: #00d4ff;
-          box-shadow: 0 0 20px rgba(0, 212, 255, 0.9);
-          animation: loadingLine 1s ease-in-out infinite;
-        }
-
-        .error-box {
-          border: 1px solid rgba(255, 77, 109, 0.4);
-          background: rgba(255, 77, 109, 0.12);
-          color: #ffd0d8;
-          border-radius: 14px;
-          padding: 11px 13px;
-          display: flex;
-          align-items: center;
-          gap: 9px;
-          font-size: 12px;
-          font-weight: 700;
-          animation: errorShake 0.45s ease;
-        }
-
-        .auth-footer {
-          position: absolute;
-          bottom: 26px;
-          z-index: 4;
-          color: rgba(255, 255, 255, 0.18);
-          font-size: 10px;
-          font-weight: 900;
-          letter-spacing: 0.35em;
-        }
-
-        @keyframes spin {
-          to {
-            transform: rotate(360deg);
-          }
-        }
-
-        @keyframes loadingLine {
-          0% {
-            transform: translateX(-110%);
-          }
-          100% {
-            transform: translateX(230%);
-          }
-        }
-
-        @keyframes errorShake {
-          0%, 100% {
-            transform: translateX(0);
-          }
-          20% {
-            transform: translateX(-8px);
-          }
-          40% {
-            transform: translateX(8px);
-          }
-          60% {
-            transform: translateX(-5px);
-          }
-          80% {
-            transform: translateX(5px);
-          }
-        }
-
-        @keyframes floatOne {
-          0%, 100% {
-            transform: translate(0, 0);
-          }
-          50% {
-            transform: translate(35px, -25px);
-          }
-        }
-
-        @keyframes floatTwo {
-          0%, 100% {
-            transform: translate(0, 0);
-          }
-          50% {
-            transform: translate(-35px, 35px);
-          }
-        }
-
-        @media (max-width: 768px) {
-          .auth-wrapper {
-            height: auto;
-            min-height: 520px;
-          }
-
-          .credentials-panel,
-          .welcome-section {
-            width: 100%;
-            position: relative;
-          }
-
-          .credentials-panel.signin,
-          .credentials-panel.signup {
-            padding: 40px 30px;
-            left: 0;
-            right: 0;
-          }
-
-          .credentials-panel.signup {
-            display: none;
-          }
-
-          .auth-wrapper.toggled .credentials-panel.signin {
-            display: none;
-          }
-
-          .auth-wrapper.toggled .credentials-panel.signup {
-            display: flex;
-          }
-
-          .welcome-section,
-          .background-shape,
-          .secondary-shape {
-            display: none;
-          }
-
-          .credentials-panel.signin .slide-element,
-          .credentials-panel.signup .slide-element,
-          .auth-wrapper.toggled .credentials-panel.signup .slide-element {
-            transform: translateY(0);
-            opacity: 1;
-            filter: blur(0);
-          }
-
-          .credentials-panel h2 {
-            font-size: 34px;
-          }
-
-          .auth-footer {
-            display: none;
-          }
+        @keyframes authGridDrift {
+          0% { transform: translate(0, 0); }
+          100% { transform: translate(48px, 48px); }
         }
       `}</style>
     </main>

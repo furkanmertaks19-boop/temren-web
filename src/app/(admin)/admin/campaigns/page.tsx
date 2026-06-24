@@ -32,7 +32,10 @@ type Campaign = {
     id: string;
     title: string;
     shortDescription: string;
+    discountLabel: string;
     description: string;
+    advantages: string;
+    priceInfo: string;
     mediaUrl: string;
     mediaType: CampaignMediaType;
     buttonText: string;
@@ -47,10 +50,13 @@ type Campaign = {
 const EMPTY_FORM: Omit<Campaign, "id" | "leadCount"> = {
     title: "",
     shortDescription: "",
+    discountLabel: "",
     description: "",
+    advantages: "",
+    priceInfo: "",
     mediaUrl: "",
     mediaType: "image",
-    buttonText: "Teklif İste",
+    buttonText: "Teklif Al",
     startDate: "",
     endDate: "",
     isActive: true,
@@ -138,7 +144,10 @@ function CampaignsPageContent() {
         setForm({
             title: campaign.title,
             shortDescription: campaign.shortDescription,
+            discountLabel: campaign.discountLabel || "",
             description: campaign.description,
+            advantages: campaign.advantages || "",
+            priceInfo: campaign.priceInfo || "",
             mediaUrl: campaign.mediaUrl,
             mediaType: campaign.mediaType,
             buttonText: campaign.buttonText,
@@ -411,12 +420,45 @@ function CampaignsPageContent() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-semibold text-slate-700 mb-1.5">Detaylı Açıklama</label>
+                                <label className="block text-sm font-semibold text-slate-700 mb-1.5">İndirim Etiketi</label>
+                                <input
+                                    type="text"
+                                    placeholder="Örn: %20 İndirim"
+                                    value={form.discountLabel}
+                                    onChange={(e) => setForm({ ...form, discountLabel: e.target.value })}
+                                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/30"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-semibold text-slate-700 mb-1.5">Kampanya Detayları</label>
                                 <textarea
                                     rows={4}
                                     value={form.description}
                                     onChange={(e) => setForm({ ...form, description: e.target.value })}
                                     className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/30 resize-y"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-semibold text-slate-700 mb-1.5">Avantajlar</label>
+                                <textarea
+                                    rows={3}
+                                    placeholder="Her satıra bir avantaj yazın"
+                                    value={form.advantages}
+                                    onChange={(e) => setForm({ ...form, advantages: e.target.value })}
+                                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/30 resize-y"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-semibold text-slate-700 mb-1.5">Fiyat Bilgisi</label>
+                                <input
+                                    type="text"
+                                    placeholder="Örn: 125.000 TL'den başlayan fiyatlarla"
+                                    value={form.priceInfo}
+                                    onChange={(e) => setForm({ ...form, priceInfo: e.target.value })}
+                                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/30"
                                 />
                             </div>
 

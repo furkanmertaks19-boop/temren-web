@@ -1,11 +1,14 @@
 import type { NormalizedTeklif } from '@/lib/teklifNormalizer';
 import type { TeklifStatus } from '@/lib/teklifStatus';
+import type { CampaignLeadStatus } from '@/lib/campaignStatus';
 
 export const adminQueryKeys = {
     all: ['admin'] as const,
     notifications: ['admin', 'notifications'] as const,
     stats: ['admin', 'stats'] as const,
     teklifler: ['admin', 'teklifler'] as const,
+    campaigns: ['admin', 'campaigns'] as const,
+    campaignLeads: ['admin', 'campaign-leads'] as const,
 };
 
 export type AdminNotificationsData = {
@@ -23,6 +26,9 @@ export type AdminStatsData = {
         pendingComments: number;
         totalComments: number;
         newsletterSubscribers: number;
+        activeCampaigns: number;
+        totalCampaignLeads: number;
+        unreadCampaignLeads: number;
     };
     recentQuotes?: Record<string, unknown>[];
 };
@@ -84,6 +90,41 @@ export async function markTeklifAsViewed(teklif: NormalizedTeklif): Promise<void
     }
 
     await updateTeklifStatus(teklif._id, 'Görüşüldü');
+}
+
+export type CampaignLeadItem = {
+    id: string;
+    campaignId: string;
+    campaignTitle: string;
+    name: string;
+    company: string;
+    phone: string;
+    email: string;
+    message: string;
+    status: CampaignLeadStatus;
+    createdAt: string;
+    updatedAt: string;
+};
+
+export async function fetchCampaignLeads(): Promise<CampaignLeadItem[]> {
+    const res = await fetch('/api/admin/campaign-leads');
+    const json = await res.json();
+    if (!json.success) {
+        throw new Error(json.error || 'Kampanya teklifleri alınamadı');
+    }
+    return json.data ?? [];
+}
+
+export async function updateCampaignLeadStatus(id: string, status: CampaignLeadStatus): Promise<void> {
+    const res = await fetch(`/api/admin/campaign-leads/${id}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+    });
+    const json = await res.json();
+    if (!res.ok || !json.success) {
+        throw new Error(json.error || 'Durum güncellenemedi');
+    }
 }
 
 /** Admin panel sorguları için ortak React Query ayarları */

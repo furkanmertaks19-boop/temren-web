@@ -4,6 +4,7 @@ import { GoogleAnalytics } from "@next/third-parties/google";
 import "./globals.css";
 
 import ConditionalHeader from "@/components/layout/ConditionalHeader";
+import CampaignPopup from "@/components/campaign/CampaignPopup";
 import SmoothScroll from "@/components/SmoothScroll";
 import JsonLd from "@/components/seo/JsonLd";
 
@@ -207,6 +208,7 @@ export default function RootLayout({
         <SmoothScroll>
           <ConditionalHeader />
           <main className="min-h-screen">{children}</main>
+          <CampaignPopup />
         </SmoothScroll>
 
         <GoogleAnalytics gaId="G-0XVWHV8CMP" />

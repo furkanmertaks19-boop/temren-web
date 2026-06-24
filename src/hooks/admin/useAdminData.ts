@@ -7,12 +7,15 @@ import {
     adminQueryKeys,
     fetchAdminNotifications,
     fetchAdminStats,
+    fetchCampaignLeads,
     fetchTeklifler,
     markTeklifAsViewed,
+    updateCampaignLeadStatus,
     updateTeklifStatus,
 } from '@/lib/adminQueries';
 import type { NormalizedTeklif } from '@/lib/teklifNormalizer';
 import type { TeklifStatus } from '@/lib/teklifStatus';
+import type { CampaignLeadStatus } from '@/lib/campaignStatus';
 
 export function useAdminNotifications(enabled = true) {
     return useQuery({
@@ -74,6 +77,33 @@ export function useMarkTeklifViewed() {
         },
         onError: (error: Error) => {
             toast.error(error.message || 'Talep güncellenemedi');
+        },
+    });
+}
+
+export function useCampaignLeads(enabled = true) {
+    return useQuery({
+        queryKey: adminQueryKeys.campaignLeads,
+        queryFn: fetchCampaignLeads,
+        enabled,
+        staleTime: 30_000,
+        refetchInterval: enabled ? adminQueryDefaults.refetchInterval : false,
+    });
+}
+
+export function useUpdateCampaignLeadStatus() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({ id, status }: { id: string; status: CampaignLeadStatus }) =>
+            updateCampaignLeadStatus(id, status),
+        onSuccess: (_data, { status }) => {
+            queryClient.invalidateQueries({ queryKey: adminQueryKeys.campaignLeads });
+            queryClient.invalidateQueries({ queryKey: adminQueryKeys.stats });
+            toast.success(`Durum "${status}" olarak güncellendi`);
+        },
+        onError: (error: Error) => {
+            toast.error(error.message || 'Durum güncellenemedi');
         },
     });
 }

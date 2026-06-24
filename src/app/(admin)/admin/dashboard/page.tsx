@@ -19,6 +19,7 @@ import {
   ArrowUpRight,
   Sparkles,
   ChevronRight,
+  Megaphone,
 } from 'lucide-react';
 import { getAdminSession, ROLE_LABELS } from '@/lib/adminPermissions';
 import { normalizeTeklif } from '@/lib/teklifNormalizer';
@@ -51,6 +52,9 @@ export default function DashboardPage() {
     pendingComments: 0,
     totalComments: 0,
     newsletterSubscribers: 0,
+    activeCampaigns: 0,
+    totalCampaignLeads: 0,
+    unreadCampaignLeads: 0,
   };
   const loading = statsLoading || notificationsLoading;
   const lastUpdated = statsUpdatedAt ? new Date(statsUpdatedAt) : null;
@@ -93,9 +97,32 @@ export default function DashboardPage() {
       gradient: 'from-amber-500 to-amber-600',
       href: '/admin/gorusler',
     },
+    {
+      label: 'Aktif Kampanya',
+      value: stats.activeCampaigns,
+      icon: Megaphone,
+      gradient: 'from-rose-500 to-rose-600',
+      href: '/admin/campaigns',
+    },
+    {
+      label: 'Kampanya Teklifi',
+      value: stats.totalCampaignLeads,
+      icon: Inbox,
+      gradient: 'from-cyan-500 to-cyan-600',
+      href: '/admin/campaign-leads',
+    },
+    {
+      label: 'Okunmamış Kampanya Talebi',
+      value: stats.unreadCampaignLeads,
+      icon: MessageSquare,
+      gradient: stats.unreadCampaignLeads > 0 ? 'from-orange-500 to-orange-600' : 'from-emerald-500 to-emerald-600',
+      href: '/admin/campaign-leads',
+      pulse: stats.unreadCampaignLeads > 0,
+    },
   ];
 
   const quickActions = [
+    { label: 'Kampanya Oluştur', href: '/admin/campaigns?create=true', icon: Megaphone, color: 'text-orange-600', bg: 'bg-orange-50' },
     { label: 'Yeni Blog Yazısı', href: '/admin/blog', icon: Newspaper, color: 'text-blue-600', bg: 'bg-blue-50' },
     { label: 'Ürün Ekle', href: '/admin/urunler', icon: Plus, color: 'text-emerald-600', bg: 'bg-emerald-50' },
     { label: 'Slider Düzenle', href: '/admin/slider', icon: SlidersHorizontal, color: 'text-violet-600', bg: 'bg-violet-50' },

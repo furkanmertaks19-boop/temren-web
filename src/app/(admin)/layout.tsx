@@ -19,6 +19,7 @@ import {
   Settings,
   ChevronDown,
   User,
+  Megaphone,
   type LucideIcon,
 } from 'lucide-react';
 import { getAdminSession, clearAdminSession, ROLE_LABELS } from '@/lib/adminPermissions';
@@ -33,7 +34,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import AdminQueryProvider from '@/components/admin/AdminQueryProvider';
-import { useAdminNotifications } from '@/hooks/admin/useAdminData';
+import { useAdminNotifications, useAdminStats } from '@/hooks/admin/useAdminData';
 import { cn } from '@/lib/utils';
 import { Toaster } from 'react-hot-toast';
 
@@ -104,7 +105,9 @@ function AdminLayoutShell({
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { data: notifications } = useAdminNotifications();
+  const { data: statsData } = useAdminStats();
   const unreadCount = notifications?.unreadCount ?? 0;
+  const unreadCampaignLeads = statsData?.stats?.unreadCampaignLeads ?? 0;
 
   const isDashboard = pathname === '/admin/dashboard';
 
@@ -128,6 +131,7 @@ function AdminLayoutShell({
       items: [
         { name: 'Blog', path: '/admin/blog', icon: Newspaper },
         { name: 'Slider', path: '/admin/slider', icon: SlidersHorizontal },
+        { name: 'Kampanyalar', path: '/admin/campaigns', icon: Megaphone },
         { name: 'Müşteri Görüşleri', path: '/admin/gorusler', icon: MessageSquare },
       ],
     },
@@ -141,6 +145,7 @@ function AdminLayoutShell({
       title: 'Talepler',
       items: [
         { name: 'Teklif Talepleri', path: '/admin/teklifler', icon: Inbox, badge: unreadCount },
+        { name: 'Kampanya Teklifleri', path: '/admin/campaign-leads', icon: Megaphone, badge: unreadCampaignLeads },
       ],
     },
     {
@@ -150,7 +155,7 @@ function AdminLayoutShell({
         { name: 'Ayarlar', path: '/admin/nav', icon: Settings },
       ],
     },
-  ], [unreadCount]);
+  ], [unreadCount, unreadCampaignLeads]);
 
   const userInitial = (session?.displayName || 'A').charAt(0).toUpperCase();
 

@@ -17,33 +17,38 @@ const securityHeaders = [
     key: "Permissions-Policy",
     value: "camera=(), microphone=(), geolocation=()",
   },
+  {
+    key: "X-DNS-Prefetch-Control",
+    value: "on",
+  },
+  {
+    key: "Strict-Transport-Security",
+    value: "max-age=63072000; includeSubDomains; preload",
+  },
 ];
 
 const nextConfig: NextConfig = {
   reactStrictMode: false,
 
-  // Render optimizasyonu
   output: "standalone",
-
-  // Compression
   compress: true,
-
-  // Güvenlik
   poweredByHeader: false,
-
-  // Cache
   generateEtags: true,
-
-  // Source map kapalı
   productionBrowserSourceMaps: false,
 
-  // IMAGE CONFIG
   images: {
-    // Next image optimizer tamamen kapalı
-    unoptimized: true,
+    formats: ["image/avif", "image/webp"],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+        pathname: "/**",
+      },
+    ],
   },
 
-  // EXPERIMENTAL
   experimental: {
     optimizePackageImports: [
       "lucide-react",
@@ -52,7 +57,6 @@ const nextConfig: NextConfig = {
     ],
   },
 
-  // SECURITY HEADERS
   async headers() {
     return [
       {
@@ -62,21 +66,20 @@ const nextConfig: NextConfig = {
     ];
   },
 
-// REDIRECTS
-async redirects() {
-  return [
-    {
-      source: "/temrenqr/:path*",
-      destination: "/qr-welcome",
-      permanent: true,
-    },
-    {
-      source: "/en/media/photos",
-      destination: "/medya/foto/page.tsx",
-      permanent: true,
-    },
-  ];
-},
+  async redirects() {
+    return [
+      {
+        source: "/temrenqr/:path*",
+        destination: "/qr-welcome",
+        permanent: true,
+      },
+      {
+        source: "/en/media/photos",
+        destination: "/medya/foto",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

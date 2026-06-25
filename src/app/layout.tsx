@@ -4,7 +4,7 @@ import { GoogleAnalytics } from "@next/third-parties/google";
 import "./globals.css";
 
 import ConditionalHeader from "@/components/layout/ConditionalHeader";
-import CampaignPopup from "@/components/campaign/CampaignPopup";
+import CampaignPopupLoader from "@/components/campaign/CampaignPopupLoader";
 import SmoothScroll from "@/components/SmoothScroll";
 import JsonLd from "@/components/seo/JsonLd";
 
@@ -177,7 +177,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="tr" className={cn("scroll-smooth", "font-sans", geist.variable)}>
+    <html lang="tr" className={cn("font-sans", geist.variable)}>
       <head>
         {/* Performance: hint the browser to set up connections early. */}
         <link rel="dns-prefetch" href="https://res.cloudinary.com" />
@@ -208,7 +208,7 @@ export default function RootLayout({
         <SmoothScroll>
           <ConditionalHeader />
           <main className="min-h-screen">{children}</main>
-          <CampaignPopup />
+          <CampaignPopupLoader />
         </SmoothScroll>
 
         <GoogleAnalytics gaId="G-0XVWHV8CMP" />

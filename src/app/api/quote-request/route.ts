@@ -1,18 +1,45 @@
 import { connectDB } from "@/lib/db";
 import QuoteRequest from "@/models/QuoteRequest";
 import { NextResponse } from "next/server";
+import { z } from "zod";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
+
+const quoteSchema = z.object({
+  adSoyad: z.string().trim().min(2).max(120),
+  telefon: z.string().trim().min(7).max(30),
+  email: z.string().trim().email().max(200),
+  olcu: z.string().trim().max(100).optional(),
+  mesaj: z.string().trim().max(3000).optional(),
+  productName: z.string().trim().max(200).optional(),
+  sourcePage: z.string().trim().max(300).optional(),
+  sourceLabel: z.string().trim().max(200).optional(),
+});
 
 export async function POST(req: Request) {
     try {
+        const ip = getClientIp(req);
+        if (!checkRateLimit(`quote:${ip}`, 6, 60_000)) {
+            return NextResponse.json({ success: false, error: "Çok fazla istek." }, { status: 429 });
+        }
+
         await connectDB();
         const body = await req.json();
+        const parsed = quoteSchema.safeParse(body);
 
-        const label = body.sourceLabel || body.productName || "Ürün Teklifi";
-        const page = body.sourcePage || "/urunler";
+        if (!parsed.success) {
+            return NextResponse.json(
+                { success: false, error: parsed.error.issues[0]?.message || "Geçersiz veri" },
+                { status: 400 }
+            );
+        }
+
+        const data = parsed.data;
+        const label = data.sourceLabel || data.productName || "Ürün Teklifi";
+        const page = data.sourcePage || "/urunler";
 
         const checkTime = new Date(Date.now() - 15000);
         const existing = await QuoteRequest.findOne({
-            email: body.email,
+            email: data.email,
             sourcePage: page,
             createdAt: { $gt: checkTime },
         });
@@ -22,12 +49,12 @@ export async function POST(req: Request) {
         }
 
         const newRequest = await QuoteRequest.create({
-            fullName: body.adSoyad,
-            phone: body.telefon,
-            email: body.email,
-            selectedSize: body.olcu,
-            message: body.mesaj,
-            productName: body.productName || label,
+            fullName: data.adSoyad,
+            phone: data.telefon,
+            email: data.email,
+            selectedSize: data.olcu,
+            message: data.mesaj,
+            productName: data.productName || label,
             formType: "quote",
             sourcePage: page,
             sourceLabel: label,

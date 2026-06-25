@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/lib/db";
 import Campaign from "@/models/Campaign";
 import CampaignLead from "@/models/CampaignLead";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 
 export const dynamic = "force-dynamic";
 
@@ -9,6 +10,11 @@ type RouteContext = { params: Promise<{ id: string }> };
 
 export async function POST(req: NextRequest, context: RouteContext) {
     try {
+        const ip = getClientIp(req);
+        if (!checkRateLimit(`campaign-lead:${ip}`, 6, 60_000)) {
+            return NextResponse.json({ success: false, error: "Çok fazla istek." }, { status: 429 });
+        }
+
         await connectDB();
         const { id } = await context.params;
         const body = await req.json();

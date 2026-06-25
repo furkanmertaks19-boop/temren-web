@@ -3,15 +3,27 @@ import { connectDB } from "@/lib/db";
 import Blog from "@/models/Blog";
 
 // 1. HABERLERİ LİSTELE
-export async function GET() {
+export async function GET(req: NextRequest) {
     try {
         await connectDB();
 
-        const blogs = await Blog.find({})
-            .sort({ createdAt: -1 })
-            .lean();
+        const { searchParams } = new URL(req.url);
+        const limitParam = searchParams.get("limit");
+        const limit = limitParam ? Math.min(Math.max(parseInt(limitParam, 10) || 0, 1), 50) : 0;
 
-        return NextResponse.json(Array.isArray(blogs) ? blogs : [], { status: 200 });
+        let query = Blog.find({}).sort({ createdAt: -1 });
+        if (limit > 0) {
+            query = query.limit(limit);
+        }
+
+        const blogs = await query.lean();
+
+        return NextResponse.json(Array.isArray(blogs) ? blogs : [], {
+            status: 200,
+            headers: {
+                "Cache-Control": "public, s-maxage=120, stale-while-revalidate=600",
+            },
+        });
     } catch (error) {
         console.error("BLOG_GET_ERROR:", error);
 

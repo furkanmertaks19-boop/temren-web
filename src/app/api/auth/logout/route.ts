@@ -1,16 +1,18 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
+import { ADMIN_SESSION_COOKIE } from "@/lib/adminSession";
 
 export async function POST() {
     try {
-        const cookieStore = await cookies();
-        
-        // Vercel veya local fark etmeksizin auth cookie'sini temizle
-        // Not: 'token' ismini kendi projenizdeki isimle (örn: 'session') değiştirin
-        cookieStore.delete('token'); 
-
-        return NextResponse.json({ success: true, message: "Çıkış başarılı" });
-    } catch (error: any) {
+        const response = NextResponse.json({ success: true, message: "Çıkış başarılı" });
+        response.cookies.set(ADMIN_SESSION_COOKIE, "", {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            path: "/",
+            maxAge: 0,
+        });
+        return response;
+    } catch {
         return NextResponse.json({ error: "Çıkış yapılamadı" }, { status: 500 });
     }
 }

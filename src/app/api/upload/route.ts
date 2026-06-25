@@ -9,7 +9,7 @@ import {
 export const runtime = "nodejs";
 
 cloudinary.config({
-    cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "dbuyzwlux",
+    cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
     api_secret: process.env.CLOUDINARY_API_SECRET,
     secure: true,
@@ -23,6 +23,25 @@ export async function POST(req: Request) {
 
         if (!file) {
             return NextResponse.json({ error: "Dosya seçilmedi" }, { status: 400 });
+        }
+
+        const MAX_UPLOAD_SIZE = 30 * 1024 * 1024;
+        if (file.size > MAX_UPLOAD_SIZE) {
+            return NextResponse.json({ error: "Dosya boyutu 30MB'dan büyük olamaz" }, { status: 400 });
+        }
+
+        const allowedTypes = new Set([
+            "image/jpeg",
+            "image/png",
+            "image/gif",
+            "image/webp",
+            "video/mp4",
+            "video/webm",
+            "video/quicktime",
+        ]);
+
+        if (context !== "campaign" && file.type && !allowedTypes.has(file.type)) {
+            return NextResponse.json({ error: "Desteklenmeyen dosya türü" }, { status: 400 });
         }
 
         if (context === "campaign") {

@@ -294,7 +294,9 @@ export default function CampaignPopup() {
     const [formOpen, setFormOpen] = useState(false);
 
     useEffect(() => {
-        if (isAdminPage) return;
+        if (typeof window !== "undefined" && window.location.pathname.startsWith("/admin")) {
+            return;
+        }
 
         let cancelled = false;
 
@@ -318,7 +320,7 @@ export default function CampaignPopup() {
         return () => {
             cancelled = true;
         };
-    }, [isAdminPage, pathname]);
+    }, []);
 
     const handleClose = () => {
         if (campaign) dismissCampaign(campaign.id);

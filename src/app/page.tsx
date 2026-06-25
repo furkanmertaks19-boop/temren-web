@@ -1,28 +1,19 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence, Variants } from "framer-motion";
-import { ChevronRight, ChevronLeft, ArrowRight, Loader2 } from "lucide-react";
+import dynamic from "next/dynamic";
+import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
+import { ChevronRight, ChevronLeft, ArrowRight } from "lucide-react";
 
-import Features from "@/components/home/Features";
-import QuickLinks from "@/components/home/QuickLinks";
-import ExportMap from "@/components/home/ExportMap";
-import Footer from "@/components/layout/Footer";
-import TrackSystem from "@/components/home/TrackSystem";
-import BlogSummary from "@/components/home/BlogSummary";
-
-const fadeInUp: Variants = {
-  initial: { opacity: 0, y: 40 },
-  animate: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] },
-  },
-};
-
-const staggerContainer: Variants = {
-  animate: { transition: { staggerChildren: 0.2 } },
-};
+const Features = dynamic(() => import("@/components/home/Features"));
+const QuickLinks = dynamic(() => import("@/components/home/QuickLinks"));
+const ExportMap = dynamic(() => import("@/components/home/ExportMap"), {
+  loading: () => <div className="min-h-screen bg-[#020617]" />,
+});
+const TrackSystem = dynamic(() => import("@/components/home/TrackSystem"));
+const BlogSummary = dynamic(() => import("@/components/home/BlogSummary"));
+const Footer = dynamic(() => import("@/components/layout/Footer"));
 
 type SlideItem = {
   _id?: string;
@@ -36,33 +27,64 @@ type SlideItem = {
   order?: number;
 };
 
+const fadeInUp = {
+  initial: { opacity: 0, y: 24 },
+  animate: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: "easeOut" as const },
+  },
+};
+
+const staggerContainer = {
+  animate: { transition: { staggerChildren: 0.12 } },
+};
+
+function HeroSkeleton() {
+  return (
+    <section className="relative h-screen w-full overflow-hidden bg-black">
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-black to-slate-900 animate-pulse" />
+      <div className="relative z-10 h-full container mx-auto px-8 flex flex-col justify-center">
+        <div className="h-3 w-32 bg-white/10 rounded mb-6" />
+        <div className="h-16 w-2/3 max-w-xl bg-white/10 rounded mb-8" />
+        <div className="h-5 w-full max-w-md bg-white/10 rounded mb-3" />
+        <div className="h-5 w-4/5 max-w-sm bg-white/10 rounded" />
+      </div>
+    </section>
+  );
+}
+
 export default function Home() {
   const [slides, setSlides] = useState<SlideItem[]>([]);
   const [current, setCurrent] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
+
     const fetchSlides = async () => {
       try {
-        const res = await fetch("/api/slider", { cache: "no-store" });
+        const res = await fetch("/api/slider");
         const data = await res.json();
+        if (cancelled) return;
 
         const slidesArray: SlideItem[] = Array.isArray(data) ? data : [];
-
         const activeSlides = slidesArray
           .filter((s) => s && s.isActive !== false)
           .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
         setSlides(activeSlides);
-      } catch (error) {
-        console.error("Slider hatası:", error);
-        setSlides([]);
+      } catch {
+        if (!cancelled) setSlides([]);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
     fetchSlides();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -91,23 +113,30 @@ export default function Home() {
     setCurrent((p) => (p === 0 ? slides.length - 1 : p - 1));
   };
 
+  const renderBelowFold = () => (
+    <>
+      <Features />
+      <TrackSystem />
+      <QuickLinks />
+      <ExportMap />
+      <BlogSummary />
+      <Footer />
+    </>
+  );
+
   if (loading) {
     return (
-      <div className="h-screen w-full bg-black flex items-center justify-center">
-        <Loader2 className="text-blue-600 animate-spin" size={40} />
-      </div>
+      <main className="w-full bg-white overflow-x-hidden">
+        <HeroSkeleton />
+        {renderBelowFold()}
+      </main>
     );
   }
 
   if (slides.length === 0) {
     return (
-      <main className="w-full bg-white overflow-x-hidden scroll-smooth">
-        <Features />
-        <TrackSystem />
-        <QuickLinks />
-        <ExportMap />
-        <BlogSummary />
-        <Footer />
+      <main className="w-full bg-white overflow-x-hidden">
+        {renderBelowFold()}
       </main>
     );
   }
@@ -115,7 +144,7 @@ export default function Home() {
   const activeSlide = slides[current];
 
   return (
-    <main className="w-full bg-white overflow-x-hidden scroll-smooth">
+    <main className="w-full bg-white overflow-x-hidden">
       <section className="relative h-screen w-full overflow-hidden bg-black">
         <AnimatePresence mode="wait">
           <motion.div
@@ -123,16 +152,18 @@ export default function Home() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 1.5 }}
+            transition={{ duration: 0.45 }}
             className="absolute inset-0 w-full h-full"
           >
             <div className="absolute inset-0 w-full h-full">
-              <motion.div
-                initial={{ scale: 1.2 }}
-                animate={{ scale: 1 }}
-                transition={{ duration: 10, ease: "linear" }}
-                className="w-full h-full bg-cover bg-center"
-                style={{ backgroundImage: `url(${activeSlide.image})` }}
+              <Image
+                src={activeSlide.image}
+                alt={activeSlide.title}
+                fill
+                priority={current === 0}
+                sizes="100vw"
+                className="object-cover object-center"
+                quality={80}
               />
               <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent z-10" />
             </div>
@@ -168,17 +199,11 @@ export default function Home() {
                 <motion.div variants={fadeInUp}>
                   <a
                     href={activeSlide.buttonLink || "/"}
-                    className="group relative inline-flex bg-blue-600 text-white px-12 py-5 font-black text-[11px] tracking-widest uppercase overflow-hidden transition-all duration-300"
+                    className="group relative inline-flex bg-blue-600 text-white px-12 py-5 font-black text-[11px] tracking-widest uppercase overflow-hidden transition-all duration-300 hover:bg-white hover:text-black"
                   >
                     <span className="relative z-10 flex items-center gap-3">
                       {activeSlide.buttonText || "KEŞFET"} <ArrowRight size={18} />
                     </span>
-                    <div className="absolute inset-0 bg-white translate-y-[100%] group-hover:translate-y-0 transition-transform duration-500" />
-                    <style jsx>{`
-                      .group:hover span {
-                        color: black;
-                      }
-                    `}</style>
                   </a>
                 </motion.div>
               </motion.div>
@@ -190,12 +215,14 @@ export default function Home() {
           <div className="absolute bottom-12 right-12 z-30 flex gap-4">
             <button
               onClick={prevSlide}
+              aria-label="Önceki slayt"
               className="p-5 border border-white/10 text-white hover:bg-blue-600 transition-all rounded-full group outline-none"
             >
               <ChevronLeft size={24} className="group-active:scale-90 transition-transform" />
             </button>
             <button
               onClick={nextSlide}
+              aria-label="Sonraki slayt"
               className="p-5 border border-white/10 text-white hover:bg-blue-600 transition-all rounded-full group outline-none"
             >
               <ChevronRight size={24} className="group-active:scale-90 transition-transform" />
@@ -204,12 +231,7 @@ export default function Home() {
         )}
       </section>
 
-      <Features />
-      <TrackSystem />
-      <QuickLinks />
-      <ExportMap />
-      <BlogSummary />
-      <Footer />
+      {renderBelowFold()}
     </main>
   );
 }

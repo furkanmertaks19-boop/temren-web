@@ -16,6 +16,8 @@ import {
     BarChart3,
     Share2,
     Globe,
+    AlertCircle,
+    RefreshCw,
 } from "lucide-react";
 import { getAdminSession, ROLE_LABELS } from "@/lib/adminPermissions";
 import { normalizeTeklif } from "@/lib/teklifNormalizer";
@@ -35,7 +37,12 @@ import QuickActions from "@/components/admin/dashboard/QuickActions";
 
 export default function DashboardPage() {
     const [session, setSession] = useState<ReturnType<typeof getAdminSession>>(null);
-    const { data: statsData, isLoading: statsLoading } = useAdminStats();
+    const {
+        data: statsData,
+        isLoading: statsLoading,
+        isError: statsError,
+        refetch: refetchStats,
+    } = useAdminStats();
     const { data: notifications, isLoading: notificationsLoading } = useAdminNotifications();
 
     useEffect(() => {
@@ -69,15 +76,26 @@ export default function DashboardPage() {
         [notifications?.latestOffers]
     );
 
-    const kpiCards = [
-        { label: "Toplam Ürün", value: stats.totalProducts, description: "Katalogdaki ürünler", icon: Package, gradient: "from-blue-500 to-blue-600", href: "/admin/urunler", delta: 8 },
-        { label: "Aktif Slider", value: stats.activeSlides, description: "Yayındaki görseller", icon: SlidersHorizontal, gradient: "from-violet-500 to-violet-600", href: "/admin/slider", delta: 0 },
-        { label: "Aktif Kampanya", value: stats.activeCampaigns, description: "Yayında olan kampanyalar", icon: Megaphone, gradient: "from-rose-500 to-rose-600", href: "/admin/campaigns", delta: 12 },
+    // Not: KPI sayıları /api/admin/stats üzerinden gerçek verilerdir.
+    // delta yalnızca gerçek hesaplanan değer (teklif) için gösterilir; uydurma artış/azalış yok.
+    const kpiCards: {
+        label: string;
+        value: number;
+        description: string;
+        icon: typeof Package;
+        gradient: string;
+        href: string;
+        delta?: number;
+        pulse?: boolean;
+    }[] = [
+        { label: "Toplam Ürün", value: stats.totalProducts, description: "Katalogdaki ürünler", icon: Package, gradient: "from-blue-500 to-blue-600", href: "/admin/urunler" },
+        { label: "Aktif Slider", value: stats.activeSlides, description: "Yayındaki görseller", icon: SlidersHorizontal, gradient: "from-violet-500 to-violet-600", href: "/admin/slider" },
+        { label: "Aktif Kampanya", value: stats.activeCampaigns, description: "Yayında olan kampanyalar", icon: Megaphone, gradient: "from-rose-500 to-rose-600", href: "/admin/campaigns" },
         { label: "Gelen Teklif", value: stats.totalQuotes, description: "Toplam teklif talebi", icon: Inbox, gradient: "from-cyan-500 to-cyan-600", href: "/admin/teklifler", delta: stats.quotesDelta },
         { label: "Okunmamış Teklif", value: stats.unreadQuotes, description: "Bekleyen talepler", icon: MessageSquare, gradient: stats.unreadQuotes > 0 ? "from-orange-500 to-orange-600" : "from-emerald-500 to-emerald-600", href: "/admin/teklifler", pulse: stats.unreadQuotes > 0 },
-        { label: "Kampanya Talepleri", value: stats.totalCampaignLeads, description: "Kampanyalardan gelen", icon: Mail, gradient: "from-teal-500 to-teal-600", href: "/admin/campaign-leads", delta: 5 },
-        { label: "Bekleyen Yorum", value: stats.pendingComments, description: "Onay bekleyen yorumlar", icon: Users, gradient: "from-amber-500 to-amber-600", href: "/admin/gorusler" },
-        { label: "Blog Yazısı", value: stats.totalBlogs, description: `${stats.publishedBlogs} yayında`, icon: Newspaper, gradient: "from-indigo-500 to-indigo-600", href: "/admin/blog", delta: 3 },
+        { label: "Kampanya Talepleri", value: stats.totalCampaignLeads, description: `${stats.unreadCampaignLeads} okunmamış`, icon: Mail, gradient: "from-teal-500 to-teal-600", href: "/admin/campaign-leads" },
+        { label: "Bekleyen Yorum", value: stats.pendingComments, description: `${stats.totalComments} toplam yorum`, icon: Users, gradient: "from-amber-500 to-amber-600", href: "/admin/gorusler" },
+        { label: "Blog Yazısı", value: stats.totalBlogs, description: `${stats.publishedBlogs} yayında`, icon: Newspaper, gradient: "from-indigo-500 to-indigo-600", href: "/admin/blog" },
     ];
 
     return (
@@ -111,6 +129,39 @@ export default function DashboardPage() {
                 </p>
                 {session?.role && <p className="text-xs text-slate-400">{ROLE_LABELS[session.role]}</p>}
             </motion.div>
+
+            {/* Error state — gerçek veriler çekilemedi (ör. oturum süresi doldu) */}
+            {statsError && (
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-red-200 bg-red-50 dark:border-red-500/30 dark:bg-red-500/10 px-5 py-4">
+                    <div className="flex items-start gap-3">
+                        <span className="flex items-center justify-center w-9 h-9 rounded-xl bg-red-100 dark:bg-red-500/20 text-red-600 shrink-0">
+                            <AlertCircle size={18} />
+                        </span>
+                        <div>
+                            <p className="text-[14px] font-semibold text-red-800 dark:text-red-300">
+                                Veriler yüklenemedi
+                            </p>
+                            <p className="text-[13px] text-red-600/90 dark:text-red-400/90">
+                                Oturumunuz sona ermiş olabilir. Tekrar deneyin veya yeniden giriş yapın.
+                            </p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                        <button
+                            onClick={() => refetchStats()}
+                            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white dark:bg-slate-900 text-[13px] font-semibold text-red-700 dark:text-red-300 border border-red-200 dark:border-red-500/30 hover:bg-red-50 transition-colors"
+                        >
+                            <RefreshCw size={14} /> Tekrar dene
+                        </button>
+                        <Link
+                            href="/admin/login"
+                            className="px-3 py-2 rounded-xl bg-red-600 text-white text-[13px] font-semibold hover:bg-red-700 transition-colors"
+                        >
+                            Giriş yap
+                        </Link>
+                    </div>
+                </div>
+            )}
 
             {/* KPI cards */}
             <section>

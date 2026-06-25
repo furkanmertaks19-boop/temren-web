@@ -14,7 +14,7 @@ import {
 } from "recharts";
 import { Instagram, Linkedin, Youtube, Facebook, Twitter, ArrowUpRight, type LucideIcon } from "lucide-react";
 import { DashboardCard, CardHead } from "./DashboardCard";
-import { socialPlatforms, socialFollowerGrowth, topSocialPosts } from "@/lib/admin-dashboard-data";
+import { socialPlatforms, socialFollowerGrowth, topSocialPosts } from "@/lib/admin-dashboard-demo-data";
 
 const PLATFORM_ICON: Record<string, LucideIcon> = {
     instagram: Instagram,
@@ -39,7 +39,10 @@ export default function SocialMediaSection() {
                 {socialPlatforms.map((p, i) => {
                     const Icon = PLATFORM_ICON[p.key];
                     return (
-                        <DashboardCard key={p.key} hover delay={i * 0.04} className="p-4">
+                        <DashboardCard key={p.key} hover delay={i * 0.04} className="p-4 relative">
+                            <span className="absolute top-2 right-2 text-[9px] font-bold uppercase tracking-wider text-amber-600 bg-amber-50 dark:bg-amber-500/10 px-1.5 py-0.5 rounded">
+                                Demo
+                            </span>
                             <div className="flex items-center justify-between mb-3">
                                 <div
                                     className="flex items-center justify-center w-10 h-10 rounded-xl text-white shadow-sm"

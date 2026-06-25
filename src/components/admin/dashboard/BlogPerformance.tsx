@@ -4,28 +4,38 @@ import React from "react";
 import Link from "next/link";
 import { BookOpen, Clock, Inbox, FileText, ArrowUpRight } from "lucide-react";
 import { DashboardCard, CardHead } from "./DashboardCard";
-import { blogPerformance } from "@/lib/admin-dashboard-data";
+import DashboardEmptyState from "./DashboardEmptyState";
+import type { BlogPerformanceData } from "@/lib/admin-dashboard-types";
 
 type BlogPerformanceProps = {
-    totalBlogs?: number;
-    publishedBlogs?: number;
+    data: BlogPerformanceData;
+    loading?: boolean;
 };
 
-export default function BlogPerformance({ totalBlogs = 0, publishedBlogs = 0 }: BlogPerformanceProps) {
-    const draftCount = Math.max(totalBlogs - publishedBlogs, 0);
-
+export default function BlogPerformance({ data, loading }: BlogPerformanceProps) {
     const miniStats = [
-        { label: "Ort. Okuma", value: `${blogPerformance.avgReadMinutes} dk`, icon: Clock, tint: "text-blue-500" },
-        { label: "Blogdan Teklif", value: blogPerformance.leadsFromBlog, icon: Inbox, tint: "text-emerald-500" },
-        { label: "Yayında", value: publishedBlogs, icon: BookOpen, tint: "text-[#FF6B00]" },
-        { label: "Taslak", value: draftCount, icon: FileText, tint: "text-slate-400" },
+        {
+            label: "Ort. Okuma",
+            value: data.avgReadMinutes !== null ? `${data.avgReadMinutes} dk` : "Veri yok",
+            icon: Clock,
+            tint: "text-blue-500",
+        },
+        { label: "Blogdan Teklif", value: data.leadsFromBlog, icon: Inbox, tint: "text-emerald-500" },
+        { label: "Yayında", value: data.publishedCount, icon: BookOpen, tint: "text-[#FF6B00]" },
+        { label: "Taslak", value: data.draftCount, icon: FileText, tint: "text-slate-400" },
     ];
 
+    if (loading) {
+        return (
+            <DashboardCard className="p-8 text-center text-sm text-slate-400">Yükleniyor...</DashboardCard>
+        );
+    }
+
     return (
-        <DashboardCard className="overflow-hidden">
+        <DashboardCard className="overflow-hidden h-full">
             <CardHead
                 title="Blog Performansı"
-                description="En çok okunan yazılar"
+                description="Yayındaki ve taslak blog yazıları"
                 action={
                     <Link
                         href="/admin/blog"
@@ -46,22 +56,38 @@ export default function BlogPerformance({ totalBlogs = 0, publishedBlogs = 0 }: 
                 ))}
             </div>
 
-            <div className="px-5 pb-5 space-y-2.5">
-                {blogPerformance.topPosts.map((post, i) => (
-                    <div key={post.title} className="flex items-center gap-3">
-                        <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 text-[12px] font-bold text-slate-500 shrink-0">
-                            {i + 1}
-                        </span>
-                        <div className="flex-1 min-w-0">
-                            <p className="text-[14px] font-semibold text-slate-800 dark:text-slate-200 truncate">{post.title}</p>
-                            <p className="text-[12px] text-slate-400">{post.minutes} dk okuma</p>
+            {data.recentPosts.length > 0 ? (
+                <div className="px-5 pb-5 space-y-2.5">
+                    {data.recentPosts.map((post, i) => (
+                        <div key={post.id} className="flex items-center gap-3">
+                            <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 text-[12px] font-bold text-slate-500 shrink-0">
+                                {i + 1}
+                            </span>
+                            <div className="flex-1 min-w-0">
+                                <p className="text-[14px] font-semibold text-slate-800 dark:text-slate-200 truncate">
+                                    {post.title}
+                                </p>
+                                <p className="text-[12px] text-slate-400">
+                                    {post.isPublished ? "Yayında" : "Taslak"}
+                                    {post.readMinutes !== null ? ` · ${post.readMinutes} dk` : ""}
+                                </p>
+                            </div>
+                            <span className="text-[13px] font-bold text-slate-900 dark:text-white tabular-nums shrink-0">
+                                {data.hasViewTracking && post.views > 0
+                                    ? post.views.toLocaleString("tr-TR")
+                                    : post.views === 0
+                                      ? "—"
+                                      : post.views.toLocaleString("tr-TR")}
+                            </span>
                         </div>
-                        <span className="text-[13px] font-bold text-slate-900 dark:text-white tabular-nums shrink-0">
-                            {post.reads.toLocaleString("tr-TR")}
-                        </span>
-                    </div>
-                ))}
-            </div>
+                    ))}
+                </div>
+            ) : (
+                <DashboardEmptyState
+                    title="Henüz blog yazısı yok"
+                    description="İlk blog yazınızı eklediğinizde burada listelenecek."
+                />
+            )}
         </DashboardCard>
     );
 }

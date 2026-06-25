@@ -14,7 +14,7 @@ import {
 } from "recharts";
 import { Eye, Clock, TrendingUp, Users, Target } from "lucide-react";
 import { DashboardCard, CardHead } from "./DashboardCard";
-import { websiteAnalytics, formatDuration } from "@/lib/admin-dashboard-data";
+import { websiteAnalytics, formatDuration } from "@/lib/admin-dashboard-demo-data";
 import { cn } from "@/lib/utils";
 
 const ACCENT = "#FF6B00";
@@ -60,7 +60,10 @@ export default function AnalyticsChart() {
             {/* Mini KPI cards */}
             <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
                 {miniCards.map((card) => (
-                    <DashboardCard key={card.key} hover className="p-4">
+                    <DashboardCard key={card.key} hover className="p-4 relative">
+                        <span className="absolute top-2 right-2 text-[9px] font-bold uppercase tracking-wider text-amber-600 bg-amber-50 dark:bg-amber-500/10 px-1.5 py-0.5 rounded">
+                            Demo
+                        </span>
                         <div className="flex items-center gap-2 text-slate-400 dark:text-slate-500 mb-3">
                             <card.icon size={15} />
                             <span className="text-[11px] font-semibold uppercase tracking-wider">{card.label}</span>

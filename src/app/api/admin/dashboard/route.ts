@@ -6,14 +6,10 @@ export const dynamic = "force-dynamic";
 export async function GET() {
     try {
         const data = await fetchAdminDashboardData();
-        return NextResponse.json({
-            success: true,
-            stats: data.stats,
-            recentQuotes: data.recentQuotes,
-        });
+        return NextResponse.json(data);
     } catch (error: unknown) {
         const message = error instanceof Error ? error.message : "Bilinmeyen hata";
-        console.error("Dashboard Stats API Hatası:", message);
+        console.error("Dashboard API Hatası:", message);
         return NextResponse.json({ success: false, error: message }, { status: 500 });
     }
 }

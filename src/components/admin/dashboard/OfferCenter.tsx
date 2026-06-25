@@ -5,19 +5,21 @@ import Link from "next/link";
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import { ArrowUpRight, ChevronRight, Inbox } from "lucide-react";
 import { DashboardCard, CardHead } from "./DashboardCard";
+import DashboardEmptyState from "./DashboardEmptyState";
 import TeklifStatusBadge from "@/components/admin/TeklifStatusBadge";
-import { offersByProduct, offerStatusMix } from "@/lib/admin-dashboard-data";
+import type { OfferByProductItem, OfferStatusItem } from "@/lib/admin-dashboard-types";
 import type { NormalizedTeklif } from "@/lib/teklifNormalizer";
 
 type OfferCenterProps = {
     offers: NormalizedTeklif[];
+    offersByProduct: OfferByProductItem[];
+    offerStatusMix: OfferStatusItem[];
     loading?: boolean;
 };
 
-export default function OfferCenter({ offers, loading }: OfferCenterProps) {
+export default function OfferCenter({ offers, offersByProduct, offerStatusMix, loading }: OfferCenterProps) {
     return (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            {/* Recent offers */}
             <DashboardCard className="lg:col-span-2 overflow-hidden">
                 <CardHead
                     title="Teklif Merkezi"
@@ -58,75 +60,87 @@ export default function OfferCenter({ offers, loading }: OfferCenterProps) {
                         ))}
                     </div>
                 ) : (
-                    <div className="flex flex-col items-center py-16 text-center">
-                        <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 mb-3">
-                            <Inbox size={28} className="text-slate-300" />
-                        </div>
-                        <p className="text-sm text-slate-500">Henüz teklif talebi yok.</p>
-                    </div>
+                    <DashboardEmptyState title="Henüz teklif talebi yok" />
                 )}
             </DashboardCard>
 
             <div className="space-y-4">
-                {/* Offers by product */}
                 <DashboardCard className="overflow-hidden">
-                    <CardHead title="Ürün Bazlı Teklif" description="Dağılım" />
-                    <div className="px-5 pb-5">
-                        <div className="h-[150px]">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <PieChart>
-                                    <Pie
-                                        data={offersByProduct}
-                                        dataKey="value"
-                                        nameKey="name"
-                                        cx="50%"
-                                        cy="50%"
-                                        innerRadius={42}
-                                        outerRadius={64}
-                                        paddingAngle={3}
-                                        stroke="none"
-                                    >
-                                        {offersByProduct.map((s) => (
-                                            <Cell key={s.name} fill={s.color} />
-                                        ))}
-                                    </Pie>
-                                    <Tooltip
-                                        formatter={(value, name) => [`${value} teklif`, name as string]}
-                                        contentStyle={{ borderRadius: 12, border: "none", boxShadow: "0 8px 24px rgba(0,0,0,0.12)" }}
-                                    />
-                                </PieChart>
-                            </ResponsiveContainer>
+                    <CardHead title="Ürün Bazlı Teklif" description="Gerçek dağılım" />
+                    {offersByProduct.length > 0 ? (
+                        <div className="px-5 pb-5">
+                            <div className="h-[150px]">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <PieChart>
+                                        <Pie
+                                            data={offersByProduct}
+                                            dataKey="value"
+                                            nameKey="name"
+                                            cx="50%"
+                                            cy="50%"
+                                            innerRadius={42}
+                                            outerRadius={64}
+                                            paddingAngle={3}
+                                            stroke="none"
+                                        >
+                                            {offersByProduct.map((s) => (
+                                                <Cell key={s.name} fill={s.color} />
+                                            ))}
+                                        </Pie>
+                                        <Tooltip
+                                            formatter={(value, name) => [`${value} teklif`, name as string]}
+                                            contentStyle={{ borderRadius: 12, border: "none", boxShadow: "0 8px 24px rgba(0,0,0,0.12)" }}
+                                        />
+                                    </PieChart>
+                                </ResponsiveContainer>
+                            </div>
+                            <div className="space-y-1.5 mt-2">
+                                {offersByProduct.map((s) => (
+                                    <div key={s.name} className="flex items-center justify-between text-[12px]">
+                                        <span className="flex items-center gap-2 text-slate-600 dark:text-slate-300 min-w-0">
+                                            <span className="size-2 rounded-full shrink-0" style={{ backgroundColor: s.color }} />
+                                            <span className="truncate">{s.name}</span>
+                                        </span>
+                                        <span className="font-semibold text-slate-900 dark:text-white tabular-nums shrink-0 ml-2">
+                                            {s.value}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
-                        <div className="space-y-1.5 mt-2">
-                            {offersByProduct.map((s) => (
-                                <div key={s.name} className="flex items-center justify-between text-[12px]">
-                                    <span className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
-                                        <span className="size-2 rounded-full" style={{ backgroundColor: s.color }} />
-                                        {s.name}
-                                    </span>
-                                    <span className="font-semibold text-slate-900 dark:text-white tabular-nums">{s.value}</span>
+                    ) : (
+                        <DashboardEmptyState
+                            title="Henüz teklif yok"
+                            description="Ürün bazlı dağılım teklif geldikçe oluşacak."
+                            className="py-8"
+                        />
+                    )}
+                </DashboardCard>
+
+                <DashboardCard className="p-5">
+                    <h3 className="text-[15px] font-bold text-slate-900 dark:text-white mb-3">Teklif Durumları</h3>
+                    {offerStatusMix.length > 0 ? (
+                        <div className="space-y-2.5">
+                            {offerStatusMix.map((s) => (
+                                <div key={s.name}>
+                                    <div className="flex items-center justify-between mb-1 text-[12px]">
+                                        <span className="text-slate-600 dark:text-slate-300">{s.name}</span>
+                                        <span className="font-semibold text-slate-900 dark:text-white tabular-nums">
+                                            {s.count} (%{s.value})
+                                        </span>
+                                    </div>
+                                    <div className="h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                                        <div
+                                            className="h-full rounded-full"
+                                            style={{ width: `${s.value}%`, backgroundColor: s.color }}
+                                        />
+                                    </div>
                                 </div>
                             ))}
                         </div>
-                    </div>
-                </DashboardCard>
-
-                {/* Offer status mix */}
-                <DashboardCard className="p-5">
-                    <h3 className="text-[15px] font-bold text-slate-900 dark:text-white mb-3">Teklif Durumları</h3>
-                    <div className="space-y-2.5">
-                        {offerStatusMix.map((s) => (
-                            <div key={s.name}>
-                                <div className="flex items-center justify-between mb-1 text-[12px]">
-                                    <span className="text-slate-600 dark:text-slate-300">{s.name}</span>
-                                    <span className="font-semibold text-slate-900 dark:text-white tabular-nums">%{s.value}</span>
-                                </div>
-                                <div className="h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
-                                    <div className="h-full rounded-full" style={{ width: `${s.value}%`, backgroundColor: s.color }} />
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+                    ) : (
+                        <p className="text-[13px] text-slate-400">Henüz teklif durumu verisi yok.</p>
+                    )}
                 </DashboardCard>
             </div>
         </div>

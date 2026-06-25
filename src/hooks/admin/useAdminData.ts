@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import {
     adminQueryDefaults,
     adminQueryKeys,
+    fetchAdminDashboard,
     fetchAdminNotifications,
     fetchAdminStats,
     fetchCampaignLeads,
@@ -37,6 +38,16 @@ export function useAdminStats(enabled = true) {
     });
 }
 
+export function useAdminDashboard(enabled = true) {
+    return useQuery({
+        queryKey: adminQueryKeys.dashboard,
+        queryFn: fetchAdminDashboard,
+        enabled,
+        staleTime: adminQueryDefaults.staleTime,
+        refetchInterval: enabled ? adminQueryDefaults.refetchInterval : false,
+    });
+}
+
 export function useTeklifler(enabled = true) {
     return useQuery({
         queryKey: adminQueryKeys.teklifler,
@@ -57,6 +68,7 @@ export function useUpdateTeklifStatus() {
             queryClient.invalidateQueries({ queryKey: adminQueryKeys.teklifler });
             queryClient.invalidateQueries({ queryKey: adminQueryKeys.notifications });
             queryClient.invalidateQueries({ queryKey: adminQueryKeys.stats });
+            queryClient.invalidateQueries({ queryKey: adminQueryKeys.dashboard });
             toast.success(`Durum "${status}" olarak güncellendi`);
         },
         onError: (error: Error) => {
@@ -74,6 +86,7 @@ export function useMarkTeklifViewed() {
             queryClient.invalidateQueries({ queryKey: adminQueryKeys.teklifler });
             queryClient.invalidateQueries({ queryKey: adminQueryKeys.notifications });
             queryClient.invalidateQueries({ queryKey: adminQueryKeys.stats });
+            queryClient.invalidateQueries({ queryKey: adminQueryKeys.dashboard });
         },
         onError: (error: Error) => {
             toast.error(error.message || 'Talep güncellenemedi');
@@ -100,6 +113,7 @@ export function useUpdateCampaignLeadStatus() {
         onSuccess: (_data, { status }) => {
             queryClient.invalidateQueries({ queryKey: adminQueryKeys.campaignLeads });
             queryClient.invalidateQueries({ queryKey: adminQueryKeys.stats });
+            queryClient.invalidateQueries({ queryKey: adminQueryKeys.dashboard });
             toast.success(`Durum "${status}" olarak güncellendi`);
         },
         onError: (error: Error) => {

@@ -1,11 +1,13 @@
 import type { NormalizedTeklif } from '@/lib/teklifNormalizer';
 import type { TeklifStatus } from '@/lib/teklifStatus';
 import type { CampaignLeadStatus } from '@/lib/campaignStatus';
+import type { AdminDashboardData, AdminDashboardStats } from '@/lib/admin-dashboard-types';
 
 export const adminQueryKeys = {
     all: ['admin'] as const,
     notifications: ['admin', 'notifications'] as const,
     stats: ['admin', 'stats'] as const,
+    dashboard: ['admin', 'dashboard'] as const,
     teklifler: ['admin', 'teklifler'] as const,
     campaigns: ['admin', 'campaigns'] as const,
     campaignLeads: ['admin', 'campaign-leads'] as const,
@@ -19,25 +21,11 @@ export type AdminNotificationsData = {
 
 export type AdminStatsData = {
     success: boolean;
-    stats: {
-        totalProducts: number;
-        totalQuotes: number;
-        unreadQuotes: number;
-        activeSlides: number;
-        pendingComments: number;
-        totalComments: number;
-        newsletterSubscribers: number;
-        activeCampaigns: number;
-        totalCampaignLeads: number;
-        unreadCampaignLeads: number;
-        totalBlogs: number;
-        publishedBlogs: number;
-        quotesThisMonth: number;
-        quotesLastMonth: number;
-        quotesDelta: number;
-    };
-    recentQuotes?: Record<string, unknown>[];
+    stats: AdminDashboardStats;
+    recentQuotes?: NormalizedTeklif[];
 };
+
+export type { AdminDashboardData, AdminDashboardStats };
 
 export async function fetchAdminNotifications(): Promise<AdminNotificationsData> {
     const res = await fetch('/api/admin/notifications');
@@ -54,6 +42,15 @@ export async function fetchAdminStats(): Promise<AdminStatsData> {
     const data = await res.json();
     if (!data.success) {
         throw new Error(data.error || 'İstatistikler alınamadı');
+    }
+    return data;
+}
+
+export async function fetchAdminDashboard(): Promise<AdminDashboardData> {
+    const res = await fetch('/api/admin/dashboard');
+    const data = await res.json();
+    if (!data.success) {
+        throw new Error(data.error || 'Dashboard verileri alınamadı');
     }
     return data;
 }

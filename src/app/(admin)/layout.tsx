@@ -20,6 +20,8 @@ import {
   ChevronDown,
   User,
   Megaphone,
+  Sun,
+  Moon,
   type LucideIcon,
 } from 'lucide-react';
 import { getAdminSession, clearAdminSession, ROLE_LABELS } from '@/lib/adminPermissions';
@@ -104,12 +106,37 @@ function AdminLayoutShell({
   const pathname = usePathname();
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const { data: notifications } = useAdminNotifications();
   const { data: statsData } = useAdminStats();
   const unreadCount = notifications?.unreadCount ?? 0;
   const unreadCampaignLeads = statsData?.stats?.unreadCampaignLeads ?? 0;
 
   const isDashboard = pathname === '/admin/dashboard';
+
+  useEffect(() => {
+    const stored = (typeof window !== 'undefined' && localStorage.getItem('admin-theme')) as
+      | 'light'
+      | 'dark'
+      | null;
+    if (stored === 'dark') {
+      setTheme('dark');
+      document.documentElement.classList.add('dark');
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    setTheme((prev) => {
+      const next = prev === 'dark' ? 'light' : 'dark';
+      document.documentElement.classList.toggle('dark', next === 'dark');
+      try {
+        localStorage.setItem('admin-theme', next);
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
+  };
 
   const handleLogout = async () => {
     try {
@@ -260,7 +287,7 @@ function AdminLayoutShell({
   const UserMenu = () => (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-lg hover:bg-slate-100 transition-colors outline-none">
+        <button className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors outline-none">
           <Avatar className="size-8">
             <AvatarFallback
               className="text-xs font-semibold text-white"
@@ -270,7 +297,7 @@ function AdminLayoutShell({
             </AvatarFallback>
           </Avatar>
           <div className="hidden sm:block text-left">
-            <p className="text-xs font-medium text-slate-900 leading-tight">
+            <p className="text-xs font-medium text-slate-900 dark:text-white leading-tight">
               {session?.displayName || 'Admin'}
             </p>
             <p className="text-[10px] text-slate-400 leading-tight">
@@ -314,10 +341,20 @@ function AdminLayoutShell({
     </DropdownMenu>
   );
 
+  const ThemeToggle = () => (
+    <button
+      onClick={toggleTheme}
+      aria-label="Tema değiştir"
+      className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+    >
+      {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+    </button>
+  );
+
   const NotificationButton = () => (
     <Link
       href="/admin/teklifler"
-      className="relative p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+      className="relative p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
     >
       <Bell size={18} />
       {unreadCount > 0 && (
@@ -332,7 +369,7 @@ function AdminLayoutShell({
   );
 
   return (
-    <div className="admin-panel flex min-h-screen bg-white text-slate-900">
+    <div className="admin-panel flex min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100">
       <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
       {/* Desktop sidebar */}
       <aside
@@ -376,11 +413,11 @@ function AdminLayoutShell({
 
       <div className="flex-1 lg:ml-64 flex flex-col min-h-screen">
         {/* Top bar */}
-        <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-md px-4 sm:px-6 h-14 flex items-center justify-between gap-4 shadow-[0_1px_0_rgba(15,23,42,0.06)]">
+        <header className="sticky top-0 z-30 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md px-4 sm:px-6 h-14 flex items-center justify-between gap-4 shadow-[0_1px_0_rgba(15,23,42,0.06)] dark:shadow-[0_1px_0_rgba(255,255,255,0.06)]">
           <div className="flex items-center gap-3 min-w-0">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="lg:hidden p-2 -ml-2 text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100"
+              className="lg:hidden p-2 -ml-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
             >
               <Menu size={20} />
             </button>
@@ -392,13 +429,25 @@ function AdminLayoutShell({
           </div>
 
           <div className="flex items-center gap-2 ml-auto">
+            <ThemeToggle />
             <NotificationButton />
             <UserMenu />
           </div>
         </header>
 
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto bg-[#F4F6F9]">
-          {children}
+        <main className="flex-1 w-full bg-[#F4F6F9] dark:bg-slate-950">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={pathname}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
+              className="p-4 sm:p-6 lg:p-8 max-w-[1600px] w-full mx-auto"
+            >
+              {children}
+            </motion.div>
+          </AnimatePresence>
         </main>
       </div>
     </div>

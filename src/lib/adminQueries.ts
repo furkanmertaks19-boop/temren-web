@@ -21,6 +21,7 @@ export type AdminStatsData = {
     success: boolean;
     stats: {
         totalProducts: number;
+        totalQuotes: number;
         unreadQuotes: number;
         activeSlides: number;
         pendingComments: number;
@@ -29,6 +30,11 @@ export type AdminStatsData = {
         activeCampaigns: number;
         totalCampaignLeads: number;
         unreadCampaignLeads: number;
+        totalBlogs: number;
+        publishedBlogs: number;
+        quotesThisMonth: number;
+        quotesLastMonth: number;
+        quotesDelta: number;
     };
     recentQuotes?: Record<string, unknown>[];
 };

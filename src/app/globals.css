@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Class tabanlı dark mode (admin paneli için altyapı) */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* 🚀 TAILWIND V4 TEMA YAPILANDIRMASI */
 @theme {
   /* Turuncu uyarı veren z-[200] için standart z-200 tanımlıyoruz */

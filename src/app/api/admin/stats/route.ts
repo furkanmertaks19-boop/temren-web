@@ -14,18 +14,39 @@ const getModels = () => {
     const Comment = mongoose.models.Comment || mongoose.model("Comment", new mongoose.Schema({}, { strict: false, timestamps: true }));
     const Campaign = mongoose.models.Campaign || mongoose.model("Campaign", new mongoose.Schema({}, { strict: false, timestamps: true }));
     const CampaignLead = mongoose.models.CampaignLead || mongoose.model("CampaignLead", new mongoose.Schema({}, { strict: false, timestamps: true }));
+    const Blog = mongoose.models.Blog || mongoose.model("Blog", new mongoose.Schema({}, { strict: false, timestamps: true }));
 
-    return { QuoteRequest, Newsletter, Product, Slider, Comment, Campaign, CampaignLead };
+    return { QuoteRequest, Newsletter, Product, Slider, Comment, Campaign, CampaignLead, Blog };
 };
 
 export async function GET() {
     try {
         await connectDB();
-        const { QuoteRequest, Newsletter, Product, Slider, Comment, Campaign, CampaignLead } = getModels();
+        const { QuoteRequest, Newsletter, Product, Slider, Comment, Campaign, CampaignLead, Blog } = getModels();
 
         const now = new Date();
-        const [totalProducts, unreadQuotes, sliderCount, commentCount, pendingComments, recentQuotes, activeCampaigns, totalCampaignLeads, unreadCampaignLeads] = await Promise.all([
+        const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+
+        const [
+            totalProducts,
+            totalQuotes,
+            unreadQuotes,
+            sliderCount,
+            commentCount,
+            pendingComments,
+            recentQuotes,
+            activeCampaigns,
+            totalCampaignLeads,
+            unreadCampaignLeads,
+            totalBlogs,
+            publishedBlogs,
+            newsletterSubscribers,
+            quotesThisMonth,
+            quotesLastMonth,
+        ] = await Promise.all([
             Product.countDocuments(),
+            QuoteRequest.countDocuments(),
             QuoteRequest.countDocuments(getUnreadTeklifMongoFilter()),
             Slider.countDocuments({ isActive: true }),
             Comment.countDocuments(),
@@ -38,20 +59,35 @@ export async function GET() {
             }),
             CampaignLead.countDocuments(),
             CampaignLead.countDocuments(getUnreadCampaignLeadMongoFilter()),
+            Blog.countDocuments(),
+            Blog.countDocuments({ isActive: true }),
+            Newsletter.countDocuments(),
+            QuoteRequest.countDocuments({ createdAt: { $gte: startOfThisMonth } }),
+            QuoteRequest.countDocuments({ createdAt: { $gte: startOfLastMonth, $lt: startOfThisMonth } }),
         ]);
+
+        const quotesDelta = quotesLastMonth > 0
+            ? Math.round(((quotesThisMonth - quotesLastMonth) / quotesLastMonth) * 100)
+            : (quotesThisMonth > 0 ? 100 : 0);
 
         return NextResponse.json({
             success: true,
             stats: {
                 totalProducts,
+                totalQuotes,
                 unreadQuotes,
                 activeSlides: sliderCount,
                 totalComments: commentCount,
                 pendingComments,
-                newsletterSubscribers: await Newsletter.countDocuments(),
+                newsletterSubscribers,
                 activeCampaigns,
                 totalCampaignLeads,
                 unreadCampaignLeads,
+                totalBlogs,
+                publishedBlogs,
+                quotesThisMonth,
+                quotesLastMonth,
+                quotesDelta,
             },
             recentQuotes
         });

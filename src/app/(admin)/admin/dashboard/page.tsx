@@ -172,7 +172,7 @@ export default function DashboardPage() {
             <section>
                 <SectionHeading
                     title="Website Analytics"
-                    description="Demo veri — Google Analytics bağlanınca canlı olacak"
+                    description="Google Analytics 4 canlı verileri"
                     icon={<BarChart3 size={18} />}
                 />
                 <AnalyticsChart />

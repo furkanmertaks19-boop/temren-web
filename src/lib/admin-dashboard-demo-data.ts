@@ -1,55 +1,9 @@
 /**
  * Yalnızca henüz API entegrasyonu olmayan bölümler için demo veriler.
- * Website Analytics (Google Analytics) ve Social Media Analytics burada kalır.
+ * Social Media Analytics burada kalır.
  */
 
 export type TrendPoint = { label: string; value: number };
-
-export const websiteAnalytics = {
-    cards: {
-        today: 412,
-        thisWeek: 2840,
-        thisMonth: 11920,
-        avgSessionSeconds: 184,
-        conversionRate: 4.7,
-    },
-    dailyVisitors: [
-        { label: "Pzt", value: 320 },
-        { label: "Sal", value: 410 },
-        { label: "Çar", value: 380 },
-        { label: "Per", value: 520 },
-        { label: "Cum", value: 610 },
-        { label: "Cmt", value: 430 },
-        { label: "Paz", value: 290 },
-    ] as TrendPoint[],
-    monthlyVisitors: [
-        { label: "Oca", value: 8200 },
-        { label: "Şub", value: 7600 },
-        { label: "Mar", value: 9100 },
-        { label: "Nis", value: 10200 },
-        { label: "May", value: 9800 },
-        { label: "Haz", value: 11920 },
-        { label: "Tem", value: 12400 },
-        { label: "Ağu", value: 11100 },
-        { label: "Eyl", value: 13200 },
-        { label: "Eki", value: 14100 },
-        { label: "Kas", value: 13800 },
-        { label: "Ara", value: 15200 },
-    ] as TrendPoint[],
-    topPages: [
-        { path: "/", title: "Ana Sayfa", views: 5420, share: 100 },
-        { path: "/urunler/palet-sistemleri", title: "Palet Sistemleri", views: 3210, share: 59 },
-        { path: "/urunler/tika", title: "TİKA", views: 2180, share: 40 },
-        { path: "/iletisim", title: "İletişim", views: 1640, share: 30 },
-        { path: "/medya/blog", title: "Blog", views: 1120, share: 21 },
-    ],
-    trafficSources: [
-        { name: "Google", value: 52, color: "#FF6B00" },
-        { name: "Direct", value: 23, color: "#0B1736" },
-        { name: "Social", value: 16, color: "#38bdf8" },
-        { name: "Referral", value: 9, color: "#a855f7" },
-    ],
-};
 
 export type SocialPlatform = {
     key: string;
@@ -85,9 +39,3 @@ export const topSocialPosts = [
     { platform: "YouTube", title: "Vakum tablası montaj videosu", reach: 7400, engagement: 6.3 },
     { platform: "Facebook", title: "Fuar katılım duyurusu", reach: 6100, engagement: 5.5 },
 ];
-
-export function formatDuration(seconds: number): string {
-    const m = Math.floor(seconds / 60);
-    const s = seconds % 60;
-    return `${m}d ${s}sn`;
-}

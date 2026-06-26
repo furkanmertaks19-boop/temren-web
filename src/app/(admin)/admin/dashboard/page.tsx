@@ -24,7 +24,7 @@ import { useAdminDashboard } from "@/hooks/admin/useAdminData";
 import type { AdminDashboardStats } from "@/lib/admin-dashboard-types";
 import StatsCard from "@/components/admin/dashboard/StatsCard";
 import { SectionHeading } from "@/components/admin/dashboard/DashboardCard";
-import AnalyticsChart from "@/components/admin/dashboard/AnalyticsChart";
+import AnalyticsChart, { type AnalyticsLoadStatus } from "@/components/admin/dashboard/AnalyticsChart";
 import SocialMediaSection from "@/components/admin/dashboard/SocialMediaCard";
 import CampaignPerformance from "@/components/admin/dashboard/CampaignPerformance";
 import ProductPerformance from "@/components/admin/dashboard/ProductPerformance";
@@ -57,8 +57,15 @@ const EMPTY_STATS: AdminDashboardStats = {
     totalCampaignLeads: 0,
 };
 
+function getAnalyticsDescription(status: AnalyticsLoadStatus): string | undefined {
+    if (status === "success" || status === "empty") return "Canlı Google Analytics verisi";
+    if (status === "error") return "Google Analytics bağlantı hatası";
+    return undefined;
+}
+
 export default function DashboardPage() {
     const [session, setSession] = useState<ReturnType<typeof getAdminSession>>(null);
+    const [analyticsStatus, setAnalyticsStatus] = useState<AnalyticsLoadStatus>("loading");
     const { data, isLoading, isError, refetch } = useAdminDashboard();
 
     useEffect(() => {
@@ -172,10 +179,10 @@ export default function DashboardPage() {
             <section>
                 <SectionHeading
                     title="Website Analytics"
-                    description="Google Analytics 4 canlı verileri"
+                    description={getAnalyticsDescription(analyticsStatus)}
                     icon={<BarChart3 size={18} />}
                 />
-                <AnalyticsChart />
+                <AnalyticsChart onStatusChange={setAnalyticsStatus} />
             </section>
 
             <section>

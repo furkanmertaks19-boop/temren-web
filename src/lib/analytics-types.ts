@@ -4,18 +4,17 @@ export type TrafficSource = { name: string; value: number; color: string };
 
 export type TopPage = { path: string; title: string; views: number; share: number };
 
-export type WebsiteAnalyticsData = {
-    cards: {
-        today: number;
-        thisWeek: number;
-        thisMonth: number;
-        avgSessionSeconds: number;
-        conversionRate: number;
-    };
-    dailyVisitors: AnalyticsTrendPoint[];
-    monthlyVisitors: AnalyticsTrendPoint[];
-    topPages: TopPage[];
+export type GaAnalyticsData = {
+    todayUsers: number;
+    weekUsers: number;
+    monthUsers: number;
+    activeUsers: number;
+    screenPageViews: number;
+    averageSessionDuration: number;
     trafficSources: TrafficSource[];
+    topPages: TopPage[];
+    dailyUsers: AnalyticsTrendPoint[];
+    monthlyUsers: AnalyticsTrendPoint[];
 };
 
 export function formatDuration(seconds: number): string {

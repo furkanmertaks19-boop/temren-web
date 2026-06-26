@@ -12,20 +12,26 @@ import {
     XAxis,
     YAxis,
 } from "recharts";
-import { AlertCircle, Clock, Eye, RefreshCw, TrendingUp, Users, Target } from "lucide-react";
+import { AlertCircle, Clock, Eye, FileText, RefreshCw, TrendingUp, Users } from "lucide-react";
 import { DashboardCard, CardHead } from "./DashboardCard";
 import DashboardEmptyState from "./DashboardEmptyState";
-import type { WebsiteAnalyticsData } from "@/lib/analytics-types";
+import type { GaAnalyticsData } from "@/lib/analytics-types";
 import { formatDuration } from "@/lib/analytics-types";
 import { cn } from "@/lib/utils";
 
 const ACCENT = "#FF6B00";
 
+export type AnalyticsLoadStatus = "loading" | "success" | "error" | "empty";
+
 type AnalyticsState =
     | { status: "loading" }
     | { status: "error"; message: string }
     | { status: "empty" }
-    | { status: "success"; data: WebsiteAnalyticsData };
+    | { status: "success"; data: GaAnalyticsData };
+
+type AnalyticsChartProps = {
+    onStatusChange?: (status: AnalyticsLoadStatus) => void;
+};
 
 function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: { value: number }[]; label?: string }) {
     if (!active || !payload?.length) return null;
@@ -66,34 +72,43 @@ function AnalyticsSkeleton() {
     );
 }
 
-function buildMiniCards(data: WebsiteAnalyticsData) {
+function buildMiniCards(data: GaAnalyticsData) {
     return [
-        { key: "today", label: "Bugün", icon: Users, value: data.cards.today, suffix: "ziyaretçi" },
-        { key: "week", label: "Bu Hafta", icon: TrendingUp, value: data.cards.thisWeek, suffix: "ziyaretçi" },
-        { key: "month", label: "Bu Ay", icon: Eye, value: data.cards.thisMonth, suffix: "ziyaretçi" },
+        { key: "today", label: "Bugün", icon: Users, value: data.todayUsers, suffix: "ziyaretçi" },
+        { key: "week", label: "Bu Hafta", icon: TrendingUp, value: data.weekUsers, suffix: "ziyaretçi" },
+        { key: "month", label: "Bu Ay", icon: Eye, value: data.monthUsers, suffix: "ziyaretçi" },
         {
             key: "session",
             label: "Ort. Oturum",
             icon: Clock,
-            value: formatDuration(data.cards.avgSessionSeconds),
+            value: formatDuration(data.averageSessionDuration),
             suffix: "süre",
         },
         {
-            key: "conv",
-            label: "Teklif Dönüşümü",
-            icon: Target,
-            value: `%${data.cards.conversionRate.toLocaleString("tr-TR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}`,
-            suffix: "oran",
+            key: "views",
+            label: "Sayfa Görüntüleme",
+            icon: FileText,
+            value: data.screenPageViews,
+            suffix: "son 30 gün",
         },
     ];
 }
 
-export default function AnalyticsChart() {
+export default function AnalyticsChart({ onStatusChange }: AnalyticsChartProps) {
     const [range, setRange] = useState<"daily" | "monthly">("monthly");
     const [state, setState] = useState<AnalyticsState>({ status: "loading" });
 
+    const notifyStatus = useCallback(
+        (status: AnalyticsLoadStatus) => {
+            onStatusChange?.(status);
+        },
+        [onStatusChange]
+    );
+
     const loadAnalytics = useCallback(async () => {
         setState({ status: "loading" });
+        notifyStatus("loading");
+
         try {
             const res = await fetch("/api/admin/analytics");
             const json = await res.json();
@@ -104,15 +119,18 @@ export default function AnalyticsChart() {
 
             if (json.empty) {
                 setState({ status: "empty" });
+                notifyStatus("empty");
                 return;
             }
 
             setState({ status: "success", data: json.data });
+            notifyStatus("success");
         } catch (error: unknown) {
             const message = error instanceof Error ? error.message : "Analytics verileri alınamadı.";
             setState({ status: "error", message });
+            notifyStatus("error");
         }
-    }, []);
+    }, [notifyStatus]);
 
     useEffect(() => {
         void loadAnalytics();
@@ -132,7 +150,7 @@ export default function AnalyticsChart() {
                         </span>
                         <div>
                             <p className="text-[14px] font-semibold text-red-800 dark:text-red-300">
-                                Analytics verileri yüklenemedi
+                                Google Analytics bağlantı hatası
                             </p>
                             <p className="text-[13px] text-red-600/90 dark:text-red-400/90">{state.message}</p>
                         </div>
@@ -161,7 +179,7 @@ export default function AnalyticsChart() {
     }
 
     const { data } = state;
-    const chartData = range === "daily" ? data.dailyVisitors : data.monthlyVisitors;
+    const chartData = range === "daily" ? data.dailyUsers : data.monthlyUsers;
     const miniCards = buildMiniCards(data);
     const hasChartData = chartData.some((point) => point.value > 0);
 
@@ -186,7 +204,7 @@ export default function AnalyticsChart() {
                 <DashboardCard className="lg:col-span-2 overflow-hidden">
                     <CardHead
                         title="Ziyaretçi Grafiği"
-                        description="Site trafiği genel görünümü"
+                        description={`Aktif kullanıcı · ${data.activeUsers.toLocaleString("tr-TR")} (son 30 gün)`}
                         action={
                             <div className="flex items-center gap-1 p-1 rounded-xl bg-slate-100 dark:bg-slate-800">
                                 {(["daily", "monthly"] as const).map((r) => (

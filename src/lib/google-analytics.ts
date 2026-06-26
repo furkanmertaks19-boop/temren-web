@@ -1,6 +1,6 @@
 import { BetaAnalyticsDataClient } from "@google-analytics/data";
 import type { protos } from "@google-analytics/data";
-import type { AnalyticsTrendPoint, TopPage, TrafficSource, WebsiteAnalyticsData } from "@/lib/analytics-types";
+import type { AnalyticsTrendPoint, GaAnalyticsData, TopPage, TrafficSource } from "@/lib/analytics-types";
 
 const TRAFFIC_COLORS = ["#FF6B00", "#0B1736", "#38bdf8", "#a855f7", "#10b981", "#f43f5e", "#eab308"];
 
@@ -31,6 +31,9 @@ let client: BetaAnalyticsDataClient | null = null;
 
 function getClient(): BetaAnalyticsDataClient {
     if (!client) {
+        if (!process.env.GOOGLE_APPLICATION_CREDENTIALS?.trim()) {
+            throw new Error("GOOGLE_APPLICATION_CREDENTIALS ortam değişkeni tanımlı değil.");
+        }
         client = new BetaAnalyticsDataClient();
     }
     return client;
@@ -74,14 +77,14 @@ function formatYearMonthLabel(yearMonth: string): string {
     return MONTH_LABELS[monthIndex] ?? yearMonth;
 }
 
-function mapDailyVisitors(rows: Row[]): AnalyticsTrendPoint[] {
+function mapDailyUsers(rows: Row[]): AnalyticsTrendPoint[] {
     return rows.map((row) => ({
         label: formatDateLabel(dimensionValue(row, 0)),
         value: metricValue(row, 0),
     }));
 }
 
-function mapMonthlyVisitors(rows: Row[]): AnalyticsTrendPoint[] {
+function mapMonthlyUsers(rows: Row[]): AnalyticsTrendPoint[] {
     return rows.map((row) => ({
         label: formatYearMonthLabel(dimensionValue(row, 0)),
         value: metricValue(row, 0),
@@ -123,25 +126,22 @@ function mapTopPages(rows: Row[]): TopPage[] {
     }));
 }
 
-function isAnalyticsEmpty(data: WebsiteAnalyticsData): boolean {
-    const { cards, dailyVisitors, monthlyVisitors, topPages, trafficSources } = data;
-    const hasCardData =
-        cards.today > 0 ||
-        cards.thisWeek > 0 ||
-        cards.thisMonth > 0 ||
-        cards.avgSessionSeconds > 0 ||
-        cards.conversionRate > 0;
-
+export function isAnalyticsEmpty(data: GaAnalyticsData): boolean {
     return (
-        !hasCardData &&
-        dailyVisitors.every((point) => point.value === 0) &&
-        monthlyVisitors.every((point) => point.value === 0) &&
-        topPages.length === 0 &&
-        trafficSources.length === 0
+        data.todayUsers === 0 &&
+        data.weekUsers === 0 &&
+        data.monthUsers === 0 &&
+        data.activeUsers === 0 &&
+        data.screenPageViews === 0 &&
+        data.averageSessionDuration === 0 &&
+        data.dailyUsers.every((point) => point.value === 0) &&
+        data.monthlyUsers.every((point) => point.value === 0) &&
+        data.topPages.length === 0 &&
+        data.trafficSources.length === 0
     );
 }
 
-export async function fetchWebsiteAnalytics(): Promise<WebsiteAnalyticsData> {
+export async function fetchGaAnalytics(): Promise<GaAnalyticsData> {
     const gaClient = getClient();
     const property = getPropertyResource();
 
@@ -161,12 +161,12 @@ export async function fetchWebsiteAnalytics(): Promise<WebsiteAnalyticsData> {
                 metrics: [{ name: "activeUsers" }],
             },
             {
-                dateRanges: [{ startDate: "thisMonthToDate", endDate: "today" }],
-                metrics: [{ name: "averageSessionDuration" }],
+                dateRanges: [{ startDate: "30daysAgo", endDate: "today" }],
+                metrics: [{ name: "activeUsers" }, { name: "screenPageViews" }],
             },
             {
                 dateRanges: [{ startDate: "30daysAgo", endDate: "today" }],
-                metrics: [{ name: "sessionConversionRate" }],
+                metrics: [{ name: "averageSessionDuration" }],
             },
             {
                 dateRanges: [{ startDate: "7daysAgo", endDate: "today" }],
@@ -198,28 +198,18 @@ export async function fetchWebsiteAnalytics(): Promise<WebsiteAnalyticsData> {
     });
 
     const reports = batchResponse.reports ?? [];
+    const summaryRow = reports[3]?.rows?.[0];
 
-    const todayRow = reports[0]?.rows?.[0];
-    const weekRow = reports[1]?.rows?.[0];
-    const monthRow = reports[2]?.rows?.[0];
-    const avgSessionRow = reports[3]?.rows?.[0];
-    const conversionRow = reports[4]?.rows?.[0];
-
-    const data: WebsiteAnalyticsData = {
-        cards: {
-            today: metricValue(todayRow, 0),
-            thisWeek: metricValue(weekRow, 0),
-            thisMonth: metricValue(monthRow, 0),
-            avgSessionSeconds: Math.round(metricValue(avgSessionRow, 0)),
-            conversionRate: Math.round(metricValue(conversionRow, 0) * 1000) / 10,
-        },
-        dailyVisitors: mapDailyVisitors(reports[5]?.rows ?? []),
-        monthlyVisitors: mapMonthlyVisitors(reports[6]?.rows ?? []),
+    return {
+        todayUsers: metricValue(reports[0]?.rows?.[0], 0),
+        weekUsers: metricValue(reports[1]?.rows?.[0], 0),
+        monthUsers: metricValue(reports[2]?.rows?.[0], 0),
+        activeUsers: metricValue(summaryRow, 0),
+        screenPageViews: metricValue(summaryRow, 1),
+        averageSessionDuration: Math.round(metricValue(reports[4]?.rows?.[0], 0)),
+        dailyUsers: mapDailyUsers(reports[5]?.rows ?? []),
+        monthlyUsers: mapMonthlyUsers(reports[6]?.rows ?? []),
         trafficSources: mapTrafficSources(reports[7]?.rows ?? []),
         topPages: mapTopPages(reports[8]?.rows ?? []),
     };
-
-    return data;
 }
-
-export { isAnalyticsEmpty };
